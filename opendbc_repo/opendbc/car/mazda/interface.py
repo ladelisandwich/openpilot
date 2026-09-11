@@ -163,7 +163,11 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def init(CP, can_recv, can_send):
     if CP.flags & MazdaSafetyFlags.RADAR_EMULATION:
-      enter_radar_programming_session(can_recv, can_send)
+      # If the stock radar is not silenced, it keeps transmitting CRZ_INFO/CRZ_CTRL at
+      # 50Hz and would fight our synthetic frames for control of gas and brake. Record
+      # the outcome so card.py can drop us back to lateral-only + stock MRCC.
+      suppressed = enter_radar_programming_session(can_recv, can_send)
+      Params().put_bool("EcuDisableFailed", not suppressed)
 
   @staticmethod
   def deinit(CP, can_recv, can_send):

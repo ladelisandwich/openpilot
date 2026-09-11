@@ -49,6 +49,7 @@ class CarController(CarControllerBase):
     self.resume_ctrl_active_prev = False
     self.virtual_resume_sent_latched = False
     self.resume_button_prev = False
+    self.radar_suppress_failed = None
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
 
@@ -75,7 +76,12 @@ class CarController(CarControllerBase):
     self.ti_apply_torque_last = ti_apply_torque
 
     if self.CP.flags & MazdaSafetyFlags.GEN1:
-      radar_emulation = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION)
+      # Read once, after CarInterface.init() has had a chance to run. If the stock radar
+      # refused the programming session it is still transmitting, so never add our frames
+      # on top of it -- fall back to stock MRCC for gas and brake.
+      if self.radar_suppress_failed is None:
+        self.radar_suppress_failed = self.params.get_bool("EcuDisableFailed")
+      radar_emulation = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION) and not self.radar_suppress_failed
       virtual_resume_sent = False
 
       if radar_emulation:
@@ -244,7 +250,7 @@ class CarController(CarControllerBase):
                                                           v_ego=CS.out.vEgo))
           self.long_counter = (self.long_counter + 1) % 16
         self.resume_button_prev = effective_resume_requested
-      elif self.CP.openpilotLongitudinalControl:
+      elif self.CP.openpilotLongitudinalControl and self.CP.flags & MazdaSafetyFlags.RADAR_INTERCEPTOR:
         hold = False
         if CS.out.standstill:
           hold = (self.frame - self.hold_timer_frame) < 600

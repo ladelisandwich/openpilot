@@ -272,13 +272,13 @@ def _uds_request(can_recv, can_send, bus: int, addr: int, request: bytes, respon
 
 
 def enter_radar_programming_session(can_recv, can_send, bus: int = RADAR_BUS, addr: int = RADAR_ADDR,
-                                    retry: int = 5) -> bool:
+                                    retry: int = 10, timeout: float = 0.2) -> bool:
   request = bytes([uds.SERVICE_TYPE.DIAGNOSTIC_SESSION_CONTROL, uds.SESSION_TYPE.PROGRAMMING])
   response = bytes([uds.SERVICE_TYPE.DIAGNOSTIC_SESSION_CONTROL + 0x40, uds.SESSION_TYPE.PROGRAMMING])
 
   for attempt in range(retry):
     try:
-      if _uds_request(can_recv, can_send, bus, addr, request, response):
+      if _uds_request(can_recv, can_send, bus, addr, request, response, timeout=timeout):
         carlog.warning(f"mazda radar programming session enabled on {hex(addr)}")
         return True
     except Exception:
