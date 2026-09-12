@@ -1,6 +1,6 @@
 from opendbc.can import CANPacker
 from opendbc.car import Bus, structs
-from opendbc.car.lateral import apply_driver_steer_torque_limits
+from opendbc.car.lateral import apply_driver_steer_torque_limits, apply_ti_steer_torque_limits
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.mazda import mazdacan
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
@@ -68,8 +68,8 @@ class CarController(CarControllerBase):
                                                       CS.out.steeringTorque, self.ccp)
       if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR:
         if CS.ti_lkas_allowed:
-          ti_new_torque = int(round(CC.actuators.torque * self.ccp.STEER_MAX))
-          ti_apply_torque = apply_driver_steer_torque_limits(ti_new_torque, self.apply_torque_last,
+          ti_new_torque = int(round(CC.actuators.torque * self.ccp.TI_STEER_MAX))
+          ti_apply_torque = apply_ti_steer_torque_limits(ti_new_torque, self.ti_apply_torque_last,
                                                     CS.out.steeringTorque, self.ccp)
 
     self.apply_torque_last = apply_torque

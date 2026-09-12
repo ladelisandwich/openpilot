@@ -76,6 +76,34 @@ def apply_driver_steer_torque_limits(apply_torque: int, apply_torque_last: int, 
   return int(round(float(apply_torque)))
 
 
+def apply_ti_steer_torque_limits(apply_torque: int, apply_torque_last: int, driver_torque: float, LIMITS):
+  """Torque Interceptor rate/driver limits.
+
+  The TI is a separate actuator from the stock EPS with its own torque ceiling and
+  ramp rates, so it must be limited against its own previous output -- not the stock
+  channel's. Restored from MoreTore/openpilot; dropped when the Mazda port moved to
+  the new opendbc layout.
+  """
+  # limits due to driver torque
+  driver_max_torque = LIMITS.TI_STEER_MAX + (LIMITS.TI_STEER_DRIVER_ALLOWANCE +
+                                             driver_torque * LIMITS.TI_STEER_DRIVER_FACTOR) * LIMITS.TI_STEER_DRIVER_MULTIPLIER
+  driver_min_torque = -LIMITS.TI_STEER_MAX + (-LIMITS.TI_STEER_DRIVER_ALLOWANCE + driver_torque *
+                                              LIMITS.TI_STEER_DRIVER_FACTOR) * LIMITS.TI_STEER_DRIVER_MULTIPLIER
+  max_steer_allowed = max(min(LIMITS.TI_STEER_MAX, driver_max_torque), 0)
+  min_steer_allowed = min(max(-LIMITS.TI_STEER_MAX, driver_min_torque), 0)
+  apply_torque = np.clip(apply_torque, min_steer_allowed, max_steer_allowed)
+
+  # slow rate if steer torque increases in magnitude
+  if apply_torque_last > 0:
+    apply_torque = np.clip(apply_torque, max(apply_torque_last - LIMITS.TI_STEER_DELTA_DOWN, -LIMITS.TI_STEER_DELTA_UP),
+                        apply_torque_last + LIMITS.TI_STEER_DELTA_UP)
+  else:
+    apply_torque = np.clip(apply_torque, apply_torque_last - LIMITS.TI_STEER_DELTA_UP,
+                        min(apply_torque_last + LIMITS.TI_STEER_DELTA_DOWN, LIMITS.TI_STEER_DELTA_UP))
+
+  return int(round(float(apply_torque)))
+
+
 def apply_dist_to_meas_limits(val, val_last, val_meas,
                               STEER_DELTA_UP, STEER_DELTA_DOWN,
                               STEER_ERROR_MAX, STEER_MAX):
