@@ -149,16 +149,24 @@ class CarController(CarControllerBase):
             self.stop_intent_latched = True
 
           hold_latched_ready = CS.out.standstill and self.standstill_hold_frames > HOLD_REQUEST_FRAMES
-          # A physical wheel RES should always be able to ask Mazda to leave HOLD. For
-          # virtual RES, require both an actually-sent RES frame and the latched-hold
-          # phase so a transient shouldStop flicker cannot release the hold early.
-          physical_resume_unlatch_requested = CS.out.standstill and physical_resume_requested and (not stopping or hold_latched_ready)
+          # A physical wheel RES is an explicit driver request, so honour it immediately.
+          # With the radar silenced nothing else acts on the CRZ_BTNS press, and gating it
+          # behind the 6s latch phase made the button dead for exactly the short stops
+          # where it is wanted. Virtual RES keeps the latch requirement so a transient
+          # shouldStop flicker cannot release the hold early.
+          physical_resume_unlatch_requested = CS.out.standstill and physical_resume_requested
           virtual_resume_unlatch_requested = CS.out.standstill and virtual_resume_requested and hold_latched_ready
           resume_unlatch_requested = physical_resume_unlatch_requested or virtual_resume_unlatch_requested
           effective_resume_requested = resume_unlatch_requested
           resume_rising_edge = effective_resume_requested and not self.resume_button_prev
           release_brake = self.resume_release_frames > 0
-          base_release_hold_requested = CC.cruiseControl.override or CS.out.gasPressed or restart_requested or release_brake
+          # Mirrors the stock-radar release condition: the planner asking to move is
+          # sufficient on its own. HOLD_REQUEST_FRAMES governs how long HOLD is applied,
+          # not whether a release is permitted -- conflating the two is what left the car
+          # latched until the driver touched the gas.
+          planner_release_requested = (CC.cruiseControl.override or CS.out.gasPressed or restart_requested or
+                                       (CC.cruiseControl.resume and not stopping))
+          base_release_hold_requested = planner_release_requested or release_brake
 
           if CS.out.standstill and self.stop_intent_latched and not base_release_hold_requested:
             self.standstill_hold_frames += 1
@@ -172,7 +180,8 @@ class CarController(CarControllerBase):
           elif self.resume_crz_latched_frames > 0:
             self.resume_crz_latched_frames -= 1
 
-          if resume_unlatch_requested:
+          # Drive the synthetic unlatch sequence from the planner too, not just RES.
+          if resume_unlatch_requested or (planner_release_requested and self.stop_intent_latched and CS.out.standstill):
             self.resume_release_frames = RESUME_RELEASE_FRAMES
           elif self.resume_release_frames > 0:
             self.resume_release_frames -= 1
