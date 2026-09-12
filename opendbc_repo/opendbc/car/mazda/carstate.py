@@ -2,6 +2,7 @@ import copy
 from cereal import custom
 from opendbc.can import CANDefine, CANParser
 from opendbc.car import Bus, create_button_events, structs, DT_CTRL
+from openpilot.common.params import Params
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.mazda.values import DBC, LKAS_LIMITS, MazdaSafetyFlags, TI_STATE, CarControllerParams
@@ -27,6 +28,12 @@ class CarState(CarStateBase):
     self.distance_button = 0
     # physical RES / SET+ press on the wheel; used by the radar emulation HOLD release
     self.accel_button = 0
+    # When openpilot owns the set speed (pcmCruiseSpeed=False) the wheel buttons have to
+    # reach VCruiseHelper as button events. Only emit them for that mode -- adding button
+    # events unconditionally would change engagement behaviour for everyone else.
+    self.low_min_set_speed = Params().get_bool("LowerMinSetSpeed")
+    self.speed_up_button = 0
+    self.speed_down_button = 0
     self.ti_ramp_down = False
     self.ti_version = 1
     self.ti_state = TI_STATE.RUN
@@ -51,6 +58,10 @@ class CarState(CarStateBase):
     self.distance_button = cp.vl["CRZ_BTNS"]["DISTANCE_LESS"]
     # CX-9 has a dedicated RES button; some Mazdas emit SET_P for the wheel "+" instead
     self.accel_button = int(cp.vl["CRZ_BTNS"]["RES"] == 1 or cp.vl["CRZ_BTNS"]["SET_P"] == 1)
+    prev_speed_up_button = self.speed_up_button
+    prev_speed_down_button = self.speed_down_button
+    self.speed_up_button = int(cp.vl["CRZ_BTNS"]["SET_P"] == 1)
+    self.speed_down_button = int(cp.vl["CRZ_BTNS"]["SET_M"] == 1)
 
     self.parse_wheel_speeds(ret,
       cp.vl["WHEEL_SPEEDS"]["FL"],
@@ -175,6 +186,10 @@ class CarState(CarStateBase):
 
     # TODO: add button types for inc and dec
     ret.buttonEvents = create_button_events(self.distance_button, prev_distance_button, {1: ButtonType.gapAdjustCruise})
+    if self.low_min_set_speed:
+      ret.buttonEvents = ret.buttonEvents + \
+        create_button_events(self.speed_up_button, prev_speed_up_button, {1: ButtonType.accelCruise}) + \
+        create_button_events(self.speed_down_button, prev_speed_down_button, {1: ButtonType.decelCruise})
 
     fp_ret = custom.StarPilotCarState.new_message()
 

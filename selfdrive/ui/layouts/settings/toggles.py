@@ -33,6 +33,7 @@ DESCRIPTIONS = {
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
   "TorqueInterceptorEnabled": tr_noop("Enable the torque interceptor to control the steering wheel."),
+  "LowerMinSetSpeed": tr_noop("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash keeps showing its minimum; the openpilot screen shows the real target."),
   "RadarInterceptorEnabled": tr_noop("Enable if you have installed the radar Iterceptor."),
   "RadarEmulationEnabled": tr_noop("Silence the stock radar and let openpilot control gas and brake. No extra hardware required. Do not enable together with the Radar Interceptor."),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
@@ -118,6 +119,12 @@ class TogglesLayout(Widget):
       "RadarEmulationEnabled": (
         lambda: tr("Enable Radar Emulation"),
         DESCRIPTIONS["RadarEmulationEnabled"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "LowerMinSetSpeed": (
+        lambda: tr("Lower Minimum Set Speed"),
+        DESCRIPTIONS["LowerMinSetSpeed"],
         "chffr_wheel.png",
         True,
       ),

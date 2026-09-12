@@ -21,6 +21,7 @@ from opendbc.car.gm.values import CAR as GM
 from opendbc.car.honda.values import CAR as HONDA, HONDA_BOSCH, HondaFlags, HondaSafetyFlags, HondaStarPilotFlags
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import CAR as HYUNDAI, CANFD_CAR, HyundaiFlags, HyundaiStarPilotFlags, HyundaiStarPilotSafetyFlags, ALT_BUS_LDA_BUTTON_CARS
+from opendbc.car.mazda.values import CAR as MAZDA
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.subaru.values import CAR as SUBARU, SubaruSafetyFlags
 from opendbc.car.toyota.values import CAR as TOYOTA, NO_DSU_CAR, TSS2_CAR, UNSUPPORTED_DSU_CAR, ToyotaStarPilotFlags, ToyotaSafetyFlags
@@ -230,6 +231,18 @@ class CarInterfaceBase(ABC):
         fp_ret.canUsePedal = candidate not in HONDA_BOSCH
         if any(0x35E in bus_fingerprint for bus_fingerprint in fingerprint.values()):
           fp_ret.flags |= int(HondaStarPilotFlags.HAS_CAMERA_MESSAGES)
+
+      elif platform in MAZDA:
+        # The cluster refuses to display a set speed below ~19 mph, and with pcmCruiseSpeed
+        # the dash value is what openpilot targets. Radar emulation already commands the
+        # car from 19 mph down to a standstill, so the floor is purely a display artifact.
+        # Handing the set speed to VCruiseHelper drops the minimum to V_CRUISE_MIN (8 kph).
+        # pcmCruise stays True, so engagement still follows the stock MRCC set/cancel edge.
+        # redneckCruiseAvailable only unlocks the non-PCM set-speed path in cruise.py here;
+        # RedneckCruise itself is Hyundai-only (card.py checks brand).
+        if CP.openpilotLongitudinalControl and params.get_bool("LowerMinSetSpeed"):
+          fp_ret.redneckCruiseAvailable = True
+          fp_ret.pcmCruiseSpeed = False
 
       elif platform in HYUNDAI:
         if candidate in CANFD_CAR:

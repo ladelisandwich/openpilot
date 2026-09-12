@@ -30,6 +30,7 @@ class TogglesLayoutMici(NavScroller):
     enable_openpilot = BigParamControl("enable openpilot", "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
     enable_torque_interceptor = BigParamControl("torque interceptor", "TorqueInterceptorEnabled", toggle_callback=restart_needed_callback)
     enable_radar_emulation = BigParamControl("radar emulation", "RadarEmulationEnabled", toggle_callback=restart_needed_callback)
+    lower_min_set_speed = BigParamControl("lower min set speed", "LowerMinSetSpeed", toggle_callback=restart_needed_callback)
     enable_radar_interceptor = BigParamControl("radar interceptor", "RadarInterceptorEnabled", toggle_callback=restart_needed_callback)
     enable_no_mrcc = BigParamControl("no stock MRCC", "NoMRCC", toggle_callback=restart_needed_callback)
     enable_no_fsc = BigParamControl("no stock FSC", "NoFSC", toggle_callback=restart_needed_callback)
@@ -48,6 +49,7 @@ class TogglesLayoutMici(NavScroller):
       enable_openpilot,
       enable_torque_interceptor,
       enable_radar_emulation,
+      lower_min_set_speed,
       enable_radar_interceptor,
       enable_no_mrcc,
       enable_no_fsc,
@@ -67,6 +69,7 @@ class TogglesLayoutMici(NavScroller):
       ("OpenpilotEnabledToggle", enable_openpilot),
       ("TorqueInterceptorEnabled", enable_torque_interceptor),
       ("RadarEmulationEnabled", enable_radar_emulation),
+      ("LowerMinSetSpeed", lower_min_set_speed),
       ("RadarInterceptorEnabled", enable_radar_interceptor),
       ("NoMRCC", enable_no_mrcc),
       ("NoFSC", enable_no_fsc),

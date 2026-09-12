@@ -726,6 +726,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"TorqueInterceptorEnabled", {PERSISTENT, BOOL, "1", "1"}},
     {"RadarInterceptorEnabled", {PERSISTENT, BOOL}},
     {"RadarEmulationEnabled", {PERSISTENT, BOOL}},
+    {"LowerMinSetSpeed", {PERSISTENT, BOOL}},
     {"NoMRCC", {PERSISTENT, BOOL}},
     {"NoFSC", {PERSISTENT, BOOL}},
     {"BlendedACC", {PERSISTENT, BOOL, "1", "1"}},
