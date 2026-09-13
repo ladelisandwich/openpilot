@@ -185,11 +185,14 @@ class CarState(CarStateBase):
     self.cp = cp
 
     # TODO: add button types for inc and dec
-    ret.buttonEvents = create_button_events(self.distance_button, prev_distance_button, {1: ButtonType.gapAdjustCruise})
+    # Build the full list in Python before assigning: reading ret.buttonEvents back gives
+    # a capnp list builder, which cannot be concatenated with a Python list.
+    button_events = create_button_events(self.distance_button, prev_distance_button, {1: ButtonType.gapAdjustCruise})
     if self.low_min_set_speed:
-      ret.buttonEvents = ret.buttonEvents + \
+      button_events = button_events + \
         create_button_events(self.speed_up_button, prev_speed_up_button, {1: ButtonType.accelCruise}) + \
         create_button_events(self.speed_down_button, prev_speed_down_button, {1: ButtonType.decelCruise})
+    ret.buttonEvents = button_events
 
     fp_ret = custom.StarPilotCarState.new_message()
 
