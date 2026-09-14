@@ -45,14 +45,6 @@ class CarState(CarStateBase):
     self.stock_radar_ctr_last = None
     self.stock_radar_silent_frames = 0
     self.stock_radar_seen = False
-
-  @property
-  def fsc_settled(self) -> bool:
-    return self.fsc_settled_frames >= CarControllerParams.FSC_SETTLE_FRAMES
-
-  @property
-  def stock_radar_alive(self) -> bool:
-    return self.stock_radar_seen and self.stock_radar_silent_frames < CarControllerParams.STOCK_RADAR_ALIVE_FRAMES
     self.ti_ramp_down = False
     self.ti_version = 1
     self.ti_state = TI_STATE.RUN
@@ -61,6 +53,14 @@ class CarState(CarStateBase):
     self.ti_lkas_allowed = False
 
     self._prev_steering_angle = 0
+
+  @property
+  def fsc_settled(self) -> bool:
+    return self.fsc_settled_frames >= CarControllerParams.FSC_SETTLE_FRAMES
+
+  @property
+  def stock_radar_alive(self) -> bool:
+    return self.stock_radar_seen and self.stock_radar_silent_frames < CarControllerParams.STOCK_RADAR_ALIVE_FRAMES
 
   def update(self, can_parsers, starpilot_toggles) -> tuple[structs.CarState, custom.StarPilotCarState]:
     if self.CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):
@@ -79,11 +79,14 @@ class CarState(CarStateBase):
     # master and freezes once it is silenced. Only read in STOCK/SILENCING, where we transmit
     # no CRZ_INFO of our own -- see the limitation note in radar_session.py.
     crz_ctr = cp.vl["CRZ_INFO"]["CTR1"]
-    if self.stock_radar_ctr_last is None or crz_ctr != self.stock_radar_ctr_last:
+    if self.stock_radar_ctr_last is None:
+      # First read proves nothing: an unpopulated parser returns 0, which would otherwise
+      # look like a live radar before any CAN has arrived.
       self.stock_radar_ctr_last = crz_ctr
-      if self.stock_radar_seen:
-        self.stock_radar_silent_frames = 0
+    elif crz_ctr != self.stock_radar_ctr_last:
+      self.stock_radar_ctr_last = crz_ctr
       self.stock_radar_seen = True
+      self.stock_radar_silent_frames = 0
     else:
       self.stock_radar_silent_frames = min(self.stock_radar_silent_frames + 1,
                                            CarControllerParams.STOCK_RADAR_ALIVE_FRAMES)
