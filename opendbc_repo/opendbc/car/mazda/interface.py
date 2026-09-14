@@ -7,8 +7,8 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarInterfaceBase, TorqueFromLateralAccelCallbackType, LateralAccelFromTorqueCallbackType
 from opendbc.car.mazda.carcontroller import CarController
 from opendbc.car.mazda.carstate import CarState
-from opendbc.car.mazda.longitudinal import enter_radar_programming_session, request_radar_default_session
-from opendbc.car.mazda.values import CAR, LKAS_LIMITS, MazdaSafetyFlags, MazdaSafetyFlags, GEN1, GEN2, GEN3
+from opendbc.car.mazda.longitudinal import request_radar_default_session
+from opendbc.car.mazda.values import CAR, LKAS_LIMITS, MazdaSafetyFlags, GEN1, GEN2, GEN3
 from openpilot.common.params import Params
 
 NON_LINEAR_TORQUE_PARAMS = {
@@ -162,12 +162,13 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, can_recv, can_send):
+    # The radar teardown deliberately does NOT happen here. A blocking UDS request at init
+    # lands inside the Forward Sensing Camera's cold-boot radar-presence check, which makes
+    # the FSC latch "Smart City Brake Support Malfunction". RadarSessionManager owns it from
+    # the control loop instead, where it can wait for the camera and for a standstill.
+    # Clear any stale failure latch so a previous drive cannot veto this one.
     if CP.flags & MazdaSafetyFlags.RADAR_EMULATION:
-      # If the stock radar is not silenced, it keeps transmitting CRZ_INFO/CRZ_CTRL at
-      # 50Hz and would fight our synthetic frames for control of gas and brake. Record
-      # the outcome so card.py can drop us back to lateral-only + stock MRCC.
-      suppressed = enter_radar_programming_session(can_recv, can_send)
-      Params().put_bool("EcuDisableFailed", not suppressed)
+      Params().put_bool("EcuDisableFailed", False)
 
   @staticmethod
   def deinit(CP, can_recv, can_send):

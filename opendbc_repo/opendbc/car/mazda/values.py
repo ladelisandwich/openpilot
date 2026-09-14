@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import IntFlag
 
-from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
+from opendbc.car import DT_CTRL, Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.structs import CarParams
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
@@ -10,6 +10,22 @@ from opendbc.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
 Ecu = CarParams.Ecu
 
 class CarControllerParams:
+  # --- radar session / FSC gate timing (ported from zoompilot's approach) ---
+  # The Forward Sensing Camera checks for the radar at cold boot. Silencing it during that
+  # window makes the FSC latch "Smart City Brake Support Malfunction", so defer the teardown
+  # until CAM_LANEINFO has been reporting clean for this long.
+  FSC_SETTLE_T = 10.0
+  CAM_LANEINFO_FRESH_T = 1.5      # longest observed CAM_LANEINFO period
+  STOCK_RADAR_ALIVE_T = 0.5       # CRZ_INFO counter idle time before the radar counts as silent
+  RADAR_SESSION_LIMIT_T = 10.0    # per-attempt UDS budget
+  RADAR_RESTORE_T = 0.5           # stock traffic needed before a handback counts as complete
+  RADAR_UDS_STEP = 50             # radar UDS traffic at 2 Hz
+  FSC_SETTLE_FRAMES = int(FSC_SETTLE_T / DT_CTRL)
+  CAM_LANEINFO_FRESH_FRAMES = int(CAM_LANEINFO_FRESH_T / DT_CTRL)
+  STOCK_RADAR_ALIVE_FRAMES = int(STOCK_RADAR_ALIVE_T / DT_CTRL)
+  RADAR_SESSION_LIMIT_FRAMES = int(RADAR_SESSION_LIMIT_T / DT_CTRL)
+  RADAR_RESTORE_FRAMES = int(RADAR_RESTORE_T / DT_CTRL)
+
   def __init__(self, CP):
     self.STEER_STEP = 1 # 100 Hz
     if CP.flags & MazdaSafetyFlags.GEN1:

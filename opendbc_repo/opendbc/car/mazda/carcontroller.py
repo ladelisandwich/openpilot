@@ -4,10 +4,10 @@ from opendbc.car.lateral import apply_driver_steer_torque_limits, apply_ti_steer
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.mazda import mazdacan
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
-                                           RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, \
+                                           RADAR_HEARTBEAT_STEP, \
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
-                                           create_radar_tester_present, hold_brake_accel, hold_latched_accel, \
-                                           near_stop_brake_accel
+                                           hold_brake_accel, hold_latched_accel, near_stop_brake_accel
+from opendbc.car.mazda.radar_session import RadarSessionManager
 from opendbc.car.mazda.values import CarControllerParams, Buttons, MazdaSafetyFlags
 from openpilot.common.realtime import DT_CTRL
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -50,6 +50,10 @@ class CarController(CarControllerBase):
     self.virtual_resume_sent_latched = False
     self.resume_button_prev = False
     self.radar_suppress_failed = None
+    # Owns the radar's diagnostic session. Runs in the control loop so the teardown can
+    # wait for the FSC to settle and for the car to be stopped -- see radar_session.py.
+    self.radar_session = RadarSessionManager()
+    self.silencing_failed_latched = False
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
 
@@ -79,9 +83,28 @@ class CarController(CarControllerBase):
       # Read once, after CarInterface.init() has had a chance to run. If the stock radar
       # refused the programming session it is still transmitting, so never add our frames
       # on top of it -- fall back to stock MRCC for gas and brake.
-      if self.radar_suppress_failed is None:
-        self.radar_suppress_failed = self.params.get_bool("EcuDisableFailed")
-      radar_emulation = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION) and not self.radar_suppress_failed
+      emulation_enabled = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION)
+
+      # Drive the radar session state machine. It decides when the radar may be taken over
+      # (camera settled, car stopped, stock ACC not engaged) and whether we own it yet.
+      # handback stays False during normal operation: the takeover window is exactly when
+      # longitudinal is inactive at a standstill, so requesting a handback there would mean
+      # the radar could never be silenced at all. Restoration is CarInterface.deinit()'s job,
+      # and the session lapses on its own a few seconds after the tester-present stops.
+      if emulation_enabled:
+        self.radar_session.update(
+          CS.fsc_settled, CS.stock_radar_alive, handback=False,
+          standstill=CS.out.standstill, bus_healthy=CS.out.canValid, frame=self.frame,
+          stock_engaged=CS.stock_radar_alive and CS.out.cruiseState.enabled)
+        if self.radar_session.diagnostic_message is not None:
+          can_sends.append(self.radar_session.diagnostic_message)
+        # Record a definitive silencing failure once, so card.py can drop back to stock MRCC.
+        if self.radar_session.silencing_failed and not self.silencing_failed_latched:
+          self.silencing_failed_latched = True
+          self.params.put_bool_nonblocking("EcuDisableFailed", True)
+      # Only synthesize CRZ_INFO/CRZ_CTRL once the radar is genuinely ours. If the stock radar
+      # is still awake, two ACC masters would be commanding the PCM at 50Hz each.
+      radar_emulation = emulation_enabled and self.radar_session.replacement_active
       virtual_resume_sent = False
 
       if radar_emulation:
@@ -231,10 +254,6 @@ class CarController(CarControllerBase):
           elif self.stop_intent_latched and not release_hold_requested and (stopping or CS.out.vEgo < NEAR_STOP_ENTRY_SPEED):
             accel = min(accel, near_stop_brake_accel(CS.out.vEgo))
 
-        # hold the stock radar in its UDS programming session so it stays silent
-        if self.frame % TESTER_PRESENT_STEP == 0:
-          can_sends.append(create_radar_tester_present(RADAR_BUS))
-
         lead_visible = CC.hudControl.leadVisible
         synthetic_radar_lead = CC.longActive and (lead_visible or stop_go_request or standstill_hold_request or hold_latched or
                                                   crz_hold_latched or crz_hold_passive or crz_ctrl_resume_active or
@@ -338,8 +357,18 @@ class CarController(CarControllerBase):
       ti_apply_torque if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else None))
 
     new_actuators = CC.actuators.as_builder()
-    new_actuators.torque = apply_torque / self.ccp.STEER_MAX
-    new_actuators.torqueOutputCan = apply_torque
+    # Report the torque of whichever actuator is actually steering the car. controlsd
+    # flags steer_limited_by_safety from |requested - applied|, so reporting the stock
+    # EPS channel while the TI does the work makes openpilot think it is being limited
+    # the moment the EPS clamps -- which on GEN1 is exactly when the TI is needed. That
+    # raised "Take Control, Turn Exceeds Steering Limit" on sharp low-speed turns even
+    # though the TI was tracking the request fine.
+    if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR and CS.ti_lkas_allowed:
+      new_actuators.torque = ti_apply_torque / self.ccp.TI_STEER_MAX
+      new_actuators.torqueOutputCan = ti_apply_torque
+    else:
+      new_actuators.torque = apply_torque / self.ccp.STEER_MAX
+      new_actuators.torqueOutputCan = apply_torque
 
     self.long_active_last = CC.longActive
     self.frame += 1

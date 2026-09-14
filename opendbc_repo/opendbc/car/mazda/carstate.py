@@ -34,6 +34,25 @@ class CarState(CarStateBase):
     self.low_min_set_speed = Params().get_bool("LowerMinSetSpeed")
     self.speed_up_button = 0
     self.speed_down_button = 0
+    # --- radar session witnesses (see radar_session.py) ---
+    # The FSC checks for the radar at cold boot; tearing it down inside that window latches
+    # "Smart City Brake Support Malfunction". Gate on settled, error-free CAM_LANEINFO.
+    self.fsc_settled_frames = 0
+    self.cam_laneinfo_stale_frames = CarControllerParams.CAM_LANEINFO_FRESH_FRAMES
+    self.cam_laneinfo_ts_last = 0
+    # Stock radar liveness, inferred from the CRZ_INFO counter advancing. Only trustworthy
+    # while we transmit no CRZ_INFO ourselves (STOCK / SILENCING) -- see radar_session.py.
+    self.stock_radar_ctr_last = None
+    self.stock_radar_silent_frames = 0
+    self.stock_radar_seen = False
+
+  @property
+  def fsc_settled(self) -> bool:
+    return self.fsc_settled_frames >= CarControllerParams.FSC_SETTLE_FRAMES
+
+  @property
+  def stock_radar_alive(self) -> bool:
+    return self.stock_radar_seen and self.stock_radar_silent_frames < CarControllerParams.STOCK_RADAR_ALIVE_FRAMES
     self.ti_ramp_down = False
     self.ti_version = 1
     self.ti_state = TI_STATE.RUN
@@ -56,6 +75,19 @@ class CarState(CarStateBase):
 
     prev_distance_button = self.distance_button
     self.distance_button = cp.vl["CRZ_BTNS"]["DISTANCE_LESS"]
+    # Stock radar liveness: the CRZ_INFO counter advances at 50Hz while the radar is the ACC
+    # master and freezes once it is silenced. Only read in STOCK/SILENCING, where we transmit
+    # no CRZ_INFO of our own -- see the limitation note in radar_session.py.
+    crz_ctr = cp.vl["CRZ_INFO"]["CTR1"]
+    if self.stock_radar_ctr_last is None or crz_ctr != self.stock_radar_ctr_last:
+      self.stock_radar_ctr_last = crz_ctr
+      if self.stock_radar_seen:
+        self.stock_radar_silent_frames = 0
+      self.stock_radar_seen = True
+    else:
+      self.stock_radar_silent_frames = min(self.stock_radar_silent_frames + 1,
+                                           CarControllerParams.STOCK_RADAR_ALIVE_FRAMES)
+
     # CX-9 has a dedicated RES button; some Mazdas emit SET_P for the wheel "+" instead
     self.accel_button = int(cp.vl["CRZ_BTNS"]["RES"] == 1 or cp.vl["CRZ_BTNS"]["SET_P"] == 1)
     prev_speed_up_button = self.speed_up_button
@@ -180,6 +212,24 @@ class CarState(CarStateBase):
       self.lkas_disabled = cp_cam.vl["CAM_LANEINFO"]["LANE_LINES"] == 0 if not self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else False
       self.cam_lkas = cp_cam.vl["CAM_LKAS"]
       self.cam_laneinfo = cp_cam.vl["CAM_LANEINFO"]
+
+      # FSC settle gate. BIT2 is deliberately excluded: it can stay high for a whole ignition
+      # cycle without indicating an incomplete boot. A camera dropout restarts the timer, and
+      # the gate starts closed because an unpopulated parser reads all-zero and would
+      # otherwise look settled.
+      laneinfo = cp_cam.vl["CAM_LANEINFO"]
+      # ts_nanos is 0 until a real frame arrives, so this also keeps the gate closed before
+      # the first camera frame -- an unpopulated parser reads all-zero and would look settled.
+      cam_ts = cp_cam.ts_nanos["CAM_LANEINFO"]["LANE_LINES"]
+      if cam_ts != self.cam_laneinfo_ts_last:
+        self.cam_laneinfo_ts_last = cam_ts
+        self.cam_laneinfo_stale_frames = 0
+      else:
+        self.cam_laneinfo_stale_frames = min(self.cam_laneinfo_stale_frames + 1,
+                                             CarControllerParams.CAM_LANEINFO_FRESH_FRAMES)
+      cam_fresh = cam_ts != 0 and self.cam_laneinfo_stale_frames < CarControllerParams.CAM_LANEINFO_FRESH_FRAMES
+      settled = cam_fresh and not (laneinfo["NO_ERR_BIT"] or laneinfo["ERR_BIT"])
+      self.fsc_settled_frames = self.fsc_settled_frames + 1 if settled else 0
       ret.steerFaultPermanent = cp_cam.vl["CAM_LKAS"]["ERR_BIT_1"] == 1 if not self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else False
     self.cp_cam = cp_cam
     self.cp = cp
