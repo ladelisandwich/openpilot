@@ -7,7 +7,7 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarInterfaceBase, TorqueFromLateralAccelCallbackType, LateralAccelFromTorqueCallbackType
 from opendbc.car.mazda.carcontroller import CarController
 from opendbc.car.mazda.carstate import CarState
-from opendbc.car.mazda.longitudinal import request_radar_default_session
+from opendbc.car.mazda.longitudinal import capture_stock_radar_frames, enter_radar_programming_session, request_radar_default_session
 from opendbc.car.mazda.values import CAR, LKAS_LIMITS, MazdaSafetyFlags, GEN1, GEN2, GEN3
 from openpilot.common.params import Params
 
@@ -162,13 +162,16 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def init(CP, can_recv, can_send):
-    # The radar teardown deliberately does NOT happen here. A blocking UDS request at init
-    # lands inside the Forward Sensing Camera's cold-boot radar-presence check, which makes
-    # the FSC latch "Smart City Brake Support Malfunction". RadarSessionManager owns it from
-    # the control loop instead, where it can wait for the camera and for a standstill.
-    # Clear any stale failure latch so a previous drive cannot veto this one.
     if CP.flags & MazdaSafetyFlags.RADAR_EMULATION:
       Params().put_bool("EcuDisableFailed", False)
+      # Record the radar's own frames while it is still talking, then silence it. Replaying
+      # this car's real frames is far more faithful than hardcoded templates from another
+      # model -- a CX-9 capture showed 0x362, 0x365 and 0x366 differed materially from the
+      # CX-5 templates that shipped, which is the likeliest reason its modules noticed the
+      # radar had gone.
+      capture_stock_radar_frames(can_recv)
+      suppressed = enter_radar_programming_session(can_recv, can_send)
+      Params().put_bool("EcuDisableFailed", not suppressed)
 
   @staticmethod
   def deinit(CP, can_recv, can_send):

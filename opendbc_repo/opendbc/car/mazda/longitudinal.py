@@ -38,15 +38,51 @@ RADAR_SYNTHETIC_LEAD_TRACK_ADDR = 0x364
 
 CRZ_INFO_STANDBY_TEMPLATE = bytes.fromhex("01ffe3ffc0000000")
 CRZ_INFO_TEMPLATE = bytes.fromhex("01ffe20006800000")
+# Fallbacks only. The live capture in capture_stock_radar_frames() is preferred -- these
+# are used only if that fails. Values below are from a 2023 CX-9 bus capture; the CX-5
+# templates that shipped originally were wrong for this car on 0x362, 0x365 and 0x366,
+# which is the most likely reason its modules noticed the radar had gone.
 RADAR_STATIC_TEMPLATE = bytes.fromhex("0008c00000000000")
 RADAR_TRACK_EMPTY_TEMPLATES = (
-  bytes.fromhex("fff7fefe1fc00080"),
-  bytes.fromhex("fff7fefe1fc78c80"),
-  bytes.fromhex("fff7fefe1fc00000"),
-  bytes.fromhex("fff7fefe1fc00000"),
-  bytes.fromhex("fff7fe7ffbff3fc0"),
-  bytes.fromhex("fff7fe7ffbff3fc0"),
+  bytes.fromhex("fff7fefe1fc00080"),   # 0x361 - matched the CX-9 capture
+  bytes.fromhex("fff7fefe1fc97080"),   # 0x362 - CX-9 capture (was fff7fefe1fc78c80)
+  bytes.fromhex("fff7fefe1fc00000"),   # 0x363 - matched
+  bytes.fromhex("fff7fefe1fc00000"),   # 0x364 - matched
+  bytes.fromhex("04808e08a0461d40"),   # 0x365 - CX-9 capture (was fff7fe7ffbff3fc0)
+  bytes.fromhex("1911607ffbff03c0"),   # 0x366 - CX-9 capture (was fff7fe7ffbff3fc0)
 )
+
+# Radar frames observed live before the session is taken, keyed by address. Preferred over
+# the templates above because they come from this car in its current state rather than from
+# a capture of a different model.
+_captured_radar_frames: dict[int, bytes] = {}
+
+
+def capture_stock_radar_frames(can_recv, timeout: float = 1.5) -> dict[int, bytes]:
+  """Record the stock radar's own frames before silencing it, so we replay what this
+  particular car actually broadcasts.
+
+  Hardcoded templates are a guess about another vehicle's radar. The real frames are on the
+  bus for the taking right up until we silence it, and replaying them is strictly more
+  faithful. Falls back to the templates if nothing arrives in time.
+  """
+  import time
+  wanted = set(RADAR_TRACK_ADDRS) | {RADAR_STATIC_ADDR}
+  seen: dict[int, bytes] = {}
+  deadline = time.monotonic() + timeout
+  while time.monotonic() < deadline and len(seen) < len(wanted):
+    for packet in can_recv(wait_for_one=True):
+      for msg in packet:
+        if msg.src == RADAR_BUS and msg.address in wanted:
+          seen[msg.address] = bytes(msg.dat)
+  _captured_radar_frames.clear()
+  _captured_radar_frames.update(seen)
+  missing = sorted(hex(a) for a in wanted - set(seen))
+  if missing:
+    carlog.warning(f"mazda radar capture incomplete, using templates for {missing}")
+  else:
+    carlog.warning(f"mazda radar capture complete: {sorted(hex(a) for a in seen)}")
+  return seen
 RADAR_SYNTHETIC_LEAD_TRACK_TEMPLATE = bytes.fromhex("0a4000001dc00000")
 
 LONG_COMMAND_STEP = 2
@@ -263,8 +299,10 @@ def build_radar_track(raw: bytes, counter: int) -> bytes:
 
 
 def create_radar_heartbeat_messages(bus: int, counter: int, synthetic_lead: bool = False) -> list[CanData]:
-  can_sends = [CanData(RADAR_STATIC_ADDR, RADAR_STATIC_TEMPLATE, bus)]
-  for addr, raw in zip(RADAR_TRACK_ADDRS, RADAR_TRACK_EMPTY_TEMPLATES, strict=True):
+  static = _captured_radar_frames.get(RADAR_STATIC_ADDR, RADAR_STATIC_TEMPLATE)
+  can_sends = [CanData(RADAR_STATIC_ADDR, static, bus)]
+  for addr, template in zip(RADAR_TRACK_ADDRS, RADAR_TRACK_EMPTY_TEMPLATES, strict=True):
+    raw = _captured_radar_frames.get(addr, template)
     if synthetic_lead and addr == RADAR_SYNTHETIC_LEAD_TRACK_ADDR:
       raw = RADAR_SYNTHETIC_LEAD_TRACK_TEMPLATE
     can_sends.append(CanData(addr, build_radar_track(raw, counter), bus))

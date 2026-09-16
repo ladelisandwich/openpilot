@@ -4,10 +4,10 @@ from opendbc.car.lateral import apply_driver_steer_torque_limits, apply_ti_steer
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.mazda import mazdacan
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
-                                           RADAR_HEARTBEAT_STEP, \
+                                           RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, \
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
-                                           hold_brake_accel, hold_latched_accel, near_stop_brake_accel
-from opendbc.car.mazda.radar_session import RadarSessionManager
+                                           create_radar_tester_present, hold_brake_accel, hold_latched_accel, \
+                                           near_stop_brake_accel
 from opendbc.car.mazda.values import CarControllerParams, Buttons, MazdaSafetyFlags
 from openpilot.common.realtime import DT_CTRL
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -50,10 +50,6 @@ class CarController(CarControllerBase):
     self.virtual_resume_sent_latched = False
     self.resume_button_prev = False
     self.radar_suppress_failed = None
-    # Owns the radar's diagnostic session. Runs in the control loop so the teardown can
-    # wait for the FSC to settle and for the car to be stopped -- see radar_session.py.
-    self.radar_session = RadarSessionManager()
-    self.silencing_failed_latched = False
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
 
@@ -83,28 +79,11 @@ class CarController(CarControllerBase):
       # Read once, after CarInterface.init() has had a chance to run. If the stock radar
       # refused the programming session it is still transmitting, so never add our frames
       # on top of it -- fall back to stock MRCC for gas and brake.
-      emulation_enabled = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION)
-
-      # Drive the radar session state machine. It decides when the radar may be taken over
-      # (camera settled, car stopped, stock ACC not engaged) and whether we own it yet.
-      # handback stays False during normal operation: the takeover window is exactly when
-      # longitudinal is inactive at a standstill, so requesting a handback there would mean
-      # the radar could never be silenced at all. Restoration is CarInterface.deinit()'s job,
-      # and the session lapses on its own a few seconds after the tester-present stops.
-      if emulation_enabled:
-        self.radar_session.update(
-          CS.fsc_settled, CS.stock_radar_alive, handback=False,
-          standstill=CS.out.standstill, bus_healthy=CS.out.canValid, frame=self.frame,
-          stock_engaged=CS.stock_radar_alive and CS.out.cruiseState.enabled)
-        if self.radar_session.diagnostic_message is not None:
-          can_sends.append(self.radar_session.diagnostic_message)
-        # Record a definitive silencing failure once, so card.py can drop back to stock MRCC.
-        if self.radar_session.silencing_failed and not self.silencing_failed_latched:
-          self.silencing_failed_latched = True
-          self.params.put_bool_nonblocking("EcuDisableFailed", True)
-      # Only synthesize CRZ_INFO/CRZ_CTRL once the radar is genuinely ours. If the stock radar
-      # is still awake, two ACC masters would be commanding the PCM at 50Hz each.
-      radar_emulation = emulation_enabled and self.radar_session.replacement_active
+      # Read once, after CarInterface.init() has run. If the radar refused the programming
+      # session it is still transmitting, so never add our frames on top of it.
+      if self.radar_suppress_failed is None:
+        self.radar_suppress_failed = self.params.get_bool("EcuDisableFailed")
+      radar_emulation = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION) and not self.radar_suppress_failed
       virtual_resume_sent = False
 
       if radar_emulation:
@@ -253,6 +232,10 @@ class CarController(CarControllerBase):
             accel = hold_latched_accel() if hold_latched else hold_brake_accel()
           elif self.stop_intent_latched and not release_hold_requested and (stopping or CS.out.vEgo < NEAR_STOP_ENTRY_SPEED):
             accel = min(accel, near_stop_brake_accel(CS.out.vEgo))
+
+        # hold the radar in its programming session so it stays silent
+        if self.frame % TESTER_PRESENT_STEP == 0:
+          can_sends.append(create_radar_tester_present(RADAR_BUS))
 
         lead_visible = CC.hudControl.leadVisible
         synthetic_radar_lead = CC.longActive and (lead_visible or stop_go_request or standstill_hold_request or hold_latched or
