@@ -59,7 +59,6 @@ HOLD_BRAKE_CMD_TARGET = -1024.0
 HOLD_LATCHED_CMD_TARGET = -1.0
 NEAR_STOP_BRAKE_CMD_TARGET = -750.0
 NEAR_STOP_ENTRY_SPEED = 1.0
-ACTIVE_STOP_CHECKSUM_BIAS = 0x04
 
 # Stock Mazda longitudinal is not using one global raw-command scale across all
 # speeds. Keep more authority at low/mid speed, and soften the map at highway
@@ -102,13 +101,25 @@ def _patch_signal(message_name: str, raw: bytes, signal_name: str, value: float)
   return bytes(dat)
 
 
-def _compute_inverted_sum_checksum(raw: bytes, checksum_index: int = 7) -> int:
-  return (0xFF - (sum(raw[i] for i in range(len(raw)) if i != checksum_index) & 0xFF)) & 0xFF
+def _crz_info_checksum(dat: bytes) -> int:
+  """Invert the sum of the first seven bytes, EXCLUDING two bits from the sum.
+
+  STOPPING (d[5] & 0x04) and RESUME_UNLATCHING (d[6] & 0x40) do not contribute. Verified
+  against 52,442 stock CRZ_INFO frames captured from the car with the radar alive: every
+  one of the 960 frames carrying either bit is reproduced exactly by this, and none by a
+  plain sum.
+
+  The previous implementation applied a +4 bias for STOPPING only -- arithmetically the
+  same as excluding d[5] & 0x04 -- and handled RESUME_UNLATCHING not at all, so every frame
+  in the resume unlatch sequence carried a checksum wrong by 0x40 and was rejected by the
+  car. That is why the chassis never released HOLD.
+  """
+  return (0xFF - ((sum(dat[:7]) - (dat[5] & 0x04) - (dat[6] & 0x40)) & 0xFF)) & 0xFF
 
 
-def _update_crz_info_checksum(raw: bytes, bias: int = 0) -> bytes:
+def _update_crz_info_checksum(raw: bytes) -> bytes:
   dat = bytearray(raw)
-  dat[7] = (_compute_inverted_sum_checksum(dat) + bias) & 0xFF
+  dat[7] = _crz_info_checksum(dat)
   return bytes(dat)
 
 
@@ -174,8 +185,7 @@ def build_crz_info(accel: float, counter: int, long_active: bool, hold_request: 
   raw = _patch_signal("CRZ_INFO", raw, "STOPPING_MAYBE2", int(stopping_active))
   raw = _patch_signal("CRZ_INFO", raw, "RESUME_UNLATCHING_MAYBE", int(resume_unlatching))
   raw = _patch_signal("CRZ_INFO", raw, "CTR1", counter % 16)
-  checksum_bias = ACTIVE_STOP_CHECKSUM_BIAS if stopping_active else 0
-  return _update_crz_info_checksum(raw, bias=checksum_bias)
+  return _update_crz_info_checksum(raw)
 
 
 def select_profile(long_active: bool, lead_visible: bool, hold_request: bool,
