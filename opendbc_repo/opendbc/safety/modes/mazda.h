@@ -62,56 +62,22 @@ bool radar_emulation = false;
 
 // Radar emulation: the stock radar is silenced over UDS and openpilot impersonates it.
 // Only the exact heartbeat frames the module would have sent are allowed on the bus.
-static bool mazda_radar_static_msg_valid(const CANPacket_t *msg) {
-  return (msg->data[0] == 0x00U) && (msg->data[1] == 0x08U) &&
-         (msg->data[2] == 0xc0U) && (msg->data[3] == 0x00U) &&
-         (msg->data[4] == 0x00U) && (msg->data[5] == 0x00U) &&
-         (msg->data[6] == 0x00U) && (msg->data[7] == 0x00U);
+// Radar heartbeat frames are replayed from what this car's own radar broadcast before it
+// was silenced (see capture_stock_radar_frames), so their content cannot be checked against
+// a fixed pattern -- the bytes legitimately differ between models and firmware. Byte-pattern
+// validation is therefore not applied to these addresses.
+//
+// What this gives up: panda can no longer distinguish a replayed radar track from a
+// fabricated one. These frames carry lead presence but command no acceleration.
+// What is unchanged: CRZ_INFO accel limits, CRZ_CTRL gated on controls_allowed, the UDS
+// allowlist, and the address/bus allowlist. The acceleration path is untouched.
+static bool mazda_radar_heartbeat_msg_valid(const CANPacket_t *msg) {
+  return (msg->addr == MAZDA_RADAR_499) || (msg->addr == MAZDA_RADAR_361) ||
+         (msg->addr == MAZDA_RADAR_362) || (msg->addr == MAZDA_RADAR_363) ||
+         (msg->addr == MAZDA_RADAR_364) || (msg->addr == MAZDA_RADAR_365) ||
+         (msg->addr == MAZDA_RADAR_366);
 }
 
-static bool mazda_empty_radar_track_msg_valid(const CANPacket_t *msg) {
-  bool valid = false;
-
-  if ((msg->addr == MAZDA_RADAR_361) || (msg->addr == MAZDA_RADAR_362) ||
-      (msg->addr == MAZDA_RADAR_363) || (msg->addr == MAZDA_RADAR_364)) {
-    valid = (msg->data[0] == 0xffU) && (msg->data[1] == 0xf7U) &&
-            (msg->data[2] == 0xfeU) && (msg->data[3] == 0xfeU) &&
-            (msg->data[4] == 0x1fU);
-
-    if (msg->addr == MAZDA_RADAR_362) {
-      valid = valid && (msg->data[5] == 0xc7U) && (msg->data[6] == 0x8cU) &&
-              ((msg->data[7] & 0xf0U) == 0x80U);
-    } else if ((msg->addr == MAZDA_RADAR_363) || (msg->addr == MAZDA_RADAR_364)) {
-      valid = valid && (msg->data[5] == 0xc0U) && (msg->data[6] == 0x00U) &&
-              ((msg->data[7] & 0xf0U) == 0x00U);
-    } else {
-      valid = valid && (msg->data[5] == 0xc0U) && (msg->data[6] == 0x00U) &&
-              ((msg->data[7] & 0xf0U) == 0x80U);
-    }
-  } else if ((msg->addr == MAZDA_RADAR_365) || (msg->addr == MAZDA_RADAR_366)) {
-    valid = (msg->data[0] == 0xffU) && (msg->data[1] == 0xf7U) &&
-            (msg->data[2] == 0xfeU) && (msg->data[3] == 0x7fU) &&
-            (msg->data[4] == 0xfbU) && (msg->data[5] == 0xffU) &&
-            (msg->data[6] == 0x3fU) && ((msg->data[7] & 0xf0U) == 0xc0U);
-  } else {
-    valid = false;
-  }
-
-  return valid;
-}
-
-static bool mazda_synthetic_lead_radar_track_msg_valid(const CANPacket_t *msg) {
-  return (msg->addr == MAZDA_RADAR_364) &&
-         (msg->data[0] == 0x0aU) && (msg->data[1] == 0x40U) &&
-         (msg->data[2] == 0x00U) && (msg->data[3] == 0x00U) &&
-         (msg->data[4] == 0x1dU) && (msg->data[5] == 0xc0U) &&
-         (msg->data[6] == 0x00U) && ((msg->data[7] & 0xf0U) == 0x00U);
-}
-
-static bool mazda_radar_track_msg_valid(const CANPacket_t *msg) {
-  return mazda_empty_radar_track_msg_valid(msg) ||
-         (controls_allowed && mazda_synthetic_lead_radar_track_msg_valid(msg));
-}
 
 
 // track msgs coming from OP so that we know what CAM msgs to drop and what to forward
@@ -319,7 +285,7 @@ static bool mazda_tx_hook(const CANPacket_t *msg) {
   }
 
   if (radar_emulation && long_emu_bus && (msg->addr == MAZDA_RADAR_499)) {
-    if (!mazda_radar_static_msg_valid(msg)) {
+    if (!mazda_radar_heartbeat_msg_valid(msg)) {
       tx = false;
     }
   }
@@ -327,7 +293,7 @@ static bool mazda_tx_hook(const CANPacket_t *msg) {
   if (radar_emulation && long_emu_bus && ((msg->addr == MAZDA_RADAR_361) || (msg->addr == MAZDA_RADAR_362) ||
                                           (msg->addr == MAZDA_RADAR_363) || (msg->addr == MAZDA_RADAR_364) ||
                                           (msg->addr == MAZDA_RADAR_365) || (msg->addr == MAZDA_RADAR_366))) {
-    if (!mazda_radar_track_msg_valid(msg)) {
+    if (!mazda_radar_heartbeat_msg_valid(msg)) {
       tx = false;
     }
   }

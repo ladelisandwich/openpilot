@@ -58,7 +58,7 @@ RADAR_TRACK_EMPTY_TEMPLATES = (
 _captured_radar_frames: dict[int, bytes] = {}
 
 
-def capture_stock_radar_frames(can_recv, timeout: float = 1.5) -> dict[int, bytes]:
+def capture_stock_radar_frames(can_recv, timeout: float = 1.0) -> dict[int, bytes]:
   """Record the stock radar's own frames before silencing it, so we replay what this
   particular car actually broadcasts.
 
@@ -70,8 +70,14 @@ def capture_stock_radar_frames(can_recv, timeout: float = 1.5) -> dict[int, byte
   wanted = set(RADAR_TRACK_ADDRS) | {RADAR_STATIC_ADDR}
   seen: dict[int, bytes] = {}
   deadline = time.monotonic() + timeout
+  # wait_for_one=True would block forever on a silent bus and never reach the deadline,
+  # stalling car startup. Poll instead so the timeout is always honoured.
   while time.monotonic() < deadline and len(seen) < len(wanted):
-    for packet in can_recv(wait_for_one=True):
+    packets = can_recv(wait_for_one=False)
+    if not packets:
+      time.sleep(0.01)
+      continue
+    for packet in packets:
       for msg in packet:
         if msg.src == RADAR_BUS and msg.address in wanted:
           seen[msg.address] = bytes(msg.dat)
@@ -303,7 +309,12 @@ def create_radar_heartbeat_messages(bus: int, counter: int, synthetic_lead: bool
   can_sends = [CanData(RADAR_STATIC_ADDR, static, bus)]
   for addr, template in zip(RADAR_TRACK_ADDRS, RADAR_TRACK_EMPTY_TEMPLATES, strict=True):
     raw = _captured_radar_frames.get(addr, template)
-    if synthetic_lead and addr == RADAR_SYNTHETIC_LEAD_TRACK_ADDR:
+    # The synthetic-lead payload is a CX-5 capture. Injecting it into a car whose own radar
+    # frames we are otherwise replaying would put a pattern on the bus that this car's radar
+    # never produces -- the exact problem the capture exists to avoid. Only use it when we
+    # have no capture for this address. A verified lead-present capture from this vehicle
+    # would be needed to signal a lead faithfully.
+    if synthetic_lead and addr == RADAR_SYNTHETIC_LEAD_TRACK_ADDR and addr not in _captured_radar_frames:
       raw = RADAR_SYNTHETIC_LEAD_TRACK_TEMPLATE
     can_sends.append(CanData(addr, build_radar_track(raw, counter), bus))
   return can_sends
