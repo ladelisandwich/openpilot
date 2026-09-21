@@ -89,6 +89,17 @@ def capture_stock_radar_frames(can_recv, timeout: float = 1.0) -> dict[int, byte
   else:
     carlog.warning(f"mazda radar capture complete: {sorted(hex(a) for a in seen)}")
   return seen
+
+
+def update_captured_radar_frames(frames: dict[int, bytes]) -> None:
+  """Hybrid long: refresh the replayed heartbeat frames from the radar's own latest traffic,
+  taken the moment it goes silent, instead of a capture made at startup."""
+  wanted = set(RADAR_TRACK_ADDRS) | {RADAR_STATIC_ADDR}
+  fresh = {a: bytes(d) for a, d in frames.items() if a in wanted and len(d) == 8}
+  _captured_radar_frames.update(fresh)
+  carlog.warning(f"mazda radar frames refreshed at takeover: {sorted(hex(a) for a in fresh)}")
+
+
 RADAR_SYNTHETIC_LEAD_TRACK_TEMPLATE = bytes.fromhex("0a4000001dc00000")
 
 LONG_COMMAND_STEP = 2
@@ -188,6 +199,14 @@ def _interp_scale(v_ego: float, bp: tuple[float, ...], values: tuple[float, ...]
 def accel_to_accel_cmd(accel: float, v_ego: float) -> int:
   scale = _interp_scale(v_ego, ACCEL_SCALE_UP_BP, ACCEL_SCALE_UP_V) if accel >= 0.0 else _interp_scale(v_ego, ACCEL_SCALE_DOWN_BP, ACCEL_SCALE_DOWN_V)
   return int(round(clip(accel * scale, ACCEL_CMD_MIN, ACCEL_CMD_MAX)))
+
+
+def accel_cmd_to_accel(accel_cmd: float, v_ego: float) -> float:
+  """Inverse of accel_to_accel_cmd: a raw CRZ_INFO.ACCEL_CMD (e.g. the stock radar's last
+  command) in m/s^2 on the same map, so a takeover can start from what MRCC was asking for."""
+  accel_cmd = clip(accel_cmd, ACCEL_CMD_MIN, ACCEL_CMD_MAX)
+  scale = _interp_scale(v_ego, ACCEL_SCALE_UP_BP, ACCEL_SCALE_UP_V) if accel_cmd >= 0.0 else _interp_scale(v_ego, ACCEL_SCALE_DOWN_BP, ACCEL_SCALE_DOWN_V)
+  return accel_cmd / scale
 
 
 def hold_brake_accel() -> float:

@@ -7,6 +7,7 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarInterfaceBase, TorqueFromLateralAccelCallbackType, LateralAccelFromTorqueCallbackType
 from opendbc.car.mazda.carcontroller import CarController
 from opendbc.car.mazda.carstate import CarState
+from opendbc.car.mazda.hybrid import RadarWitness
 from opendbc.car.mazda.longitudinal import capture_stock_radar_frames, enter_radar_programming_session, request_radar_default_session
 from opendbc.car.mazda.values import CAR, LKAS_LIMITS, MazdaSafetyFlags, GEN1, GEN2, GEN3
 from openpilot.common.params import Params
@@ -21,6 +22,18 @@ NON_LINEAR_TORQUE_PARAMS = {
 class CarInterface(CarInterfaceBase):
   CarState = CarState
   CarController = CarController
+
+  def __init__(self, CP, FPCP):
+    super().__init__(CP, FPCP)
+    # Hybrid long switches ACC master at runtime, so it needs to see the stock radar's own frames.
+    # They are read raw here rather than through the CANParser (see hybrid.RadarWitness).
+    self.radar_witness = RadarWitness() if CP.flags & MazdaSafetyFlags.HYBRID_LONG else None
+    self.CS.radar_witness = self.radar_witness
+
+  def update(self, can_packets, starpilot_toggles):
+    if self.radar_witness is not None:
+      self.radar_witness.update(can_packets)
+    return super().update(can_packets, starpilot_toggles)
 
   def get_lataccel_torque_siglin(self) -> float:
 
@@ -127,6 +140,10 @@ class CarInterface(CarInterfaceBase):
         ret.longitudinalTuning.kpV = [1.2, 1.0, 0.8]
         ret.longitudinalTuning.kiBP = [0., 5., 20.]
         ret.longitudinalTuning.kiV = [0.18, 0.12, 0.08]
+        # Hybrid: stock MRCC in standard mode, emulation in experimental mode (see hybrid.py).
+        # CarParams flag only; the panda runs the radar emulation safety mode for both.
+        if p.get_bool("MazdaHybridLong"):
+          ret.flags |= MazdaSafetyFlags.HYBRID_LONG.value
       if p.get_bool("NoMRCC"): # No Mazda Radar Cruise Control; Missing CRZ_CTRL signal
         ret.flags |= MazdaSafetyFlags.NO_MRCC.value
         ret.safetyConfigs[0].safetyParam |= MazdaSafetyFlags.NO_MRCC.value
@@ -164,6 +181,10 @@ class CarInterface(CarInterfaceBase):
   def init(CP, can_recv, can_send):
     if CP.flags & MazdaSafetyFlags.RADAR_EMULATION:
       Params().put_bool("EcuDisableFailed", False)
+      if CP.flags & MazdaSafetyFlags.HYBRID_LONG:
+        # Hybrid starts every drive on the stock radar. The control loop silences it only when
+        # openpilot takes over, and captures its frames at that moment (see hybrid.py).
+        return
       # Record the radar's own frames while it is still talking, then silence it. Replaying
       # this car's real frames is far more faithful than hardcoded templates from another
       # model -- a CX-9 capture showed 0x362, 0x365 and 0x366 differed materially from the

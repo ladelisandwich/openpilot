@@ -36,6 +36,7 @@ DESCRIPTIONS = {
   "LowerMinSetSpeed": tr_noop("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash keeps showing its minimum; the openpilot screen shows the real target."),
   "RadarInterceptorEnabled": tr_noop("Enable if you have installed the radar Iterceptor."),
   "RadarEmulationEnabled": tr_noop("Silence the stock radar and let openpilot control gas and brake. No extra hardware required. Do not enable together with the Radar Interceptor."),
+  "MazdaHybridLong": tr_noop("Requires Radar Emulation. Stock MRCC drives in standard mode; openpilot takes gas and brake in experimental mode. Each switch restarts the radar and may drop cruise."),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
   "NoFSC": tr_noop("Enable if your car does not have stock FSC."),
   "ManualTransmission": tr_noop("Enable if your car has a manual transmission."),
@@ -119,6 +120,12 @@ class TogglesLayout(Widget):
       "RadarEmulationEnabled": (
         lambda: tr("Enable Radar Emulation"),
         DESCRIPTIONS["RadarEmulationEnabled"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaHybridLong": (
+        lambda: tr("Hybrid Longitudinal"),
+        DESCRIPTIONS["MazdaHybridLong"],
         "chffr_wheel.png",
         True,
       ),

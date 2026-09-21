@@ -436,6 +436,12 @@ class VehicleSettingsManagerView(PanelManagerView):
         "set_state": lambda s: self._controller._on_toggle("RadarEmulationEnabled"),
       })
       toggles.append({
+        "title": tr("Hybrid Longitudinal"),
+        "subtitle": tr("Requires Radar Emulation. Stock MRCC drives in standard mode; openpilot takes gas and brake in experimental mode. Each switch restarts the radar and may drop cruise."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaHybridLong"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaHybridLong"),
+      })
+      toggles.append({
         "title": tr("Lower Minimum Set Speed"),
         "subtitle": tr("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash will keep showing 19 mph; the openpilot screen shows the real target."),
         "get_state": lambda: self._controller._params.get_bool("LowerMinSetSpeed"),

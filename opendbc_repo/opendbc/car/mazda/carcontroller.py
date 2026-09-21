@@ -2,12 +2,14 @@ from opendbc.can import CANPacker
 from opendbc.car import Bus, structs
 from opendbc.car.lateral import apply_driver_steer_torque_limits, apply_ti_steer_torque_limits
 from opendbc.car.interfaces import CarControllerBase
+from opendbc.car.carlog import carlog
 from opendbc.car.mazda import mazdacan
+from opendbc.car.mazda.hybrid import HybridArbiter, HybridRadarManager, ce_status_is_experimental
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
-                                           RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, \
+                                           RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, accel_cmd_to_accel, \
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
                                            create_radar_tester_present, hold_brake_accel, hold_latched_accel, \
-                                           near_stop_brake_accel
+                                           near_stop_brake_accel, update_captured_radar_frames
 from opendbc.car.mazda.values import CarControllerParams, Buttons, MazdaSafetyFlags
 from openpilot.common.realtime import DT_CTRL
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -23,6 +25,12 @@ CRZ_CTRL_RESUME_REACTIVATE_FRAMES = int(round(0.08 / DT_CTRL))
 CRZ_INFO_RESUME_PHASE_FRAMES = int(round(0.20 / DT_CTRL))
 HOLD_REQUEST_FRAMES = int(round(6.0 / DT_CTRL))
 RESUME_RELEASE_FRAMES = int(round(0.5 / DT_CTRL))
+
+# hybrid long (see hybrid.py)
+HYBRID_MODE_READ_STEP = 10                          # experimental-mode state is read at 10 Hz
+HYBRID_HANDOVER_FRAMES = int(round(1.5 / DT_CTRL))  # blend from MRCC's last command after a takeover
+HYBRID_HANDOVER_RC = 0.3                            # s, time constant of that blend
+HYBRID_HANDOVER_ACCEL = (-3.5, 2.0)                 # clip on the blend's starting point
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_names, CP):
@@ -52,8 +60,82 @@ class CarController(CarControllerBase):
     self.radar_suppress_failed = None
     self.params = Params()
     self.params_memory = Params("/dev/shm/params")
+    # Send phases for the replacement radar frames. Always 0 except in hybrid long, where a
+    # takeover restarts them so the first frames go out the cycle the stock radar falls silent.
+    self.long_phase = 0
+    self.heartbeat_phase = 0
+    # hybrid long state (see hybrid.py)
+    self.hybrid = bool(CP.flags & MazdaSafetyFlags.HYBRID_LONG) and bool(CP.flags & MazdaSafetyFlags.RADAR_EMULATION)
+    self.hybrid_arbiter = HybridArbiter()
+    self.hybrid_radar = HybridRadarManager()
+    self.hybrid_experimental = False
+    self.hybrid_engaged_prev = False
+    self.handover_filter = FirstOrderFilter(0.0, HYBRID_HANDOVER_RC, DT_CTRL)
+    self.handover_frames = 0
 
+  def _reset_emulation_state(self):
+    self.standstill_hold_frames = 0
+    self.stop_intent_latched = False
+    self.resume_release_frames = 0
+    self.resume_crz_latched_frames = 0
+    self.resume_phase_frames = 0
+    self.resume_ctrl_active_prev = False
+    self.virtual_resume_sent_latched = False
+    self.resume_button_prev = False
 
+  def _hybrid_experimental(self, starpilot_toggles) -> bool:
+    if getattr(starpilot_toggles, "conditional_experimental_mode", False):
+      return ce_status_is_experimental(self.params_memory.get_int("CEStatus"))
+    return self.params.get_bool("ExperimentalMode")
+
+  def _update_hybrid(self, CC, CS, starpilot_toggles, can_sends) -> bool:
+    """Pick the ACC master for this cycle. Returns True while openpilot impersonates the radar."""
+    witness = CS.radar_witness
+    if witness is None:
+      return False
+
+    if self.frame % HYBRID_MODE_READ_STEP == 0:
+      self.hybrid_experimental = self._hybrid_experimental(starpilot_toggles)
+
+    engaged = CC.enabled and CS.out.cruiseState.enabled
+    if self.hybrid_engaged_prev and not engaged:
+      carlog.warning({"event": "mazdaHybridDisengaged", "master": str(self.hybrid_radar.state),
+                      "masterFrames": self.hybrid_radar.state_frames, "brake": CS.out.brakePressed,
+                      "gas": CS.out.gasPressed, "vEgo": round(CS.out.vEgo, 2)})
+    self.hybrid_engaged_prev = engaged
+
+    want = self.hybrid_arbiter.update(self.hybrid_radar.emulating, engaged, self.hybrid_experimental, CS.out.standstill,
+                                      CS.out.brakePressed, CS.out.gasPressed, CS.out.vEgo, CC.actuators.accel)
+    fsc_ok = CS.fsc_settled or bool(self.CP.flags & MazdaSafetyFlags.NO_FSC)
+    self.hybrid_radar.update(want, witness, CS.out.canValid, fsc_ok)
+    if self.hybrid_radar.diagnostic is not None:
+      can_sends.append(self.hybrid_radar.diagnostic)
+
+    if self.hybrid_radar.just_took_over:
+      # Pick up exactly where the stock radar stopped: its own latest heartbeat frames and
+      # counters, the first replacement frames this cycle, and its last command as the start
+      # of the blend into openpilot's.
+      update_captured_radar_frames(witness.heartbeat_frames())
+      if witness.crz_info_counter is not None:
+        self.long_counter = (witness.crz_info_counter + 1) % 16
+      if witness.heartbeat_counter is not None:
+        self.radar_counter = (witness.heartbeat_counter + 1) % 16
+      self.long_phase = self.frame % LONG_COMMAND_STEP
+      self.heartbeat_phase = self.frame % RADAR_HEARTBEAT_STEP
+      stock_cmd = witness.stock_accel_cmd
+      start = accel_cmd_to_accel(stock_cmd, CS.out.vEgo) if stock_cmd is not None else CC.actuators.accel
+      self.handover_filter.x = min(max(start, HYBRID_HANDOVER_ACCEL[0]), HYBRID_HANDOVER_ACCEL[1])
+      self.handover_filter.initialized = True
+      self.handover_frames = HYBRID_HANDOVER_FRAMES
+      self._reset_emulation_state()
+      self.hybrid_arbiter.note_takeover()
+      carlog.warning({"event": "mazdaHybridTakeover", "engaged": engaged, "stockAccelCmd": stock_cmd,
+                      "startAccel": round(self.handover_filter.x, 3), "vEgo": round(CS.out.vEgo, 2)})
+    if self.hybrid_radar.just_handed_back:
+      self.handover_frames = 0
+      carlog.warning({"event": "mazdaHybridHandedBack", "engaged": engaged, "vEgo": round(CS.out.vEgo, 2)})
+
+    return self.hybrid_radar.transmitting
 
   def update(self, CC, CS, now_nanos, starpilot_toggles):
     can_sends = []
@@ -76,14 +158,17 @@ class CarController(CarControllerBase):
     self.ti_apply_torque_last = ti_apply_torque
 
     if self.CP.flags & MazdaSafetyFlags.GEN1:
-      # Read once, after CarInterface.init() has had a chance to run. If the stock radar
-      # refused the programming session it is still transmitting, so never add our frames
-      # on top of it -- fall back to stock MRCC for gas and brake.
-      # Read once, after CarInterface.init() has run. If the radar refused the programming
-      # session it is still transmitting, so never add our frames on top of it.
-      if self.radar_suppress_failed is None:
-        self.radar_suppress_failed = self.params.get_bool("EcuDisableFailed")
-      radar_emulation = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION) and not self.radar_suppress_failed
+      if self.hybrid:
+        # Hybrid long: stock MRCC or radar emulation, re-decided every cycle. While MRCC is the
+        # master this runs the plain stock-long path below (cancel spam, RES spam from a stop).
+        radar_emulation = self._update_hybrid(CC, CS, starpilot_toggles, can_sends)
+      else:
+        # Read once, after CarInterface.init() has run. If the radar refused the programming
+        # session it is still transmitting, so never add our frames on top of it -- fall back
+        # to stock MRCC for gas and brake.
+        if self.radar_suppress_failed is None:
+          self.radar_suppress_failed = self.params.get_bool("EcuDisableFailed")
+        radar_emulation = bool(self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION) and not self.radar_suppress_failed
       virtual_resume_sent = False
 
       if radar_emulation:
@@ -224,8 +309,16 @@ class CarController(CarControllerBase):
         crz_info_hold_request = stop_go_request and not (brake_release_requested or release_brake)
 
         accel = 0.0
+        # hybrid takeover: blend from the stock radar's last command into openpilot's (never set
+        # outside hybrid long)
+        handover_accel = None
+        if self.handover_frames > 0:
+          self.handover_frames -= 1
+          handover_accel = self.handover_filter.update(CC.actuators.accel)
         if CC.longActive:
           accel = CC.actuators.accel
+          if handover_accel is not None and not CS.out.standstill:
+            accel = handover_accel
           if release_brake:
             accel = max(accel, 0.0)
           elif CS.out.standstill:
@@ -233,20 +326,21 @@ class CarController(CarControllerBase):
           elif self.stop_intent_latched and not release_hold_requested and (stopping or CS.out.vEgo < NEAR_STOP_ENTRY_SPEED):
             accel = min(accel, near_stop_brake_accel(CS.out.vEgo))
 
-        # hold the radar in its programming session so it stays silent
-        if self.frame % TESTER_PRESENT_STEP == 0:
+        # hold the radar in its programming session so it stays silent (hybrid: the radar
+        # manager owns all UDS traffic, including this)
+        if not self.hybrid and self.frame % TESTER_PRESENT_STEP == 0:
           can_sends.append(create_radar_tester_present(RADAR_BUS))
 
         lead_visible = CC.hudControl.leadVisible
         synthetic_radar_lead = CC.longActive and (lead_visible or stop_go_request or standstill_hold_request or hold_latched or
                                                   crz_hold_latched or crz_hold_passive or crz_ctrl_resume_active or
                                                   stop_go_release_requested or release_brake or starting)
-        if self.frame % RADAR_HEARTBEAT_STEP == 0:
+        if (self.frame - self.heartbeat_phase) % RADAR_HEARTBEAT_STEP == 0:
           for bus in (RADAR_BUS, CAM_BUS):
             can_sends.extend(create_radar_heartbeat_messages(bus, self.radar_counter, synthetic_lead=synthetic_radar_lead))
           self.radar_counter = (self.radar_counter + 1) % 16
 
-        if self.frame % LONG_COMMAND_STEP == 0:
+        if (self.frame - self.long_phase) % LONG_COMMAND_STEP == 0:
           for bus in (RADAR_BUS, CAM_BUS):
             can_sends.extend(create_longitudinal_messages(bus, accel, self.long_counter,
                                                           CC.longActive, lead_visible,

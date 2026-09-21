@@ -31,20 +31,21 @@ class CarState(CarStateBase):
     # When openpilot owns the set speed (pcmCruiseSpeed=False) the wheel buttons have to
     # reach VCruiseHelper as button events. Only emit them for that mode -- adding button
     # events unconditionally would change engagement behaviour for everyone else.
-    self.low_min_set_speed = Params().get_bool("LowerMinSetSpeed")
+    # Hybrid long shares one set speed between MRCC and emulation (the dash value), so
+    # openpilot must not own the set speed there.
+    self.low_min_set_speed = Params().get_bool("LowerMinSetSpeed") and not (CP.flags & MazdaSafetyFlags.HYBRID_LONG)
     self.speed_up_button = 0
     self.speed_down_button = 0
-    # --- radar session witnesses (see radar_session.py) ---
     # The FSC checks for the radar at cold boot; tearing it down inside that window latches
     # "Smart City Brake Support Malfunction". Gate on settled, error-free CAM_LANEINFO.
     self.fsc_settled_frames = 0
     self.cam_laneinfo_stale_frames = CarControllerParams.CAM_LANEINFO_FRESH_FRAMES
     self.cam_laneinfo_ts_last = 0
-    # Stock radar liveness, inferred from the CRZ_INFO counter advancing. Only trustworthy
-    # while we transmit no CRZ_INFO ourselves (STOCK / SILENCING) -- see radar_session.py.
-    self.stock_radar_ctr_last = None
-    self.stock_radar_silent_frames = 0
-    self.stock_radar_seen = False
+    # Raw-frame stock radar witness, set by CarInterface (see hybrid.RadarWitness). Radar
+    # liveness must NOT be read through a CANParser: reading cp.vl["CRZ_INFO"] subscribes the
+    # parser to it, and once the radar is silenced the parser marks the whole bus invalid
+    # (canError, shown as "Unknown Vehicle Variant").
+    self.radar_witness = None
     self.ti_ramp_down = False
     self.ti_version = 1
     self.ti_state = TI_STATE.RUN
@@ -57,10 +58,6 @@ class CarState(CarStateBase):
   @property
   def fsc_settled(self) -> bool:
     return self.fsc_settled_frames >= CarControllerParams.FSC_SETTLE_FRAMES
-
-  @property
-  def stock_radar_alive(self) -> bool:
-    return self.stock_radar_seen and self.stock_radar_silent_frames < CarControllerParams.STOCK_RADAR_ALIVE_FRAMES
 
   def update(self, can_parsers, starpilot_toggles) -> tuple[structs.CarState, custom.StarPilotCarState]:
     if self.CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):
@@ -75,21 +72,6 @@ class CarState(CarStateBase):
 
     prev_distance_button = self.distance_button
     self.distance_button = cp.vl["CRZ_BTNS"]["DISTANCE_LESS"]
-    # Stock radar liveness: the CRZ_INFO counter advances at 50Hz while the radar is the ACC
-    # master and freezes once it is silenced. Only read in STOCK/SILENCING, where we transmit
-    # no CRZ_INFO of our own -- see the limitation note in radar_session.py.
-    crz_ctr = cp.vl["CRZ_INFO"]["CTR1"]
-    if self.stock_radar_ctr_last is None:
-      # First read proves nothing: an unpopulated parser returns 0, which would otherwise
-      # look like a live radar before any CAN has arrived.
-      self.stock_radar_ctr_last = crz_ctr
-    elif crz_ctr != self.stock_radar_ctr_last:
-      self.stock_radar_ctr_last = crz_ctr
-      self.stock_radar_seen = True
-      self.stock_radar_silent_frames = 0
-    else:
-      self.stock_radar_silent_frames = min(self.stock_radar_silent_frames + 1,
-                                           CarControllerParams.STOCK_RADAR_ALIVE_FRAMES)
 
     # CX-9 has a dedicated RES button; some Mazdas emit SET_P for the wheel "+" instead
     self.accel_button = int(cp.vl["CRZ_BTNS"]["RES"] == 1 or cp.vl["CRZ_BTNS"]["SET_P"] == 1)

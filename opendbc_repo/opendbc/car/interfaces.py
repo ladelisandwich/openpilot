@@ -21,7 +21,7 @@ from opendbc.car.gm.values import CAR as GM
 from opendbc.car.honda.values import CAR as HONDA, HONDA_BOSCH, HondaFlags, HondaSafetyFlags, HondaStarPilotFlags
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import CAR as HYUNDAI, CANFD_CAR, HyundaiFlags, HyundaiStarPilotFlags, HyundaiStarPilotSafetyFlags, ALT_BUS_LDA_BUTTON_CARS
-from opendbc.car.mazda.values import CAR as MAZDA
+from opendbc.car.mazda.values import CAR as MAZDA, MazdaSafetyFlags
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.subaru.values import CAR as SUBARU, SubaruSafetyFlags
 from opendbc.car.toyota.values import CAR as TOYOTA, NO_DSU_CAR, TSS2_CAR, UNSUPPORTED_DSU_CAR, ToyotaStarPilotFlags, ToyotaSafetyFlags
@@ -240,7 +240,9 @@ class CarInterfaceBase(ABC):
         # pcmCruise stays True, so engagement still follows the stock MRCC set/cancel edge.
         # redneckCruiseAvailable only unlocks the non-PCM set-speed path in cruise.py here;
         # RedneckCruise itself is Hyundai-only (card.py checks brand).
-        if CP.openpilotLongitudinalControl and params.get_bool("LowerMinSetSpeed"):
+        # Not with hybrid long: MRCC and emulation must share one set speed, the dash value.
+        if CP.openpilotLongitudinalControl and params.get_bool("LowerMinSetSpeed") and \
+           not (CP.flags & MazdaSafetyFlags.HYBRID_LONG):
           fp_ret.redneckCruiseAvailable = True
           fp_ret.pcmCruiseSpeed = False
 
