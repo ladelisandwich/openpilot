@@ -4,7 +4,7 @@ from opendbc.car.lateral import apply_driver_steer_torque_limits, apply_ti_steer
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.carlog import carlog
 from opendbc.car.mazda import mazdacan
-from opendbc.car.mazda.hybrid import HybridArbiter, HybridRadarManager, ce_status_is_experimental
+from opendbc.car.mazda.hybrid import HybridArbiter, HybridRadarManager, MrccResync, RadarMaster, ce_status_is_experimental
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
                                            RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, accel_cmd_to_accel, \
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
@@ -68,6 +68,7 @@ class CarController(CarControllerBase):
     self.hybrid = bool(CP.flags & MazdaSafetyFlags.HYBRID_LONG) and bool(CP.flags & MazdaSafetyFlags.RADAR_EMULATION)
     self.hybrid_arbiter = HybridArbiter()
     self.hybrid_radar = HybridRadarManager()
+    self.mrcc_resync = MrccResync()
     self.hybrid_experimental = False
     self.hybrid_engaged_prev = False
     self.handover_filter = FirstOrderFilter(0.0, HYBRID_HANDOVER_RC, DT_CTRL)
@@ -97,11 +98,16 @@ class CarController(CarControllerBase):
     if self.frame % HYBRID_MODE_READ_STEP == 0:
       self.hybrid_experimental = self._hybrid_experimental(starpilot_toggles)
 
+    # openpilot's engagement, not just the car's cruise: with openpilot disengaged and the car's
+    # cruise still on, openpilot is busy cancelling that cruise, and nothing here should fight it.
     engaged = CC.enabled and CS.out.cruiseState.enabled
     if self.hybrid_engaged_prev and not engaged:
       carlog.warning({"event": "mazdaHybridDisengaged", "master": str(self.hybrid_radar.state),
                       "masterFrames": self.hybrid_radar.state_frames, "brake": CS.out.brakePressed,
                       "gas": CS.out.gasPressed, "vEgo": round(CS.out.vEgo, 2)})
+    elif engaged and not self.hybrid_engaged_prev and self.hybrid_radar.state == RadarMaster.MRCC:
+      # The driver set or resumed cruise themselves, so the stock radar is properly engaged again.
+      self.mrcc_resync.note_engaged_by_driver()
     self.hybrid_engaged_prev = engaged
 
     want = self.hybrid_arbiter.update(self.hybrid_radar.emulating, engaged, self.hybrid_experimental, CS.out.standstill,
@@ -133,7 +139,17 @@ class CarController(CarControllerBase):
                       "startAccel": round(self.handover_filter.x, 3), "vEgo": round(CS.out.vEgo, 2)})
     if self.hybrid_radar.just_handed_back:
       self.handover_frames = 0
-      carlog.warning({"event": "mazdaHybridHandedBack", "engaged": engaged, "vEgo": round(CS.out.vEgo, 2)})
+      carlog.warning({"event": "mazdaHybridHandedBack", "engaged": engaged,
+                      "mrccDriving": witness.mrcc_driving, "crzActive": witness.stock_cruise_active,
+                      "stockAccelCmd": witness.stock_accel_cmd, "vEgo": round(CS.out.vEgo, 2)})
+      self.mrcc_resync.note_handback()
+
+    # The radar sleeps through emulation, so after a hand-back it comes back in standby: cruise
+    # still reads engaged but nothing brakes. Nudge it with RES; if it will not take over, keep
+    # the radar instead of leaving the car with throttle and no brakes.
+    self.mrcc_resync.update(self.hybrid_radar.state == RadarMaster.MRCC, engaged, witness,
+                            CS.out.brakePressed, CS.out.gasPressed, CS.out.vEgo)
+    self.hybrid_arbiter.mrcc_unavailable = self.mrcc_resync.failed
 
     return self.hybrid_radar.transmitting
 
@@ -191,9 +207,10 @@ class CarController(CarControllerBase):
           can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP, CS.crz_btns_counter, Buttons.CANCEL))
       elif not radar_emulation:
         self.brake_counter = 0
-        if CC.cruiseControl.resume and self.frame % 5 == 0:
-          # Mazda Stop and Go requires a RES button (or gas) press if the car stops more than 3 seconds
-          # Send Resume button when planner wants car to move
+        # Two reasons to press RES while the stock radar is the master: Mazda Stop and Go needs one
+        # (or the gas) after a stop of more than 3 seconds, and a radar that came back from a
+        # hand-back in standby needs one to start driving again (see hybrid.MrccResync).
+        if (CC.cruiseControl.resume or self.mrcc_resync.press_resume) and self.frame % 5 == 0:
           can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP, CS.crz_btns_counter, Buttons.RESUME))
 
       # send HUD alerts

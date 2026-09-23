@@ -42,9 +42,10 @@ RADAR_BUS = 0
 RADAR_UDS_ADDR = 0x764
 RADAR_UDS_STEP = 50  # UDS traffic at 2 Hz: session control or tester present
 CRZ_INFO_ADDR = 0x21B
+CRZ_CTRL_ADDR = 0x21C  # the radar's own ACC state: tells us whether MRCC is really driving
 RADAR_COUNTER_ADDR = 0x361  # heartbeat track whose CTR seeds ours on a takeover
 HEARTBEAT_ADDRS = (0x361, 0x362, 0x363, 0x364, 0x365, 0x366, 0x499)
-WATCHED_ADDRS = frozenset((CRZ_INFO_ADDR,) + HEARTBEAT_ADDRS)
+WATCHED_ADDRS = frozenset((CRZ_INFO_ADDR, CRZ_CTRL_ADDR) + HEARTBEAT_ADDRS)
 ACCEL_CMD_VALID = (-2000, 2000)  # stock standby frames carry 4094, which is not a command
 
 # starpilot/common/experimental_state.py: 0 = OFF (standard) and 1 = USER_DISABLED (user forced
@@ -118,6 +119,31 @@ class RadarWitness:
     return cmd if ACCEL_CMD_VALID[0] <= cmd <= ACCEL_CMD_VALID[1] else None
 
   @property
+  def stock_cruise_active(self) -> bool:
+    """CRZ_CTRL.CRZ_ACTIVE from the stock radar: it says ACC is engaged.
+    Only meaningful while the radar is alive -- the frame is the last one it sent."""
+    d = self.frames.get(CRZ_CTRL_ADDR)
+    return bool(d is not None and len(d) >= 8 and (d[0] & 0x08))
+
+  @property
+  def mrcc_driving(self) -> bool:
+    """True only while the stock radar is really driving the car.
+
+    Two independent signals, because the failure mode has to be caught with the one that was
+    actually observed: a radar that restarts in standby keeps sending ACCEL_CMD 4094 (no
+    command at all -- stock_accel_cmd None in every field log of the fault) while the PCM still
+    reports cruise engaged and holds the throttle. CRZ_CTRL.CRZ_ACTIVE is the radar's own word
+    for the same thing and is checked as well, but only when the frame has been seen, so a car
+    that does not broadcast it cannot make this read "not driving" forever.
+    """
+    if self.stock_accel_cmd is None:
+      return False
+    d = self.frames.get(CRZ_CTRL_ADDR)
+    if d is None or len(d) < 8:
+      return True
+    return bool(d[0] & 0x08)
+
+  @property
   def crz_info_counter(self) -> int | None:
     d = self.frames.get(CRZ_INFO_ADDR)
     return (d[6] & 0x0F) if d is not None and len(d) >= 8 else None  # CRZ_INFO.CTR1
@@ -133,9 +159,9 @@ class RadarWitness:
 
 class HybridArbiter:
   """Which ACC master is wanted: True = radar emulation (openpilot), False = stock MRCC."""
-  DEBOUNCE_FRAMES = int(round(1.0 / DT_CTRL))             # a wish must hold this long to count
+  DEBOUNCE_FRAMES = int(round(0.75 / DT_CTRL))            # a wish must hold this long to count
   DISENGAGED_DEBOUNCE_FRAMES = int(round(2.0 / DT_CTRL))  # tolerate a quick re-engage
-  DWELL_FRAMES = int(round(5.0 / DT_CTRL))                # minimum time between switches
+  DWELL_FRAMES = int(round(3.0 / DT_CTRL))                # minimum time between switches
   TAKEOVER_WATCH_FRAMES = int(round(3.0 / DT_CTRL))       # a disengage this soon after a takeover blames it
   TAKEOVER_MIN_SPEED = 2.0    # m/s: never take over at a stop, stops belong to whoever is driving
   HANDBACK_MIN_SPEED = 8.5    # m/s (~19 mph): MRCC can be SET again here if the restart drops it
@@ -148,6 +174,9 @@ class HybridArbiter:
     self.takeover_rejected = False  # latched for the drive: the car dropped cruise on a takeover
     self.takeover_watch_frames = 0
     self.engaged_prev = False
+    # Set by the caller from MrccResync: MRCC came back from a hand-back and would not start
+    # driving again. Until the driver re-engages, openpilot keeps the radar.
+    self.mrcc_unavailable = False
 
   def desired(self, emulating: bool, engaged: bool, experimental: bool, standstill: bool,
               brake_pressed: bool, gas_pressed: bool, v_ego: float, accel: float) -> bool:
@@ -159,12 +188,12 @@ class HybridArbiter:
       # the driver is holding the car on the brake. A stop is never a reason to take over.
       return emulating and not brake_pressed
     if emulating:
-      if experimental:
+      if experimental or self.mrcc_unavailable:
         return True
       # Standard mode: back to MRCC, unless openpilot is braking or MRCC could not be set again.
       return v_ego < self.HANDBACK_MIN_SPEED or accel < self.HANDBACK_MAX_DECEL
-    return (experimental and v_ego > self.TAKEOVER_MIN_SPEED and not brake_pressed and not gas_pressed and
-            not self.takeover_rejected)
+    return ((experimental or self.mrcc_unavailable) and v_ego > self.TAKEOVER_MIN_SPEED and
+            not brake_pressed and not gas_pressed and not self.takeover_rejected)
 
   def note_takeover(self) -> None:
     self.takeover_watch_frames = self.TAKEOVER_WATCH_FRAMES
@@ -196,6 +225,119 @@ class HybridArbiter:
       self.pending_frames = 0
       self.frames_since_switch = 0
     return self.want_emulation
+
+
+class MrccResync:
+  """Get MRCC driving again after the stock radar restarts.
+
+  The radar is asleep while openpilot emulates it, so when it is let go it comes back in standby:
+  the PCM still reports cruise engaged and the dash still shows a set speed, but the radar commands
+  nothing. The car then holds the throttle and never brakes for traffic -- on the dash the cruise
+  symbol goes grey, exactly as it does when the driver presses the accelerator.
+
+  The radar says so itself (RadarWitness.mrcc_driving), so the fix is: notice it, press RES (the
+  same button the stop-and-go resume uses; on this car RES is its own button, not SET+), and if the
+  radar still will not take over, say so, so the caller can take the radar back rather than leave
+  the car accelerating with nothing watching the road.
+
+  It watches every silent -> alive edge, not just hand-backs, so a radar that resets on its own
+  while MRCC is in charge is caught by the same logic.
+
+  Worst case, with the radar ignoring both presses: 1.0 s to confirm, two presses 2.2 s apart,
+  and the latch at 5.4 s after the hand-back; the arbiter's debounce then puts openpilot back on
+  the radar about a second later. Normally the first press lands and it is over in 1.3 s.
+  """
+  CONFIRM_FRAMES = int(round(1.0 / DT_CTRL))   # standby must hold this long before the first nudge
+  RETRY_FRAMES = int(round(0.4 / DT_CTRL))     # standby is already established: retry sooner
+  PULSE_FRAMES = int(round(0.3 / DT_CTRL))     # length of one RES press
+  SETTLE_FRAMES = int(round(1.5 / DT_CTRL))    # give the radar this long to react
+  MAX_ATTEMPTS = 2                             # two ignored presses mean the radar is asleep
+
+  def __init__(self):
+    self.armed = False
+    self.alive_prev = False
+    self.seen_alive = False
+    self.standby_frames = 0
+    self.pulse_frames = 0
+    self.settle_frames = 0
+    self.attempts = 0
+    self.failed = False        # latched: MRCC will not drive until the driver re-engages
+    self.press_resume = False
+
+  def note_handback(self) -> None:
+    # The radar is coming back from emulation; the silent -> alive edge arms it in any case,
+    # but a hand-back is a fresh start for the attempt count.
+    self.armed = True
+    self.standby_frames = 0
+    self.pulse_frames = 0
+    self.settle_frames = 0
+    self.attempts = 0
+
+  def note_engaged_by_driver(self) -> None:
+    # A fresh engagement is the driver's own SET/RES: the radar is in charge again.
+    self.armed = False
+    self.failed = False
+    self.attempts = 0
+
+  def update(self, mrcc_master: bool, engaged: bool, witness: RadarWitness,
+             brake_pressed: bool, gas_pressed: bool, v_ego: float) -> None:
+    self.press_resume = False
+
+    # Any radar that has just come back from a silence may be in standby, whether openpilot put
+    # it to sleep or it reset on its own. The edge is read on every cycle so it is never missed.
+    # The first frames of a drive are not a restart: nothing was interrupted.
+    restarted = witness.alive and self.seen_alive and not self.alive_prev
+    self.seen_alive |= witness.alive
+    self.alive_prev = witness.alive
+
+    if not mrcc_master or not engaged:
+      self.armed = False
+      self.standby_frames = 0
+      self.pulse_frames = 0
+      self.settle_frames = 0
+      return
+
+    if restarted:
+      self.armed = True
+      self.standby_frames = 0
+
+    if not self.armed or self.failed or not witness.alive or brake_pressed or gas_pressed or \
+       v_ego < HybridArbiter.TAKEOVER_MIN_SPEED:
+      # The pedals are the driver's: never press a button on top of them.
+      self.standby_frames = 0
+      return
+
+    if witness.mrcc_driving:
+      if self.attempts:
+        carlog.warning({"event": "mazdaHybridMrccResumed", "attempts": self.attempts})
+      self.armed = False
+      self.attempts = 0
+      return
+
+    if self.settle_frames > 0:
+      self.settle_frames -= 1
+      return
+
+    if self.pulse_frames > 0:
+      self.pulse_frames -= 1
+      self.press_resume = True
+      if self.pulse_frames == 0:
+        self.settle_frames = self.SETTLE_FRAMES
+      return
+
+    self.standby_frames += 1
+    if self.standby_frames >= (self.CONFIRM_FRAMES if not self.attempts else self.RETRY_FRAMES):
+      self.standby_frames = 0
+      if self.attempts >= self.MAX_ATTEMPTS:
+        self.failed = True
+        carlog.error({"event": "mazdaHybridMrccStuck", "attempts": self.attempts,
+                      "vEgo": round(v_ego, 2)})
+      else:
+        self.attempts += 1
+        self.pulse_frames = self.PULSE_FRAMES
+        carlog.warning({"event": "mazdaHybridMrccResume", "attempt": self.attempts,
+                        "crzActive": witness.stock_cruise_active,
+                        "stockAccelCmd": witness.stock_accel_cmd, "vEgo": round(v_ego, 2)})
 
 
 class RadarMaster(StrEnum):
