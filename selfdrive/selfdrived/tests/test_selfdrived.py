@@ -5,11 +5,14 @@ from opendbc.car.hyundai.values import CAR as HYUNDAI_CAR
 from opendbc.car.nissan.values import CAR as NISSAN_CAR
 from openpilot.common.realtime import DT_CTRL
 
+from opendbc.car.mazda.values import CAR as MAZDA_CAR, MazdaSafetyFlags
 from openpilot.selfdrive.selfdrived.selfdrived import (
   VALID_ONLY_COMM_ISSUE_GRACE_FRAMES,
   SelfdriveD,
   commanded_torque_at_max_for_saturation,
   evaluate_comm_issue,
+  torque_at_max_hold_frames,
+  update_torque_at_max_hold,
 )
 
 
@@ -79,6 +82,71 @@ def test_gv70_uses_normal_saturation_timer_at_max_output():
   CP.lateralTuning.init("torque")
 
   assert not commanded_torque_at_max_for_saturation(CP, 1.0)
+
+
+def _mazda_cp(torque_interceptor: bool):
+  CP = car.CarParams.new_message()
+  CP.brand = "mazda"
+  CP.carFingerprint = MAZDA_CAR.MAZDA_CX9_2021
+  CP.steerControlType = car.CarParams.SteerControlType.torque
+  CP.lateralTuning.init("torque")
+  CP.steerLimitTimer = 0.8
+  if torque_interceptor:
+    CP.flags = int(MazdaSafetyFlags.GEN1 | MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+  else:
+    CP.flags = int(MazdaSafetyFlags.GEN1)
+  return CP
+
+
+def test_torque_interceptor_holds_max_output_for_steer_limit_timer():
+  hold = torque_at_max_hold_frames(_mazda_cp(True))
+  assert hold == round(0.8 / DT_CTRL)
+  assert torque_at_max_hold_frames(_mazda_cp(False)) == 0
+
+  frames = 0
+  for _ in range(hold - 1):
+    at_max, frames = update_torque_at_max_hold(frames, True, True, True, False, hold)
+    assert not at_max
+  at_max, frames = update_torque_at_max_hold(frames, True, True, True, False, hold)
+  assert at_max
+
+
+def test_torque_interceptor_hold_decays_while_the_car_keeps_up():
+  hold = torque_at_max_hold_frames(_mazda_cp(True))
+  # one frame of the car tracking, of a straight, of output off the ceiling, or of the TI still
+  # ramping to the request takes one frame off the hold
+  for broken in ((False, True, True, False), (True, False, True, False), (True, True, False, False),
+                 (True, True, True, True)):
+    at_max, frames = update_torque_at_max_hold(hold, *broken, hold)
+    assert not at_max and frames == hold - 1
+  at_max, frames = update_torque_at_max_hold(0, True, False, True, False, hold)
+  assert frames == 0
+
+
+def test_torque_interceptor_marginal_undershoot_still_alerts():
+  # the condition flickers off one frame in five: it must still build up to an alert
+  hold = torque_at_max_hold_frames(_mazda_cp(True))
+  frames, fired_at = 0, None
+  for k in range(4 * hold):
+    at_max, frames = update_torque_at_max_hold(frames, True, k % 5 != 0, True, False, hold)
+    if at_max and fired_at is None:
+      fired_at = k
+  assert fired_at is not None and fired_at < 2 * hold
+
+
+def test_torque_interceptor_does_not_count_while_the_ti_ramps_in():
+  hold = torque_at_max_hold_frames(_mazda_cp(True))
+  frames = 0
+  for _ in range(3 * hold):
+    at_max, frames = update_torque_at_max_hold(frames, True, True, True, True, hold)
+    assert not at_max and frames == 0
+
+
+def test_other_torque_cars_keep_the_immediate_alert():
+  at_max, frames = update_torque_at_max_hold(0, True, False, False, True, 0)
+  assert at_max and frames == 0
+  at_max, _ = update_torque_at_max_hold(0, False, True, True, False, 0)
+  assert not at_max
 
 
 def test_ecu_disable_fallback_synchronizes_behavior_and_safety_params():

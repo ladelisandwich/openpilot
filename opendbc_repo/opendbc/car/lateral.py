@@ -77,12 +77,12 @@ def apply_driver_steer_torque_limits(apply_torque: int, apply_torque_last: int, 
 
 
 def apply_ti_steer_torque_limits(apply_torque: int, apply_torque_last: int, driver_torque: float, LIMITS):
-  """Torque Interceptor rate/driver limits.
+  """Torque Interceptor rate/driver limits (the TI_* fields of the Mazda CarControllerParams).
 
-  The TI is a separate actuator from the stock EPS with its own torque ceiling and
-  ramp rates, so it must be limited against its own previous output -- not the stock
-  channel's. Restored from MoreTore/openpilot; dropped when the Mazda port moved to
-  the new opendbc layout.
+  The TI is a separate actuator from the stock EPS, so it is limited against its own
+  previous output -- not the stock channel's. With the same numbers as the stock channel it
+  sends the same command in steady state, but after the TI drops out (driver override,
+  ramp-down) it climbs back from zero instead of stepping to wherever the stock channel is.
   """
   # limits due to driver torque
   driver_max_torque = LIMITS.TI_STEER_MAX + (LIMITS.TI_STEER_DRIVER_ALLOWANCE +

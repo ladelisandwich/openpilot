@@ -13,6 +13,7 @@ from msgq.visionipc import VisionIpcClient, VisionStreamType
 from opendbc.car.chrysler.values import pacifica_hybrid_aol_stock_acc_mode
 from opendbc.car.gm.values import GMFlags
 from opendbc.car.hyundai.values import CAR as HYUNDAI_CAR
+from opendbc.car.mazda.values import MazdaSafetyFlags
 from opendbc.car.nissan.values import CAR as NISSAN_CAR
 
 from openpilot.common.params import Params
@@ -75,6 +76,39 @@ def commanded_torque_at_max_for_saturation(CP, output: float) -> bool:
                        CP.lateralTuning.which() == "torque")
   has_controller_grace = CP.carFingerprint == HYUNDAI_CAR.GENESIS_GV70_ELECTRIFIED_1ST_GEN
   return torque_controller and not has_controller_grace and abs(output) > 0.99
+
+
+def torque_at_max_hold_frames(CP) -> int:
+  """How long max output must coincide with an undershooting turn before it raises steerSaturated.
+
+  Zero keeps the immediate alert. A Mazda steering through a Torque Interceptor gets the normal
+  saturation time instead: the TI moves the wheel through the EPS assist, so the car reaches a new
+  curvature well after the request does. On turn-in the controller is briefly at its ceiling while
+  the car is still catching up, and the immediate check called that "Turn Exceeds Steering Limit"
+  on turns the car went on to make. A turn it cannot make still alerts, after the hold -- at any
+  speed, unlike lac.saturated, which only counts above 10 m/s.
+  """
+  if CP.brand == "mazda" and CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR:
+    return max(int(round(CP.steerLimitTimer / DT_CTRL)), 1)
+  return 0
+
+
+def update_torque_at_max_hold(at_max_frames: int, at_max: bool, undershooting: bool, turning: bool,
+                              steer_limited: bool, hold_frames: int) -> tuple[bool, int]:
+  """Returns (at_max counts toward steerSaturated, new count).
+
+  Leaky, like the controllers' own saturation timer: a frame where the whole alert condition holds
+  adds one, any other frame takes one away, so a marginal case that flickers across a threshold
+  still builds up. Frames where the actuator is still ramping to the request (steer_limited) do not
+  count: the car has not been given the torque yet.
+  """
+  if hold_frames <= 0:
+    return at_max, 0
+  if at_max and undershooting and turning and not steer_limited:
+    at_max_frames = min(at_max_frames + 1, hold_frames)
+  else:
+    at_max_frames = max(at_max_frames - 1, 0)
+  return at_max_frames >= hold_frames, at_max_frames
 
 
 def should_loud_blindspot_alert_without_lateral(CS, sm, starpilot_toggles, combined_left_bsm=None, combined_right_bsm=None) -> bool:
@@ -230,6 +264,7 @@ class SelfdriveD:
     self.mismatch_counter = 0
     self.cruise_mismatch_counter = 0
     self.last_steering_pressed_frame = 0
+    self.torque_at_max_frames = 0
     self.distance_traveled = 0
     self.last_functional_fan_frame = 0
     self.events_prev = []
@@ -733,7 +768,11 @@ class SelfdriveD:
       desired_lateral_accel = self.sm['modelV2'].action.desiredCurvature * (clipped_speed**2)
       undershooting = abs(desired_lateral_accel) / abs(1e-3 + actual_lateral_accel) > 1.2
       turning = abs(desired_lateral_accel) > 1.0
-      commanded_torque_at_max = commanded_torque_at_max_for_saturation(self.CP, lac.output)
+      # same test controlsd uses for steer_limited_by_safety: the car is still ramping to the request
+      steer_limited = abs(self.sm['carControl'].actuators.torque - self.sm['carOutput'].actuatorsOutput.torque) > 1e-2
+      commanded_torque_at_max, self.torque_at_max_frames = update_torque_at_max_hold(
+        self.torque_at_max_frames, commanded_torque_at_max_for_saturation(self.CP, lac.output),
+        undershooting, turning, steer_limited, torque_at_max_hold_frames(self.CP))
       # TODO: lac.saturated includes speed and other checks, should be pulled out
       if undershooting and turning and (lac.saturated or commanded_torque_at_max):
         now = time.monotonic()
@@ -746,6 +785,8 @@ class SelfdriveD:
             self.starpilot_events.add(StarPilotEventName.goatSteerSaturated)
           else:
             self.events.add(EventName.steerSaturated)
+    else:
+      self.torque_at_max_frames = 0
 
     # Check for FCW
     stock_long_is_braking = self.enabled and not self.CP.openpilotLongitudinalControl and CS.aEgo < -1.25

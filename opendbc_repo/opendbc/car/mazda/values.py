@@ -37,13 +37,24 @@ class CarControllerParams:
       self.STEER_DRIVER_FACTOR = 1         # from dbc
       self.STEER_ERROR_MAX = 350           # max delta between torque cmd and torque motor
 
-      self.TI_STEER_MAX = 600                # theoretical max_steer 2047
-      self.TI_STEER_DELTA_UP = 6             # torque increase per refresh
-      self.TI_STEER_DELTA_DOWN = 15           # torque decrease per refresh
+      # Torque Interceptor (TI1). Same envelope as the stock LKAS command above, which is what
+      # MoreTore's current StarPilot-dev build and the mgoldsch mazda base send it: the stock
+      # request, 800 counts at full command, ramping 10 up / 25 down. The older 600 / 6 / 15 set
+      # came from the pre-opendbc MoreTore port and was never a measured device limit.
+      # This is a gain change, not only a higher ceiling: every request now asks the TI for a
+      # third more, and on a GEN1 CX-5 the TI's lateral response was measured rising with about
+      # the square of the command (ssmithTaylor/openpilot-mazda-ti, selfdrive/car/mazda/
+      # lateral_plant.py), so the same request turns the car harder. A lateral tune fitted on the
+      # 600 set (custom lat accel factor / friction, a learned torque cache) needs refitting.
+      # The panda holds CAM_LKAS to 800 counts and these ramp rates; it does not check CAM_LKAS2
+      # on GEN1, so these numbers and the TI's own firmware limits bound that message.
+      self.TI_STEER_MAX = 800                # CAM_LKAS2.LKAS_REQUEST encodes +-2047
+      self.TI_STEER_DELTA_UP = 10            # torque increase per refresh
+      self.TI_STEER_DELTA_DOWN = 25          # torque decrease per refresh
       self.TI_STEER_DRIVER_ALLOWANCE = 15    # allowed driver torque before start limiting
-      self.TI_STEER_DRIVER_MULTIPLIER = 40     # weight driver torque
-      self.TI_STEER_DRIVER_FACTOR = 1         # from dbc
-      self.TI_STEER_ERROR_MAX = 350           # max delta between torque cmd and torque motor
+      self.TI_STEER_DRIVER_MULTIPLIER = 40   # weight driver torque
+      self.TI_STEER_DRIVER_FACTOR = 1        # from dbc
+      self.TI_STEER_ERROR_MAX = 350          # max delta between torque cmd and torque motor
     if CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):
       self.STEER_MAX = 8000
       self.STEER_DELTA_UP = 45              # torque increase per refresh

@@ -166,9 +166,14 @@ class CarController(CarControllerBase):
                                                       CS.out.steeringTorque, self.ccp)
       if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR:
         if CS.ti_lkas_allowed:
+          # The TI gets the stock request with the stock envelope (see CarControllerParams), so in
+          # steady state this equals apply_torque, exactly as in MoreTore's current builds. It is
+          # ramped against its own last output rather than the stock channel's: when the TI comes
+          # back from DRIVER_OVER or a ramp-down, it climbs from zero instead of stepping straight
+          # to whatever the stock channel is holding.
           ti_new_torque = int(round(CC.actuators.torque * self.ccp.TI_STEER_MAX))
           ti_apply_torque = apply_ti_steer_torque_limits(ti_new_torque, self.ti_apply_torque_last,
-                                                    CS.out.steeringTorque, self.ccp)
+                                                         CS.out.steeringTorque, self.ccp)
 
     self.apply_torque_last = apply_torque
     self.ti_apply_torque_last = ti_apply_torque
@@ -451,12 +456,9 @@ class CarController(CarControllerBase):
       ti_apply_torque if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else None))
 
     new_actuators = CC.actuators.as_builder()
-    # Report the torque of whichever actuator is actually steering the car. controlsd
-    # flags steer_limited_by_safety from |requested - applied|, so reporting the stock
-    # EPS channel while the TI does the work makes openpilot think it is being limited
-    # the moment the EPS clamps -- which on GEN1 is exactly when the TI is needed. That
-    # raised "Take Control, Turn Exceeds Steering Limit" on sharp low-speed turns even
-    # though the TI was tracking the request fine.
+    # Report the torque of whichever actuator is actually steering the car. controlsd flags
+    # steer_limited_by_safety from |requested - applied|, which freezes the lateral integrator;
+    # while the TI is ramping back in, that is what should happen.
     if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR and CS.ti_lkas_allowed:
       new_actuators.torque = ti_apply_torque / self.ccp.TI_STEER_MAX
       new_actuators.torqueOutputCan = ti_apply_torque
