@@ -1208,6 +1208,21 @@ TRAILER_LATERAL_LAT_RISE = 0.30
 TRAILER_LATERAL_FF_GAIN = 0.05
 TRAILER_LATERAL_FRICTION_GAIN = 0.03
 
+# Mazda with a Torque Interceptor (CarParams flag MazdaSafetyFlags.TORQUE_INTERCEPTOR). The TI adds its
+# request to the EPS torque-sensor signal, so the full power-steering assist answers it. At turning speeds
+# the wheel responds to a unit of torque request several times harder than on the EPS-limited cars the
+# low-speed factor was set for, and it sticks and slips through a wide friction band. Unscaled, a small
+# error near the apex of a turn swung the request from full into the turn toward full out of it. The TI
+# released, the wheel unwound, and the turn was lost while the TI climbed back (CX-9 routes
+# 00000067/00000068, 12-16 mph). Scaling the low-speed error (P, I and the friction input, on top of
+# whatever SteerKP is set) keeps the loop proportional there. The feedforward trim stops a sharp turn's
+# request from pinning the TI at its ceiling, which turns the car tighter than planned. Both are exactly
+# 1.0 from 30 mph up, where the unscaled gains tracked smoothly with the TI alone (route 68, 31-34 mph).
+MAZDA_TI_ERROR_SCALE_BP = [7.5, 10.0, 13.5]  # m/s
+MAZDA_TI_ERROR_SCALE_V = [0.15, 0.4, 1.0]
+MAZDA_TI_FF_SCALE_BP = [7.5, 13.5]  # m/s
+MAZDA_TI_FF_SCALE_V = [0.5, 1.0]
+
 _FLM_ACTIVE_OVERRIDES_TEXT = ""
 _FLM_ACTIVE_OVERRIDES = {}
 
@@ -1356,6 +1371,14 @@ def get_trailer_lateral_ff_scale(trailer_load_kg: float, v_ego: float, desired_l
 
 def get_trailer_lateral_friction_scale(trailer_load_kg: float, v_ego: float, desired_lateral_accel: float) -> float:
   return 1.0 + TRAILER_LATERAL_FRICTION_GAIN * get_trailer_lateral_assist_factor(trailer_load_kg, v_ego, desired_lateral_accel)
+
+
+def get_mazda_ti_error_scale(v_ego: float) -> float:
+  return float(np.interp(v_ego, MAZDA_TI_ERROR_SCALE_BP, MAZDA_TI_ERROR_SCALE_V))
+
+
+def get_mazda_ti_ff_scale(v_ego: float) -> float:
+  return float(np.interp(v_ego, MAZDA_TI_FF_SCALE_BP, MAZDA_TI_FF_SCALE_V))
 
 
 def _prius_sigmoid(x: float) -> float:

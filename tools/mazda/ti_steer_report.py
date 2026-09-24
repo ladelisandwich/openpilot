@@ -231,7 +231,7 @@ def main():
   if not routes:
     sys.exit(f"no routes under {args.root}")
   if args.route:
-    names = [n for n in routes if n == args.route or n.endswith(args.route)]
+    names = [n for n in routes if n == args.route or n.startswith(args.route) or n.endswith(args.route)]
     if not names:
       sys.exit(f"route {args.route} not found under {args.root}")
   else:
