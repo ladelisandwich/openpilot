@@ -5,6 +5,7 @@ from collections import deque
 from cereal import custom, log
 from opendbc.car.honda.values import CAR as HONDA_CAR, HondaFlags
 from opendbc.car.hyundai.values import HyundaiFlags
+from opendbc.car.mazda.values import MazdaSafetyFlags
 from opendbc.car.lateral import get_friction
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -12,6 +13,7 @@ from openpilot.common.pid import PIDController
 from openpilot.selfdrive.controls.lib.drive_helpers import MIN_SPEED
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.selfdrive.controls.lib.latcontrol_vehicle_tunes import *  # noqa: F403
+from openpilot.selfdrive.controls.lib.latcontrol_vehicle_tunes import get_mazda_ti_error_scale, get_mazda_ti_ff_scale
 
 # At higher speeds (25+mph) we can assume:
 # Lateral acceleration achieved by a specific car correlates to
@@ -136,6 +138,7 @@ class LatControlTorque(LatControl):
     self.is_ram_1500 = CP.carFingerprint in RAM_1500_CARS
     self.is_gm = CP.brand == "gm"
     self.is_hkg_canfd_torque = CP.brand == "hyundai" and bool(CP.flags & HyundaiFlags.CANFD)
+    self.is_mazda_ti = CP.brand == "mazda" and bool(CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR)
     self.flm_surface_profile_key = get_flm_surface_profile_key(CP.carFingerprint, torque_control=True)
     if self.is_ioniq_6:
       self.low_speed_reset_threshold = min(self.low_speed_reset_threshold, IONIQ_6_LOW_SPEED_PID_RESET_SPEED)
@@ -284,6 +287,8 @@ class LatControlTorque(LatControl):
         error_with_lsf *= get_ioniq_6_2025_low_speed_center_error_scale(
           setpoint, desired_lateral_jerk, CS.vEgo,
         )
+      if self.is_mazda_ti:
+        error_with_lsf *= get_mazda_ti_error_scale(CS.vEgo)
 
       # do error correction in lateral acceleration space, convert at end to handle non-linear torque responses correctly
       pid_log.error = float(error_with_lsf)
@@ -295,6 +300,8 @@ class LatControlTorque(LatControl):
         ff_scale = np.interp(ff, [-FF_SCALE_BLEND_LAT_ACCEL, 0.0, FF_SCALE_BLEND_LAT_ACCEL],
                              [self.torque_ff_scale_neg, 1.0, self.torque_ff_scale_pos])
       ff *= ff_scale
+      if self.is_mazda_ti:
+        ff *= get_mazda_ti_ff_scale(CS.vEgo)
       if self.is_ram_1500:
         ff *= get_ram_1500_ff_scale(setpoint, desired_lateral_jerk, CS.vEgo)
       if self.is_gmc_yukon_cc:

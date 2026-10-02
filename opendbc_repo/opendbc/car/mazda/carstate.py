@@ -2,6 +2,7 @@ import copy
 from cereal import custom
 from opendbc.can import CANDefine, CANParser
 from opendbc.car import Bus, create_button_events, structs, DT_CTRL
+from openpilot.common.params import Params
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.mazda.values import DBC, LKAS_LIMITS, MazdaSafetyFlags, TI_STATE, CarControllerParams
@@ -25,6 +26,26 @@ class CarState(CarStateBase):
     self.params = CarControllerParams(CP)
 
     self.distance_button = 0
+    # physical RES / SET+ press on the wheel; used by the radar emulation HOLD release
+    self.accel_button = 0
+    # When openpilot owns the set speed (pcmCruiseSpeed=False) the wheel buttons have to
+    # reach VCruiseHelper as button events. Only emit them for that mode -- adding button
+    # events unconditionally would change engagement behaviour for everyone else.
+    # Hybrid long shares one set speed between MRCC and emulation (the dash value), so
+    # openpilot must not own the set speed there.
+    self.low_min_set_speed = Params().get_bool("LowerMinSetSpeed") and not (CP.flags & MazdaSafetyFlags.HYBRID_LONG)
+    self.speed_up_button = 0
+    self.speed_down_button = 0
+    # The FSC checks for the radar at cold boot; tearing it down inside that window latches
+    # "Smart City Brake Support Malfunction". Gate on settled, error-free CAM_LANEINFO.
+    self.fsc_settled_frames = 0
+    self.cam_laneinfo_stale_frames = CarControllerParams.CAM_LANEINFO_FRESH_FRAMES
+    self.cam_laneinfo_ts_last = 0
+    # Raw-frame stock radar witness, set by CarInterface (see hybrid.RadarWitness). Radar
+    # liveness must NOT be read through a CANParser: reading cp.vl["CRZ_INFO"] subscribes the
+    # parser to it, and once the radar is silenced the parser marks the whole bus invalid
+    # (canError, shown as "Unknown Vehicle Variant").
+    self.radar_witness = None
     self.ti_ramp_down = False
     self.ti_version = 1
     self.ti_state = TI_STATE.RUN
@@ -33,6 +54,10 @@ class CarState(CarStateBase):
     self.ti_lkas_allowed = False
 
     self._prev_steering_angle = 0
+
+  @property
+  def fsc_settled(self) -> bool:
+    return self.fsc_settled_frames >= CarControllerParams.FSC_SETTLE_FRAMES
 
   def update(self, can_parsers, starpilot_toggles) -> tuple[structs.CarState, custom.StarPilotCarState]:
     if self.CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):
@@ -47,6 +72,13 @@ class CarState(CarStateBase):
 
     prev_distance_button = self.distance_button
     self.distance_button = cp.vl["CRZ_BTNS"]["DISTANCE_LESS"]
+
+    # CX-9 has a dedicated RES button; some Mazdas emit SET_P for the wheel "+" instead
+    self.accel_button = int(cp.vl["CRZ_BTNS"]["RES"] == 1 or cp.vl["CRZ_BTNS"]["SET_P"] == 1)
+    prev_speed_up_button = self.speed_up_button
+    prev_speed_down_button = self.speed_down_button
+    self.speed_up_button = int(cp.vl["CRZ_BTNS"]["SET_P"] == 1)
+    self.speed_down_button = int(cp.vl["CRZ_BTNS"]["SET_M"] == 1)
 
     self.parse_wheel_speeds(ret,
       cp.vl["WHEEL_SPEEDS"]["FL"],
@@ -118,7 +150,16 @@ class CarState(CarStateBase):
     ret.cruiseState.standstill = ret.standstill
     ret.cruiseState.speed = cp.vl["CRZ_EVENTS"]["CRZ_SPEED"] * CV.KPH_TO_MS
 
-    if self.CP.flags & MazdaSafetyFlags.RADAR_INTERCEPTOR:
+    if self.CP.flags & MazdaSafetyFlags.RADAR_EMULATION:
+      # The stock radar is suppressed, so CRZ_CTRL is gone from the bus. Derive MRCC
+      # state from PEDALS instead: ACC_OFF is asserted while MRCC is armed but not
+      # controlling, ACC_ACTIVE once stock ACC takes over. Treating either as
+      # "available" stops MADS reading a stock ACC engage as the main switch going off.
+      acc_armed = cp.vl["PEDALS"]["ACC_OFF"] == 1
+      acc_active = cp.vl["PEDALS"]["ACC_ACTIVE"] == 1
+      ret.cruiseState.available = acc_armed or acc_active
+      ret.cruiseState.enabled = acc_active
+    elif self.CP.flags & MazdaSafetyFlags.RADAR_INTERCEPTOR:
       self.crz_info = copy.copy(cp_cam.vl["CRZ_INFO"])
       self.crz_cntr = copy.copy(cp_cam.vl["CRZ_CTRL"])
       self.cp_cam = cp_cam
@@ -156,12 +197,37 @@ class CarState(CarStateBase):
       self.lkas_disabled = cp_cam.vl["CAM_LANEINFO"]["LANE_LINES"] == 0 if not self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else False
       self.cam_lkas = cp_cam.vl["CAM_LKAS"]
       self.cam_laneinfo = cp_cam.vl["CAM_LANEINFO"]
+
+      # FSC settle gate. BIT2 is deliberately excluded: it can stay high for a whole ignition
+      # cycle without indicating an incomplete boot. A camera dropout restarts the timer, and
+      # the gate starts closed because an unpopulated parser reads all-zero and would
+      # otherwise look settled.
+      laneinfo = cp_cam.vl["CAM_LANEINFO"]
+      # ts_nanos is 0 until a real frame arrives, so this also keeps the gate closed before
+      # the first camera frame -- an unpopulated parser reads all-zero and would look settled.
+      cam_ts = cp_cam.ts_nanos["CAM_LANEINFO"]["LANE_LINES"]
+      if cam_ts != self.cam_laneinfo_ts_last:
+        self.cam_laneinfo_ts_last = cam_ts
+        self.cam_laneinfo_stale_frames = 0
+      else:
+        self.cam_laneinfo_stale_frames = min(self.cam_laneinfo_stale_frames + 1,
+                                             CarControllerParams.CAM_LANEINFO_FRESH_FRAMES)
+      cam_fresh = cam_ts != 0 and self.cam_laneinfo_stale_frames < CarControllerParams.CAM_LANEINFO_FRESH_FRAMES
+      settled = cam_fresh and not (laneinfo["NO_ERR_BIT"] or laneinfo["ERR_BIT"])
+      self.fsc_settled_frames = self.fsc_settled_frames + 1 if settled else 0
       ret.steerFaultPermanent = cp_cam.vl["CAM_LKAS"]["ERR_BIT_1"] == 1 if not self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else False
     self.cp_cam = cp_cam
     self.cp = cp
 
     # TODO: add button types for inc and dec
-    ret.buttonEvents = create_button_events(self.distance_button, prev_distance_button, {1: ButtonType.gapAdjustCruise})
+    # Build the full list in Python before assigning: reading ret.buttonEvents back gives
+    # a capnp list builder, which cannot be concatenated with a Python list.
+    button_events = create_button_events(self.distance_button, prev_distance_button, {1: ButtonType.gapAdjustCruise})
+    if self.low_min_set_speed:
+      button_events = button_events + \
+        create_button_events(self.speed_up_button, prev_speed_up_button, {1: ButtonType.accelCruise}) + \
+        create_button_events(self.speed_down_button, prev_speed_down_button, {1: ButtonType.decelCruise})
+    ret.buttonEvents = button_events
 
     fp_ret = custom.StarPilotCarState.new_message()
 
