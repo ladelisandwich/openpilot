@@ -728,6 +728,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"RadarEmulationEnabled", {PERSISTENT, BOOL}},
     {"LowerMinSetSpeed", {PERSISTENT, BOOL}},
     {"MazdaHybridLong", {PERSISTENT, BOOL}},
+    {"MazdaHybridMaster", {PERSISTENT | DONT_LOG, INT, "0"}},
     {"NoMRCC", {PERSISTENT, BOOL}},
     {"NoFSC", {PERSISTENT, BOOL}},
     {"BlendedACC", {PERSISTENT, BOOL, "1", "1"}},

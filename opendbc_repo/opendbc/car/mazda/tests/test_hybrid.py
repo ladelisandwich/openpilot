@@ -2,7 +2,8 @@
 from opendbc.car import uds
 from opendbc.car.mazda.hybrid import (CRZ_CTRL_ADDR, CRZ_INFO_ADDR, HEARTBEAT_ADDRS, RADAR_BUS, RADAR_COUNTER_ADDR, RADAR_UDS_ADDR,
                                       HybridArbiter, HybridRadarManager, MrccResync, RadarMaster, RadarWitness,
-                                      MrccSwitch, ce_status_is_experimental, ce_status_is_forced_experimental, radar_session_msg)
+                                      MrccSwitch, ce_status_is_experimental, ce_status_is_forced_experimental, radar_session_msg,
+                                      HYBRID_MASTER_EMULATING, HYBRID_MASTER_PENDING, hybrid_master_status)
 from opendbc.car.mazda.longitudinal import accel_cmd_to_accel, accel_to_accel_cmd, build_crz_ctrl, build_crz_info
 
 STOCK = 0      # src of the stock radar's frames
@@ -473,3 +474,18 @@ class TestMrccSwitch:
     sw_run(q, 1, cruise=False)
     drops, _, _ = sw_run(q, MrccSwitch.DROP_TIMEOUT_FRAMES + 50, restoring=True, engaged=True, cruise=True)
     assert drops == MrccSwitch.DROP_TIMEOUT_FRAMES + 1 and not q.handing_back and q.failed
+
+
+class TestHybridMasterStatus:
+  def test_who_drives_and_whether_a_switch_is_coming(self):
+    def st(transmitting, wants_emulation, engaged=True, takeover_possible=True, handback_possible=True):
+      return hybrid_master_status(transmitting, wants_emulation, engaged, takeover_possible, handback_possible)
+
+    E, P = HYBRID_MASTER_EMULATING, HYBRID_MASTER_PENDING
+    assert st(False, False) == 0                              # MRCC, as chosen
+    assert st(True, True) == E                                # emulation, as chosen
+    assert st(False, True) == P                               # experimental chosen, takeover coming
+    assert st(True, False) == E | P                           # standard chosen, switch deferred or in progress
+    assert st(False, True, engaged=False) == 0                # no takeover while disengaged: nothing pending
+    assert st(False, True, takeover_possible=False) == 0      # takeovers off for this drive
+    assert st(True, False, handback_possible=False) == E      # restore failed / switch failed: openpilot keeps it

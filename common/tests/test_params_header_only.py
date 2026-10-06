@@ -95,6 +95,8 @@ class TestHeaderParsing:
     for key in ("RadarEmulationEnabled", "LowerMinSetSpeed", "MazdaHybridLong"):
       assert _HEADER_ONLY_KEYS[key] == ("BOOL", None, ("PERSISTENT",))
     assert _HEADER_ONLY_KEYS["TorqueInterceptorEnabled"] == ("BOOL", "1", ("PERSISTENT",))
+    # memory param (/dev/shm/params) the Mazda hybrid car controller writes for the onroad icon
+    assert _HEADER_ONLY_KEYS["MazdaHybridMaster"] == ("INT", "0", ("PERSISTENT", "DONT_LOG"))
 
   def test_cleared_keys_are_never_handled(self):
     # anything the library would clear on manager start or a transition must not be kept in files

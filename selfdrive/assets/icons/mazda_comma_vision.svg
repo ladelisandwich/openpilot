@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Radar emulation: openpilot drives on comma's vision -- an eye with a "c" for a pupil -->
+  <defs>
+    <mask id="iris">
+      <rect width="512" height="512" fill="#fff"/>
+      <path d="M299 218 A58 58 0 1 0 299 294" fill="none" stroke="#000" stroke-width="30" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <path d="M30 256 Q256 52 482 256 Q256 460 30 256 Z" fill="none" stroke="#fff" stroke-width="28" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="104" fill="#fff" mask="url(#iris)"/>
+</svg>

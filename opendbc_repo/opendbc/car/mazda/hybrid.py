@@ -72,6 +72,25 @@ def ce_status_is_forced_experimental(status: int) -> bool:
   return int(status) == CE_USER_OVERRIDDEN
 
 
+# Which ACC master is in charge, for the onroad icon: the car controller writes it to this memory param
+# when it changes (selfdrive/ui/onroad/starpilot/widgets/hybrid_master_icon.py reads it).
+HYBRID_MASTER_PARAM = "MazdaHybridMaster"
+HYBRID_MASTER_EMULATING = 1  # openpilot's frames are the ACC master; clear: the stock radar (MRCC)
+HYBRID_MASTER_PENDING = 2    # the driver's choice is not in effect yet: a switch is coming, or deferred
+
+
+def hybrid_master_status(transmitting: bool, driver_wants_emulation: bool, engaged: bool,
+                         takeover_possible: bool, handback_possible: bool) -> int:
+  """The icon's view of the hybrid: who drives now, and whether the driver's choice is still to come.
+  A takeover only happens while engaged, so a disengaged car in experimental mode is not pending; a switch
+  that can no longer happen this drive (silence failed, takeover rejected, restore failed) is not pending."""
+  if transmitting:
+    pending = not driver_wants_emulation and handback_possible
+    return HYBRID_MASTER_EMULATING | (HYBRID_MASTER_PENDING if pending else 0)
+  pending = driver_wants_emulation and engaged and takeover_possible
+  return HYBRID_MASTER_PENDING if pending else 0
+
+
 def radar_session_msg(session_type: int) -> CanData:
   """Single-frame UDS DiagnosticSessionControl, sent from the control loop without blocking.
   Matches the panda's 0x764 allowlist: [0x02, 0x10, 0x01 | 0x02]."""

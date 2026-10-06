@@ -4,8 +4,8 @@ from opendbc.car.lateral import apply_driver_steer_torque_limits
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.carlog import carlog
 from opendbc.car.mazda import mazdacan
-from opendbc.car.mazda.hybrid import HybridArbiter, HybridRadarManager, MrccResync, MrccSwitch, RadarMaster, \
-                                     ce_status_is_forced_experimental
+from opendbc.car.mazda.hybrid import HYBRID_MASTER_PARAM, HybridArbiter, HybridRadarManager, MrccResync, MrccSwitch, \
+                                     RadarMaster, ce_status_is_forced_experimental, hybrid_master_status
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
                                            RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, accel_cmd_to_accel, \
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
@@ -29,6 +29,7 @@ RESUME_RELEASE_FRAMES = int(round(0.5 / DT_CTRL))
 
 # hybrid long (see hybrid.py)
 HYBRID_MODE_READ_STEP = 10                          # experimental-mode state is read at 10 Hz
+HYBRID_MASTER_WRITE_MIN_FRAMES = 20                 # the onroad icon's state is written at most every 0.2 s
 HYBRID_HANDOVER_FRAMES = int(round(1.5 / DT_CTRL))  # blend from MRCC's last command after a takeover
 HYBRID_HANDOVER_RC = 0.3                            # s, time constant of that blend
 HYBRID_HANDOVER_ACCEL = (-3.5, 2.0)                 # clip on the blend's starting point
@@ -75,6 +76,8 @@ class CarController(CarControllerBase):
     self.hybrid_engaged_prev = False
     self.cancel_stuck_mrcc = False
     self.cancel_stuck_mrcc_prev = False
+    self.hybrid_master_written: int | None = None
+    self.hybrid_master_write_frame = 0
     self.handover_filter = FirstOrderFilter(0.0, HYBRID_HANDOVER_RC, DT_CTRL)
     self.handover_frames = 0
 
@@ -178,7 +181,27 @@ class CarController(CarControllerBase):
                     "takeoverRejected": self.hybrid_arbiter.takeover_rejected, "vEgo": round(CS.out.vEgo, 2)})
     self.cancel_stuck_mrcc_prev = self.cancel_stuck_mrcc
 
+    radar = self.hybrid_radar
+    self._publish_hybrid_master(hybrid_master_status(
+      radar.transmitting, self.hybrid_experimental, engaged,
+      takeover_possible=not (radar.silence_failed or self.hybrid_arbiter.takeover_rejected),
+      handback_possible=not (radar.restore_failed or self.mrcc_switch.failed)))
+
     return self.hybrid_radar.transmitting
+
+  def _publish_hybrid_master(self, status: int) -> None:
+    """For the onroad icon. Written only on a change, at most every HYBRID_MASTER_WRITE_MIN_FRAMES."""
+    if status == self.hybrid_master_written:
+      return
+    if self.hybrid_master_written is not None and self.frame - self.hybrid_master_write_frame < HYBRID_MASTER_WRITE_MIN_FRAMES:
+      return
+    try:
+      self.params_memory.put_int(HYBRID_MASTER_PARAM, status)
+    except Exception as e:  # the icon must never cost a control cycle
+      if self.hybrid_master_written is None or self.frame - self.hybrid_master_write_frame > 6000:
+        carlog.error({"event": "mazdaHybridMasterWriteFailed", "error": str(e)})
+    self.hybrid_master_written = status
+    self.hybrid_master_write_frame = self.frame
 
   def update(self, CC, CS, now_nanos, starpilot_toggles):
     can_sends = []
