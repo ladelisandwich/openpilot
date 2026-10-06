@@ -36,7 +36,11 @@ DESCRIPTIONS = {
   "LowerMinSetSpeed": tr_noop("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash keeps showing its minimum; the openpilot screen shows the real target."),
   "RadarInterceptorEnabled": tr_noop("Enable if you have installed the radar Iterceptor."),
   "RadarEmulationEnabled": tr_noop("Silence the stock radar and let openpilot control gas and brake. No extra hardware required. Do not enable together with the Radar Interceptor."),
-  "MazdaHybridLong": tr_noop("Requires Radar Emulation. Stock MRCC drives in standard mode; openpilot takes gas and brake in experimental mode. Each switch restarts the radar and may drop cruise."),
+  "MazdaHybridLong": tr_noop(
+    "Requires Radar Emulation. Stock MRCC drives until you hold the distance button for half a second: openpilot then " +
+    "takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot " +
+    "drops the cruise for a moment, then press RES."
+  ),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
   "NoFSC": tr_noop("Enable if your car does not have stock FSC."),
   "ManualTransmission": tr_noop("Enable if your car has a manual transmission."),

@@ -437,7 +437,7 @@ class VehicleSettingsManagerView(PanelManagerView):
       })
       toggles.append({
         "title": tr("Hybrid Longitudinal"),
-        "subtitle": tr("Requires Radar Emulation. Stock MRCC drives in standard mode; openpilot takes gas and brake in experimental mode. Each switch restarts the radar and may drop cruise."),
+        "subtitle": tr("Requires Radar Emulation. Stock MRCC drives until you hold the distance button for half a second: openpilot then takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot drops the cruise for a moment, then press RES."),
         "get_state": lambda: self._controller._params.get_bool("MazdaHybridLong"),
         "set_state": lambda s: self._controller._on_toggle("MazdaHybridLong"),
       })

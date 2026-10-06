@@ -25,10 +25,16 @@ RadarWitness        watches the stock radar's raw frames. Never through a CANPar
                     radar message through one subscribes the parser to it, and once the radar
                     is silenced the parser marks the whole bus invalid (canError, shown as
                     "Unknown Vehicle Variant").
-HybridArbiter       decides which master is wanted: Conditional Experimental Mode status,
-                    standstill, pedals, speed, and debounce/dwell so CEM flicker cannot thrash
-                    the radar.
+HybridArbiter       decides which master is wanted: the driver's own mode choice (forced experimental
+                    = emulation, standard = MRCC), standstill, pedals, speed, debounce and dwell.
+MrccSwitch          an engaged switch to MRCC: drops the cruise first, so the restarted radar comes
+                    up available, and leaves the RES press to the driver.
 HybridRadarManager  runs the transitions over UDS and says when replacement frames may be sent.
+
+The mode is the driver's, not automatic: a long press of the distance button (held 0.5-2.5 s) toggles
+forced experimental mode (emulation) and standard mode (MRCC), and a short press while in forced
+experimental goes back to standard (starpilot/controls/lib/mazda_hybrid_buttons.py). Conditional
+Experimental Mode's automatic triggers still steer the planner but never switch the radar.
 """
 from __future__ import annotations
 
@@ -56,6 +62,14 @@ CE_STANDARD_STATUSES = frozenset({0, 1})
 
 def ce_status_is_experimental(status: int) -> bool:
   return int(status) not in CE_STANDARD_STATUSES
+
+
+CE_USER_OVERRIDDEN = 2   # the driver forced experimental mode on (starpilot/common/experimental_state.py)
+
+
+def ce_status_is_forced_experimental(status: int) -> bool:
+  """Only the driver's own forced experimental mode, never Conditional Experimental Mode's automatic triggers."""
+  return int(status) == CE_USER_OVERRIDDEN
 
 
 def radar_session_msg(session_type: int) -> CanData:
@@ -167,13 +181,12 @@ class HybridArbiter:
   in total with cruise engaged and nothing braking). Only the driver's own SET or RES after a disengage
   brings MRCC back properly, and that is the one hand-back that is kept: openpilot disengaged, or a
   standstill with the brake held. So a drive goes stock MRCC -> (first experimental trigger) openpilot ->
-  stays openpilot until the driver disengages, then MRCC again on their next SET. While that holds, the
-  Conditional Experimental Mode status only ever starts a takeover, and one that has to hold for
-  TAKEOVER_DEBOUNCE_FRAMES: a trigger that flickers (a lead that comes and goes, a curve) must not
-  restart the radar over and over.
+  stays openpilot until the driver disengages, then MRCC again on their next SET. Here the driver's
+  forced-experimental choice only ever starts a takeover, once it has held for TAKEOVER_DEBOUNCE_FRAMES;
+  their switch back to MRCC while engaged goes through MrccSwitch, which drops the cruise first.
   """
-  HANDBACK_WHILE_ENGAGED = False                          # see above; True restores the CEM-driven hand-back
-  TAKEOVER_DEBOUNCE_FRAMES = int(round(2.0 / DT_CTRL))    # experimental must hold this long before a takeover
+  HANDBACK_WHILE_ENGAGED = False                          # see above; an engaged switch to MRCC goes through MrccSwitch
+  TAKEOVER_DEBOUNCE_FRAMES = int(round(0.5 / DT_CTRL))    # the driver's experimental choice must hold this long
   DEBOUNCE_FRAMES = int(round(0.75 / DT_CTRL))            # any other wish must hold this long to count
   DISENGAGED_DEBOUNCE_FRAMES = int(round(2.0 / DT_CTRL))  # tolerate a quick re-engage
   DWELL_FRAMES = int(round(3.0 / DT_CTRL))                # minimum time between switches
@@ -217,6 +230,19 @@ class HybridArbiter:
   def note_takeover(self) -> None:
     self.takeover_watch_frames = self.TAKEOVER_WATCH_FRAMES
 
+  def forget_takeover(self) -> None:
+    """openpilot is about to drop the cruise itself (MrccSwitch): that is not the car rejecting a takeover."""
+    self.takeover_watch_frames = 0
+
+  def release_for_mrcc(self) -> None:
+    """MrccSwitch dropped the cruise: hand the radar back now, without the disengaged debounce, so it is
+    available for the driver's RES as soon as possible."""
+    if self.want_emulation:
+      carlog.warning({"event": "mazdaHybridWant", "emulation": False, "reason": "driver chose MRCC"})
+    self.want_emulation = False
+    self.pending_frames = 0
+    self.frames_since_switch = 0
+
   def update(self, emulating: bool, engaged: bool, long_active: bool, experimental: bool, standstill: bool,
              brake_pressed: bool, gas_pressed: bool, v_ego: float, accel: float) -> bool:
     if self.takeover_watch_frames > 0:
@@ -251,6 +277,117 @@ class HybridArbiter:
       self.pending_frames = 0
       self.frames_since_switch = 0
     return self.want_emulation
+
+
+class MrccSwitch:
+  """The driver chose MRCC (standard mode) while openpilot is driving. A radar restarted while the car's cruise
+  is engaged comes back "not available" and ignores RES (route 0000000f: 33 of 33), so the cruise is dropped
+  first -- openpilot's replacement frames go inactive, as for any openpilot disengage here -- and the radar is
+  handed back the moment the car reports cruise off. It reports itself available about 0.8 s later; the driver
+  presses RES (openpilot is not allowed to engage the cruise). Until then there is no cruise and no openpilot
+  longitudinal: the same as pressing CANCEL.
+
+  Only started above MIN_SPEED (MRCC can be resumed there), off a standstill, and while openpilot is not braking
+  hard; until then openpilot keeps driving. Abandoned (and retried later) if openpilot starts braking hard
+  before the cruise has dropped. A drop the car does not act on within DROP_TIMEOUT_FRAMES is not retried until
+  the driver chooses again.
+
+  After the drop, openpilot's frames stay the PCM's ACC master until the restarting radar speaks. A RES landing
+  on them in that window would engage the cruise on openpilot again, and the radar would then boot under an
+  engaged cruise and come back unavailable, so until the radar is back any cruise that engages is dropped
+  again (handing_back).
+  """
+  DEBOUNCE_FRAMES = int(round(0.3 / DT_CTRL))
+  DROP_TIMEOUT_FRAMES = int(round(1.5 / DT_CTRL))
+  MIN_SPEED = 8.5         # m/s (~19 mph): MRCC can be resumed here (HybridArbiter.HANDBACK_MIN_SPEED)
+  MAX_DECEL = -1.0        # m/s^2: never start, nor continue, a drop while openpilot brakes harder than this
+
+  def __init__(self):
+    self.pending_frames = 0
+    self.dropping = False
+    self.drop_frames = 0
+    self.failed = False      # until the driver changes the mode again
+    self.drop_cruise = False
+    self.started = False     # this cycle: a drop began
+    self.done = False        # this cycle: the car's cruise is off, hand the radar back now
+    self.deferred_logged = False
+    self.handing_back = False
+    self.handback_drop_frames = 0
+
+  def update(self, emulating: bool, restoring: bool, engaged: bool, want_mrcc: bool, cruise_engaged: bool,
+             v_ego: float, standstill: bool, accel: float) -> None:
+    self.drop_cruise = self.started = self.done = False
+    if not want_mrcc:
+      self.failed = False
+    if not (want_mrcc and emulating) or self.failed:
+      self.pending_frames = 0
+      self.dropping = False
+      self.handing_back = False
+      self.deferred_logged = False
+      return
+
+    if self.handing_back:
+      if restoring and self.handback_drop_frames <= self.DROP_TIMEOUT_FRAMES:
+        self.drop_cruise = cruise_engaged
+        if cruise_engaged:
+          if self.handback_drop_frames == 0:
+            carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "cruise engaged before the radar was back"})
+          self.handback_drop_frames += 1
+        else:
+          self.handback_drop_frames = 0
+        return
+      # The restore failed and openpilot keeps the radar: normal service. Or the car would not drop the
+      # cruise: let openpilot drive, and do not try again until the driver chooses again.
+      self.handing_back = False
+      if restoring:
+        self.failed = True
+        carlog.error({"event": "mazdaHybridMrccSwitchFailed", "reason": "cruise stayed engaged before the radar was back"})
+        return
+
+    if self.dropping:
+      if not cruise_engaged:
+        self.dropping = False
+        self.done = True
+        self.handing_back = True
+        self.handback_drop_frames = 0
+        carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "cruise dropped", "frames": self.drop_frames,
+                        "vEgo": round(v_ego, 2)})
+        return
+      if accel < self.MAX_DECEL:
+        self.dropping = False
+        self.pending_frames = 0
+        carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "abandoned", "reason": "openpilot braking",
+                        "accel": round(accel, 2)})
+        return
+      self.drop_frames += 1
+      if self.drop_frames > self.DROP_TIMEOUT_FRAMES:
+        self.dropping = False
+        self.failed = True
+        carlog.error({"event": "mazdaHybridMrccSwitchFailed", "reason": "cruise did not drop"})
+        return
+      self.drop_cruise = True
+      return
+
+    if not engaged:
+      # already disengaged: HybridArbiter hands the radar back on its own
+      self.pending_frames = 0
+      return
+    ready = v_ego >= self.MIN_SPEED and not standstill and accel >= self.MAX_DECEL
+    if not ready:
+      self.pending_frames = 0
+      if not self.deferred_logged:
+        carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "deferred", "vEgo": round(v_ego, 2),
+                        "standstill": standstill, "accel": round(accel, 2)})
+        self.deferred_logged = True
+      return
+    self.pending_frames += 1
+    if self.pending_frames >= self.DEBOUNCE_FRAMES:
+      self.pending_frames = 0
+      self.dropping = True
+      self.drop_frames = 0
+      self.started = True
+      self.drop_cruise = True
+      carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "dropping cruise", "vEgo": round(v_ego, 2)})
 
 
 class MrccResync:

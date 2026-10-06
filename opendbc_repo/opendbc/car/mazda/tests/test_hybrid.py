@@ -2,7 +2,7 @@
 from opendbc.car import uds
 from opendbc.car.mazda.hybrid import (CRZ_CTRL_ADDR, CRZ_INFO_ADDR, HEARTBEAT_ADDRS, RADAR_BUS, RADAR_COUNTER_ADDR, RADAR_UDS_ADDR,
                                       HybridArbiter, HybridRadarManager, MrccResync, RadarMaster, RadarWitness,
-                                      ce_status_is_experimental, radar_session_msg)
+                                      MrccSwitch, ce_status_is_experimental, ce_status_is_forced_experimental, radar_session_msg)
 from opendbc.car.mazda.longitudinal import accel_cmd_to_accel, accel_to_accel_cmd, build_crz_ctrl, build_crz_info
 
 STOCK = 0      # src of the stock radar's frames
@@ -29,6 +29,11 @@ class TestCeStatus:
     assert not ce_status_is_experimental(1)   # USER_DISABLED
     for status in range(2, 9):
       assert ce_status_is_experimental(status)
+
+  def test_only_the_drivers_forced_experimental_switches_the_radar(self):
+    assert ce_status_is_forced_experimental(2)                # USER_OVERRIDDEN
+    for status in (0, 1, 3, 4, 5, 6, 7, 8):                   # OFF, USER_DISABLED and every automatic trigger
+      assert not ce_status_is_forced_experimental(status)
 
 
 class TestUdsFrames:
@@ -107,7 +112,19 @@ def arb_update(a: HybridArbiter, n=1, emulating=False, engaged=True, long_active
 
 
 class TestHybridArbiter:
-  def test_takeover_needs_two_seconds_of_experimental(self):
+  def test_release_for_mrcc_and_forget_takeover(self):
+    a = HybridArbiter()
+    a.want_emulation = True
+    a.note_takeover()
+    a.forget_takeover()
+    arb_update(a, 1, emulating=True, experimental=False)
+    arb_update(a, 1, emulating=True, experimental=False, engaged=False)   # openpilot's own drop
+    assert not a.takeover_rejected
+    a.release_for_mrcc()
+    assert not a.want_emulation
+    assert not arb_update(a, 1, emulating=True, engaged=False)           # no disengaged debounce to wait out
+
+  def test_takeover_needs_half_a_second_of_experimental(self):
     a = HybridArbiter()
     assert not arb_update(a, HybridArbiter.TAKEOVER_DEBOUNCE_FRAMES - 1, experimental=True)
     assert arb_update(a, 1, experimental=True)
@@ -365,3 +382,94 @@ class TestHybridRadarManager:
     m.update(True, w, True, True)
     w.alive = False
     assert m.update(True, w, False, True) == RadarMaster.RESTORING and not m.transmitting
+
+
+def sw_run(q: MrccSwitch, n: int, emulating=True, restoring=False, engaged=True, want_mrcc=True, cruise=True, v=25.0,
+           standstill=False, accel=0.0):
+  drops = 0
+  started = done = False
+  for _ in range(n):
+    q.update(emulating, restoring, engaged, want_mrcc, cruise, v, standstill, accel)
+    drops += q.drop_cruise
+    started |= q.started
+    done |= q.done
+  return drops, started, done
+
+
+class TestMrccSwitch:
+  def test_drop_then_done(self):
+    q = MrccSwitch()
+    drops, started, _ = sw_run(q, MrccSwitch.DEBOUNCE_FRAMES - 1)
+    assert drops == 0 and not started                                  # a choice must hold 0.3 s
+    drops, started, _ = sw_run(q, 10)
+    assert started and drops == 10 and q.dropping
+    drops, _, done = sw_run(q, 1, cruise=False)                       # the car turned its cruise off
+    assert done and drops == 0 and not q.dropping
+    drops, started, done = sw_run(q, 100, engaged=False, cruise=False)
+    assert drops == 0 and not started and not done                    # nothing more once disengaged
+
+  def test_nothing_unless_emulating_and_mrcc_wanted(self):
+    for kw in ({"emulating": False}, {"want_mrcc": False}, {"engaged": False}):
+      q = MrccSwitch()
+      drops, started, _ = sw_run(q, 200, **kw)
+      assert drops == 0 and not started, kw
+
+  def test_deferred_below_19_mph_at_a_stop_or_while_braking(self):
+    for kw in ({"v": 8.0}, {"standstill": True, "v": 0.0}, {"accel": -1.5}):
+      q = MrccSwitch()
+      drops, started, _ = sw_run(q, 200, **kw)
+      assert drops == 0 and not started, kw
+      drops, started, _ = sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 1)    # conditions met: it starts
+      assert started, kw
+
+  def test_abandoned_if_openpilot_brakes_before_the_drop(self):
+    q = MrccSwitch()
+    sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 5)
+    assert q.dropping
+    drops, _, done = sw_run(q, 1, accel=-1.5)
+    assert drops == 0 and not done and not q.dropping and not q.failed
+    _, started, _ = sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 1)
+    assert started                                                     # retried once the braking is over
+
+  def test_a_drop_the_car_ignores_is_not_repeated_until_the_driver_chooses_again(self):
+    q = MrccSwitch()
+    drops, _, _ = sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + MrccSwitch.DROP_TIMEOUT_FRAMES + 50)
+    assert q.failed and drops == MrccSwitch.DROP_TIMEOUT_FRAMES + 1
+    drops, started, _ = sw_run(q, 500)
+    assert drops == 0 and not started
+    sw_run(q, 1, want_mrcc=False)                                      # the driver went back to experimental
+    _, started, _ = sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 1)
+    assert started
+
+  def test_a_cruise_engaged_before_the_radar_is_back_is_dropped_again(self):
+    q = MrccSwitch()
+    sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 5)
+    _, _, done = sw_run(q, 1, cruise=False)
+    assert done and q.handing_back
+    drops, _, _ = sw_run(q, 50, restoring=True, engaged=False, cruise=False)
+    assert drops == 0                                                  # waiting for the radar
+    drops, started, _ = sw_run(q, 3, restoring=True, engaged=True, cruise=True, v=5.0)
+    assert drops == 3 and not started                                  # a RES on openpilot's frames: dropped at once, any speed
+    drops, _, _ = sw_run(q, 20, restoring=True, engaged=False, cruise=False)
+    assert drops == 0 and q.handing_back
+    drops, _, _ = sw_run(q, 10, emulating=False, engaged=True, cruise=True)
+    assert drops == 0 and not q.handing_back                           # the radar is master again: the driver's RES is MRCC's
+
+  def test_hand_back_window_gives_up_if_the_restore_fails_or_the_car_keeps_the_cruise(self):
+    q = MrccSwitch()
+    sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 5)
+    sw_run(q, 1, cruise=False)
+    drops, started, _ = sw_run(q, 200, emulating=False, engaged=True, cruise=True)  # restore failed: nothing to hand back to
+    assert drops == 0 and not started and not q.handing_back
+
+    q = MrccSwitch()
+    sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 5)
+    sw_run(q, 1, cruise=False)
+    drops, started, _ = sw_run(q, MrccSwitch.DEBOUNCE_FRAMES - 1, restoring=False, engaged=True, cruise=True)
+    assert drops == 0 and not started and not q.handing_back           # back to normal service: a new drop debounces again
+
+    q = MrccSwitch()
+    sw_run(q, MrccSwitch.DEBOUNCE_FRAMES + 5)
+    sw_run(q, 1, cruise=False)
+    drops, _, _ = sw_run(q, MrccSwitch.DROP_TIMEOUT_FRAMES + 50, restoring=True, engaged=True, cruise=True)
+    assert drops == MrccSwitch.DROP_TIMEOUT_FRAMES + 1 and not q.handing_back and q.failed

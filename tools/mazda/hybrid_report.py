@@ -518,7 +518,8 @@ def print_report(name: str, s: Scan, quiet: bool):
   if s.can_invalid:
     print("  canValid false: " + ", ".join(f"{a:.1f}-{b:.1f}s" for a, b in s.can_invalid))
   stuck = [e for _, e in s.log_events if e.get("event") in ("mazdaHybridMrccStuck", "mazdaHybridTakeoverRejected",
-                                                             "mazdaHybridSilenceFailed", "mazdaHybridRestoreFailed", "mazdaHybridRadarReturned")]
+                                                             "mazdaHybridSilenceFailed", "mazdaHybridRestoreFailed", "mazdaHybridRadarReturned",
+                                                             "mazdaHybridMrccSwitchFailed", "mazdaHybridCancelStuckMrcc")]
   if stuck:
     print("  hybrid faults logged by openpilot: " + ", ".join(e["event"] for e in stuck))
   if not quiet:

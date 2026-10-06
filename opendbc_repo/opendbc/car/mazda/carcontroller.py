@@ -4,7 +4,8 @@ from opendbc.car.lateral import apply_driver_steer_torque_limits
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.carlog import carlog
 from opendbc.car.mazda import mazdacan
-from opendbc.car.mazda.hybrid import HybridArbiter, HybridRadarManager, MrccResync, RadarMaster, ce_status_is_experimental
+from opendbc.car.mazda.hybrid import HybridArbiter, HybridRadarManager, MrccResync, MrccSwitch, RadarMaster, \
+                                     ce_status_is_forced_experimental
 from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP_ENTRY_SPEED, RADAR_BUS, \
                                            RADAR_HEARTBEAT_STEP, TESTER_PRESENT_STEP, accel_cmd_to_accel, \
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
@@ -69,8 +70,11 @@ class CarController(CarControllerBase):
     self.hybrid_arbiter = HybridArbiter()
     self.hybrid_radar = HybridRadarManager()
     self.mrcc_resync = MrccResync()
+    self.mrcc_switch = MrccSwitch()
     self.hybrid_experimental = False
     self.hybrid_engaged_prev = False
+    self.cancel_stuck_mrcc = False
+    self.cancel_stuck_mrcc_prev = False
     self.handover_filter = FirstOrderFilter(0.0, HYBRID_HANDOVER_RC, DT_CTRL)
     self.handover_frames = 0
 
@@ -85,8 +89,9 @@ class CarController(CarControllerBase):
     self.resume_button_prev = False
 
   def _hybrid_experimental(self, starpilot_toggles) -> bool:
+    """The driver's mode choice, never an automatic trigger: forced experimental (emulation) or not (MRCC)."""
     if getattr(starpilot_toggles, "conditional_experimental_mode", False):
-      return ce_status_is_experimental(self.params_memory.get_int("CEStatus"))
+      return ce_status_is_forced_experimental(self.params_memory.get_int("CEStatus"))
     return self.params.get_bool("ExperimentalMode")
 
   def _update_hybrid(self, CC, CS, starpilot_toggles, can_sends) -> bool:
@@ -109,6 +114,18 @@ class CarController(CarControllerBase):
       # The driver set or resumed cruise themselves, so the stock radar is properly engaged again.
       self.mrcc_resync.note_engaged_by_driver()
     self.hybrid_engaged_prev = engaged
+
+    # The driver chose MRCC while openpilot drives: drop the cruise first (see hybrid.MrccSwitch), then hand
+    # the radar back at once; the driver presses RES.
+    # Once a restore has failed there is no radar to hand back to: openpilot keeps it for the drive.
+    can_hand_back = self.hybrid_radar.emulating and not self.hybrid_radar.restore_failed
+    self.mrcc_switch.update(can_hand_back, self.hybrid_radar.state == RadarMaster.RESTORING, engaged,
+                            not self.hybrid_experimental, CS.out.cruiseState.enabled, CS.out.vEgo, CS.out.standstill,
+                            CC.actuators.accel)
+    if self.mrcc_switch.started:
+      self.hybrid_arbiter.forget_takeover()
+    if self.mrcc_switch.done:
+      self.hybrid_arbiter.release_for_mrcc()
 
     want = self.hybrid_arbiter.update(self.hybrid_radar.emulating, engaged, CC.longActive, self.hybrid_experimental,
                                       CS.out.standstill, CS.out.brakePressed, CS.out.gasPressed, CS.out.vEgo, CC.actuators.accel)
@@ -150,6 +167,16 @@ class CarController(CarControllerBase):
     self.mrcc_resync.update(self.hybrid_radar.state == RadarMaster.MRCC, engaged, witness,
                             CS.out.brakePressed, CS.out.gasPressed, CS.out.vEgo)
     self.hybrid_arbiter.mrcc_unavailable = self.mrcc_resync.failed
+    # ...and if openpilot may not take it back either (the radar would not stay silent, or the car rejected a
+    # takeover), cancel the cruise: a plain disengage beats coasting with nothing braking, and with the cruise
+    # off the radar is available again for the driver's own SET or RES.
+    self.cancel_stuck_mrcc = (self.mrcc_resync.failed and self.hybrid_radar.state == RadarMaster.MRCC and
+                              CS.out.cruiseState.enabled and
+                              (self.hybrid_radar.silence_failed or self.hybrid_arbiter.takeover_rejected))
+    if self.cancel_stuck_mrcc and not self.cancel_stuck_mrcc_prev:
+      carlog.error({"event": "mazdaHybridCancelStuckMrcc", "silenceFailed": self.hybrid_radar.silence_failed,
+                    "takeoverRejected": self.hybrid_arbiter.takeover_rejected, "vEgo": round(CS.out.vEgo, 2)})
+    self.cancel_stuck_mrcc_prev = self.cancel_stuck_mrcc
 
     return self.hybrid_radar.transmitting
 
@@ -200,7 +227,7 @@ class CarController(CarControllerBase):
         if CS.out.standstill and CC.cruiseControl.resume and self.frame % 5 == 0:
           can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP, CS.crz_btns_counter, Buttons.RESUME))
           virtual_resume_sent = True
-      elif CC.cruiseControl.cancel:
+      elif CC.cruiseControl.cancel or self.cancel_stuck_mrcc:
         # If brake is pressed, let us wait >70ms before trying to disable crz to avoid
         # a race condition with the stock system, where the second cancel from openpilot
         # will disable the crz 'main on'. crz ctrl msg runs at 50hz. 70ms allows us to
@@ -227,6 +254,9 @@ class CarController(CarControllerBase):
         can_sends.append(mazdacan.create_alert_command(self.packer, CS.cam_laneinfo, ldw, steer_required))
 
       if radar_emulation:
+        # MrccSwitch drops the car's cruise by sending these frames inactive, the same way an openpilot
+        # disengage does here. Never set outside hybrid long.
+        long_active = CC.longActive and not self.mrcc_switch.drop_cruise
         stopping = CC.actuators.longControlState == LongCtrlState.stopping
         starting = CC.actuators.longControlState == LongCtrlState.starting
         # Do not treat tiny positive low-speed PID noise as a real restart request.
@@ -245,7 +275,7 @@ class CarController(CarControllerBase):
         release_hold_requested = False
         release_brake = False
         stop_go_release_requested = False
-        if not CC.longActive:
+        if not long_active:
           self.standstill_hold_frames = 0
           self.stop_intent_latched = False
           self.resume_release_frames = 0
@@ -305,7 +335,7 @@ class CarController(CarControllerBase):
         # Only enter the synthetic stop-go/HOLD path once upstream has actually
         # committed to a stop; keep it latched through standstill until a real
         # restart or a driver override releases it.
-        stop_go_request = CC.longActive and self.stop_intent_latched and not release_hold_requested
+        stop_go_request = long_active and self.stop_intent_latched and not release_hold_requested
         standstill_hold_request = stop_go_request and CS.out.standstill
         hold_latched = standstill_hold_request and self.standstill_hold_frames > HOLD_REQUEST_FRAMES
         brake_release_requested = release_hold_requested or effective_resume_requested
@@ -337,7 +367,7 @@ class CarController(CarControllerBase):
         if self.handover_frames > 0:
           self.handover_frames -= 1
           handover_accel = self.handover_filter.update(CC.actuators.accel)
-        if CC.longActive:
+        if long_active:
           accel = CC.actuators.accel
           if handover_accel is not None and not CS.out.standstill:
             accel = handover_accel
@@ -354,7 +384,7 @@ class CarController(CarControllerBase):
           can_sends.append(create_radar_tester_present(RADAR_BUS))
 
         lead_visible = CC.hudControl.leadVisible
-        synthetic_radar_lead = CC.longActive and (lead_visible or stop_go_request or standstill_hold_request or hold_latched or
+        synthetic_radar_lead = long_active and (lead_visible or stop_go_request or standstill_hold_request or hold_latched or
                                                   crz_hold_latched or crz_hold_passive or crz_ctrl_resume_active or
                                                   stop_go_release_requested or release_brake or starting)
         if (self.frame - self.heartbeat_phase) % RADAR_HEARTBEAT_STEP == 0:
@@ -365,7 +395,7 @@ class CarController(CarControllerBase):
         if (self.frame - self.long_phase) % LONG_COMMAND_STEP == 0:
           for bus in (RADAR_BUS, CAM_BUS):
             can_sends.extend(create_longitudinal_messages(bus, accel, self.long_counter,
-                                                          CC.longActive, lead_visible,
+                                                          long_active, lead_visible,
                                                           hold_request=crz_info_hold_request,
                                                           crz_ctrl_hold_request=stop_go_request,
                                                           hold_latched=hold_latched,
