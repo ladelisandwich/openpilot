@@ -145,8 +145,19 @@ def make_state_class(md):
         if "lead_stds" in out:
           out["lead_stds"][:] = 0.5
 
-      out["meta"][0, :] = 0.0
-      out["meta"][0, Meta.ENGAGED] = 1.0
+      # what a driver's feet would be doing over the next 0..10 s, from the planned acceleration: the planner only
+      # allows throttle when the model expects the gas pedal (gasPressProbs[1]), FCW reads the hard-brake ones
+      meta = out["meta"][0]
+      meta[:] = 0.0
+      meta[Meta.ENGAGED] = 1.0
+      a_at = np.interp([0.0, 2.0, 4.0, 6.0, 8.0, 10.0], T_IDXS, a)
+      v_at = np.interp([0.0, 2.0, 4.0, 6.0, 8.0, 10.0], T_IDXS, v)
+      meta[Meta.GAS_PRESS] = np.where((a_at > -0.3) & (v_at > 0.3), 0.9, 0.05)
+      meta[Meta.BRAKE_PRESS] = np.where(a_at < -1.0, 0.9, 0.05)
+      a_min = [float(np.min(np.interp(np.linspace(t, t + 2.0, 9), T_IDXS, a))) for t in (0.0, 2.0, 4.0, 6.0, 8.0)]
+      meta[Meta.HARD_BRAKE_3] = [0.9 if x < -3.0 else 0.01 for x in a_min]
+      meta[Meta.HARD_BRAKE_4] = [0.9 if x < -4.0 else 0.01 for x in a_min]
+      meta[Meta.HARD_BRAKE_5] = [0.9 if x < -5.0 else 0.01 for x in a_min]
       out["desire_state"][0, :] = 0.0
       out["desire_state"][0, 0] = 1.0
       if "desire_pred" in out:

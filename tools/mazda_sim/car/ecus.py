@@ -281,7 +281,8 @@ class Pcm(Ecu):
 
   @property
   def armed(self) -> bool:
-    return self.main_on and self.set_allowed and not self.engaged
+    """MRCC main on and standing by (PEDALS.ACC_OFF). Engaging additionally needs the master's ACC_SET_ALLOWED."""
+    return self.main_on and not self.engaged
 
   def _round_set(self, kph: float) -> float:
     u = self.unit
@@ -425,8 +426,9 @@ class Pcm(Ecu):
     return with_checksum(d)
 
   def telemetry(self) -> dict:
-    return {"mainOn": self.main_on, "engaged": self.engaged, "armed": self.armed, "setSpeedKph": round(self.set_speed_kph, 1),
-            "aCmd": round(self.a_cmd, 3), "standby": self.standby, "hold": self.veh.hold, "crzInfoAge": round(min(self.since_crz_info, 99), 2),
+    return {"mainOn": self.main_on, "engaged": self.engaged, "armed": self.armed, "setAllowed": self.set_allowed, "setSpeedKph": round(self.set_speed_kph, 1),
+            "aCmd": round(self.a_cmd, 3), "aOut": round(self.a_out, 3), "driveN": round(self.veh.drive_force),
+            "brakeDecel": round(self.veh.brake_decel, 2), "standby": self.standby, "hold": self.veh.hold, "crzInfoAge": round(min(self.since_crz_info, 99), 2),
             "crzInfoBadChecksum": self.crz_info_bad, "lastCancel": self.cancel_reason}
 
 
