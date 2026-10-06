@@ -387,11 +387,13 @@ class TestHybridRadarManager:
 
 def sw_run(q: MrccSwitch, n: int, emulating=True, restoring=False, engaged=True, want_mrcc=True, cruise=True, v=25.0,
            standstill=False, accel=0.0):
-  drops = 0
+  drops = 0  # cycles pressing CANCEL
   started = done = False
   for _ in range(n):
     q.update(emulating, restoring, engaged, want_mrcc, cruise, v, standstill, accel)
-    drops += q.drop_cruise
+    # the replacement frames only go inactive in the hand-back window, never during the drop itself
+    assert q.drop_cruise == (q.press_cancel and q.handing_back)
+    drops += q.press_cancel
     started |= q.started
     done |= q.done
   return drops, started, done
@@ -489,3 +491,17 @@ class TestHybridMasterStatus:
     assert st(False, True, engaged=False) == 0                # no takeover while disengaged: nothing pending
     assert st(False, True, takeover_possible=False) == 0      # takeovers off for this drive
     assert st(True, False, handback_possible=False) == E      # restore failed / switch failed: openpilot keeps it
+
+
+def test_witness_reads_acc_set_allowed():
+  w = RadarWitness()
+  for allowed in (False, True):
+    frame = build_crz_info(0.0, 3, False, False, 20.0, acc_set_allowed=allowed)
+    w.update([(0, [(CRZ_INFO_ADDR, frame, RADAR_BUS)])])
+    assert w.set_allowed == allowed
+
+
+def test_warming_up_radar_is_pending_until_ready():
+  assert hybrid_master_status(False, False, False, True, True, mrcc_warming_up=True) == HYBRID_MASTER_PENDING
+  assert hybrid_master_status(False, True, False, True, True, mrcc_warming_up=True) == HYBRID_MASTER_PENDING
+  assert hybrid_master_status(False, False, False, True, True, mrcc_warming_up=False) == 0

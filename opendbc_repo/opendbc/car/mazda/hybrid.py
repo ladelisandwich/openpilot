@@ -80,14 +80,15 @@ HYBRID_MASTER_PENDING = 2    # the driver's choice is not in effect yet: a switc
 
 
 def hybrid_master_status(transmitting: bool, driver_wants_emulation: bool, engaged: bool,
-                         takeover_possible: bool, handback_possible: bool) -> int:
+                         takeover_possible: bool, handback_possible: bool, mrcc_warming_up: bool = False) -> int:
   """The icon's view of the hybrid: who drives now, and whether the driver's choice is still to come.
   A takeover only happens while engaged, so a disengaged car in experimental mode is not pending; a switch
-  that can no longer happen this drive (silence failed, takeover rejected, restore failed) is not pending."""
+  that can no longer happen this drive (silence failed, takeover rejected, restore failed) is not pending.
+  mrcc_warming_up: the radar restarted and does not accept SET/RES yet -- pending until RES will work."""
   if transmitting:
     pending = not driver_wants_emulation and handback_possible
     return HYBRID_MASTER_EMULATING | (HYBRID_MASTER_PENDING if pending else 0)
-  pending = driver_wants_emulation and engaged and takeover_possible
+  pending = mrcc_warming_up or (driver_wants_emulation and engaged and takeover_possible)
   return HYBRID_MASTER_PENDING if pending else 0
 
 
@@ -150,6 +151,13 @@ class RadarWitness:
       return None
     cmd = ((((d[2] & 0x3) << 11) | (d[3] << 3) | (d[4] >> 5)) - 4096)
     return cmd if ACCEL_CMD_VALID[0] <= cmd <= ACCEL_CMD_VALID[1] else None
+
+  @property
+  def set_allowed(self) -> bool:
+    """CRZ_INFO.ACC_SET_ALLOWED from the stock radar: SET and RES would engage now. About 12 s after a
+    restart before it accepts them (MrccSwitch). Only meaningful while the radar is alive."""
+    d = self.frames.get(CRZ_INFO_ADDR)
+    return bool(d is not None and len(d) >= 8 and (d[4] & 0x04))
 
   @property
   def stock_cruise_active(self) -> bool:
@@ -301,10 +309,16 @@ class HybridArbiter:
 class MrccSwitch:
   """The driver chose MRCC (standard mode) while openpilot is driving. A radar restarted while the car's cruise
   is engaged comes back "not available" and ignores RES (route 0000000f: 33 of 33), so the cruise is dropped
-  first -- openpilot's replacement frames go inactive, as for any openpilot disengage here -- and the radar is
-  handed back the moment the car reports cruise off. It reports itself available about 0.8 s later; the driver
-  presses RES (openpilot is not allowed to engage the cruise). Until then there is no cruise and no openpilot
-  longitudinal: the same as pressing CANCEL.
+  first and the radar is handed back the moment the car reports cruise off. The drop is a CANCEL button press
+  (press_cancel, sent by the car controller at 10 Hz like the stock-long cancel; the panda allows it at any
+  time). Sending the replacement frames inactive does not do it: route 00000028 (2026-10-06), 3 of 3 attempts,
+  the car kept its cruise for the whole 1.5 s with openpilot's frames in standby. So the frames stay active
+  while CANCEL is pressed, and openpilot keeps braking and accelerating until the car lets go.
+
+  After a restart the radar sends frames within 0.1 s but takes about 12 s before it accepts SET or RES
+  (route 00000028: RES and SET ignored until 11.9-12.1 s after each of 4 hand-backs). Until then there is no
+  cruise and no openpilot longitudinal; the driver presses RES once the radar is ready (openpilot is not
+  allowed to engage the cruise).
 
   Only started above MIN_SPEED (MRCC can be resumed there), off a standstill, and while openpilot is not braking
   hard; until then openpilot keeps driving. Abandoned (and retried later) if openpilot starts braking hard
@@ -314,7 +328,8 @@ class MrccSwitch:
   After the drop, openpilot's frames stay the PCM's ACC master until the restarting radar speaks. A RES landing
   on them in that window would engage the cruise on openpilot again, and the radar would then boot under an
   engaged cruise and come back unavailable, so until the radar is back any cruise that engages is dropped
-  again (handing_back).
+  again (handing_back): CANCEL, and here the frames go inactive as well (drop_cruise), so openpilot does not
+  drive on in the meantime.
   """
   DEBOUNCE_FRAMES = int(round(0.3 / DT_CTRL))
   DROP_TIMEOUT_FRAMES = int(round(1.5 / DT_CTRL))
@@ -326,7 +341,8 @@ class MrccSwitch:
     self.dropping = False
     self.drop_frames = 0
     self.failed = False      # until the driver changes the mode again
-    self.drop_cruise = False
+    self.press_cancel = False  # this cycle: press CANCEL to drop the car's cruise
+    self.drop_cruise = False   # this cycle: send the replacement frames inactive (hand-back window only)
     self.started = False     # this cycle: a drop began
     self.done = False        # this cycle: the car's cruise is off, hand the radar back now
     self.deferred_logged = False
@@ -335,7 +351,7 @@ class MrccSwitch:
 
   def update(self, emulating: bool, restoring: bool, engaged: bool, want_mrcc: bool, cruise_engaged: bool,
              v_ego: float, standstill: bool, accel: float) -> None:
-    self.drop_cruise = self.started = self.done = False
+    self.press_cancel = self.drop_cruise = self.started = self.done = False
     if not want_mrcc:
       self.failed = False
     if not (want_mrcc and emulating) or self.failed:
@@ -347,7 +363,7 @@ class MrccSwitch:
 
     if self.handing_back:
       if restoring and self.handback_drop_frames <= self.DROP_TIMEOUT_FRAMES:
-        self.drop_cruise = cruise_engaged
+        self.press_cancel = self.drop_cruise = cruise_engaged
         if cruise_engaged:
           if self.handback_drop_frames == 0:
             carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "cruise engaged before the radar was back"})
@@ -384,7 +400,7 @@ class MrccSwitch:
         self.failed = True
         carlog.error({"event": "mazdaHybridMrccSwitchFailed", "reason": "cruise did not drop"})
         return
-      self.drop_cruise = True
+      self.press_cancel = True
       return
 
     if not engaged:
@@ -405,7 +421,7 @@ class MrccSwitch:
       self.dropping = True
       self.drop_frames = 0
       self.started = True
-      self.drop_cruise = True
+      self.press_cancel = True
       carlog.warning({"event": "mazdaHybridMrccSwitch", "stage": "dropping cruise", "vEgo": round(v_ego, 2)})
 
 

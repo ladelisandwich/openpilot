@@ -177,8 +177,8 @@ class Scan:
     # car turns off, so the most common mode is the one that drove.
     self.panda_modes: Counter = Counter()
     self.tx_blocked, self.rx_invalid = [None, None], [None, None]
-    self.sent = {"crz_info": 0, "uds": 0, "res": 0}    # what openpilot asked pandad to send (sendcan)
-    self.echo = {"crz_info": 0, "uds": 0, "res": 0}    # what came back from the panda as put on bus 0
+    self.sent = {"crz_info": 0, "uds": 0, "res": 0, "cancel": 0}    # what openpilot asked pandad to send (sendcan)
+    self.echo = {"crz_info": 0, "uds": 0, "res": 0, "cancel": 0}    # what came back from the panda as put on bus 0
     # the radar's and the car's state after each hand-back: does MRCC ever drive again, and what does it need
     self.stock_available = False   # CRZ_CTRL.CRZ_AVAILABLE from the stock radar
     self.stock_set_allowed = False # CRZ_INFO.ACC_SET_ALLOWED: the radar would accept SET / RES now
@@ -186,6 +186,11 @@ class Scan:
     self.set_speed = None          # CRZ_EVENTS.CRZ_SPEED (kph), the dash set speed
     self.crz_started = False       # CRZ_EVENTS.CRZ_STARTED
     self.driver_presses = 0        # RES / SET presses on the wheel (frames)
+    self.handback_ready = []       # per hand-back: seconds until the radar accepted SET/RES (ACC_SET_ALLOWED), or None
+    self.ready_wait = None         # t of the hand-back still waiting for ACC_SET_ALLOWED
+    self.cancel_open = None        # driver CANCEL press in progress (t)
+    self.distance_open = None      # driver distance press in progress (t)
+    self.op_cancel_open = None
     self.after = []                # [(t_handback, [samples])]
     self.after_next_t = None
     # the stock radar's own lead (only while it is awake) against openpilot's vision lead
@@ -295,6 +300,8 @@ class Scan:
           self.sent["uds"] += 1
         elif c.src == 0 and c.address == CRZ_BTNS and (c.dat[0] & 0x04):
           self.sent["res"] += 1
+        elif c.src == 0 and c.address == CRZ_BTNS and (c.dat[0] & 0x01):
+          self.sent["cancel"] += 1
     elif w == "logMessage":
       ev = hybrid_log_event(evt.logMessage)
       if ev is not None:
@@ -309,6 +316,10 @@ class Scan:
           self.stock_last = self.tc
           cmd = accel_cmd(d)
           self.stock_set_allowed = decode(DBC_2017, CRZ_INFO, d, ("ACC_SET_ALLOWED",))["ACC_SET_ALLOWED"] == 1
+          if self.ready_wait is not None and self.stock_set_allowed:
+            self.handback_ready.append(self.t - self.ready_wait)
+            self.note(f"stock radar READY for SET/RES ({self.t - self.ready_wait:.1f} s after it came back)")
+            self.ready_wait = None
           if (cmd is None) != (self.stock_cmd is None) and self.stock_alive:
             self.note("stock radar in standby (no command)" if cmd is None else f"stock radar commanding ({cmd})")
           self.stock_cmd = cmd
@@ -340,18 +351,40 @@ class Scan:
           if d[1] == 0x10:
             self.note(f"openpilot -> radar: {kind}")
             self.pending_request = (self.t, kind)
+        elif c.src == OP_ECHO and c.address == CRZ_BTNS and (d[0] & 0x01):
+          self.echo["cancel"] += 1
+          if self.op_cancel_open is None or self.t - self.op_cancel_open > 0.5:
+            self.note("openpilot pressed CANCEL")
+          self.op_cancel_open = self.t
         elif c.src == OP_ECHO and c.address == CRZ_BTNS and (d[0] & 0x04):
           self.op_presses += 1
           self.echo["res"] += 1
           if self.press_open is None or self.t - self.press_open > 0.5:
             self.note("openpilot pressed RES")
           self.press_open = self.t
-        elif c.src == STOCK and c.address == CRZ_BTNS and (d[0] & 0x34):
-          self.driver_presses += 1
-          which = "RES" if d[0] & 0x04 else ("SET+" if d[0] & 0x10 else "SET-")
-          if self.press_open is None or self.t - self.press_open > 0.5:
-            self.note(f"driver pressed {which}")
-          self.press_open = self.t
+        elif c.src == STOCK and c.address == CRZ_BTNS and len(d) >= 1:
+          if d[0] & 0x34:
+            self.driver_presses += 1
+            which = "RES" if d[0] & 0x04 else ("SET+" if d[0] & 0x10 else "SET-")
+            if self.press_open is None or self.t - self.press_open > 0.5:
+              self.note(f"driver pressed {which}")
+            self.press_open = self.t
+          if d[0] & 0x01:
+            if self.cancel_open is None:
+              self.note("driver pressed CANCEL")
+            self.cancel_open = self.t
+          else:
+            self.cancel_open = None
+          # the distance button (DISTANCE_LESS; DISTANCE_MORE on cars that have it): hold time tells a tap
+          # (personality, or back to MRCC from forced experimental) from a long press (hybrid mode toggle)
+          if d[0] & 0xC0:
+            if self.distance_open is None:
+              self.distance_open = self.t
+          elif self.distance_open is not None:
+            held = self.t - self.distance_open
+            kind = "tap" if held < 0.5 else ("long press" if held < 2.5 else "very long press")
+            self.note(f"driver distance button {kind} ({held:.1f} s)")
+            self.distance_open = None
         elif c.src == STOCK and c.address == PEDALS and len(d) >= 1:
           cruise = bool(d[0] & 0x08)
           self.acc_off = bool(d[0] & 0x04)
@@ -376,6 +409,9 @@ class Scan:
         self.note("stock radar BACK")
         if self.pending_request and "restart" in self.pending_request[1]:
           self.handbacks.append((self.t, self.v, self.t - self.pending_request[0]))
+          if self.ready_wait is not None:
+            self.handback_ready.append(None)   # the previous one never became ready
+          self.ready_wait = self.t
           self.last_switch = (self.t, "hand-back")
           self.pending_request = None
           self.after.append((self.t, []))
@@ -486,12 +522,14 @@ def print_report(name: str, s: Scan, quiet: bool):
   modes = ", ".join(f"{m} param {prm} ({n} msgs)" for (m, prm), n in s.panda_modes.most_common(3)) or "unknown"
   print(f"  panda safety while driving: {modes}   [265 = GEN1+TI+radar emulation; 9 = GEN1+TI only]")
   print(f"  panda counters over the route: tx blocked {blocked}  rx invalid {invalid}")
-  print("  openpilot -> bus: " + ", ".join(f"{k} sent {s.sent[k]} / on the bus {s.echo[k]}" for k in ("crz_info", "uds", "res")) +
+  print("  openpilot -> bus: " + ", ".join(f"{k} sent {s.sent[k]} / on the bus {s.echo[k]}" for k in ("crz_info", "uds", "res", "cancel")) +
         "   (uds = session control and tester present only; sent but not on the bus = refused by the panda)")
   for (t, v, dur, cmd) in s.takeovers:
     print(f"    takeover  at {t:7.1f}s {v * MPH:3.0f} mph: radar silent {dur:.2f} s after the request; started from stock command {cmd}")
-  for (t, v, dur), (_, samples) in zip(s.handbacks, s.after, strict=True):
-    print(f"    hand-back at {t:7.1f}s {v * MPH:3.0f} mph: radar back {dur:.2f} s after the request")
+  ready = s.handback_ready + [None] * (len(s.handbacks) - len(s.handback_ready))
+  for (t, v, dur), (_, samples), rdy in zip(s.handbacks, s.after, ready, strict=True):
+    rdy_txt = f"accepts SET/RES {rdy:.1f} s later" if rdy is not None else "never showed ACC_SET_ALLOWED before the next switch / route end"
+    print(f"    hand-back at {t:7.1f}s {v * MPH:3.0f} mph: radar back {dur:.2f} s after the request, {rdy_txt}")
     print("        +s   mph  radar  stockCmd  CRZ_ACTIVE CRZ_AVAIL setOK  car:cruise accOff  setKph started  RES/SET frames op/driver  op   lead radar/vision")
     for (dt, vv, alive, cmd, act, avail, cruise, off, spd, started, opp, drv, en, rlead, vlead, set_ok) in samples:
       cmd_txt = f"{cmd:6d}" if cmd is not None else "standby"

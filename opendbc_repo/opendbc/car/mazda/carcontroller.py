@@ -30,6 +30,7 @@ RESUME_RELEASE_FRAMES = int(round(0.5 / DT_CTRL))
 # hybrid long (see hybrid.py)
 HYBRID_MODE_READ_STEP = 10                          # experimental-mode state is read at 10 Hz
 HYBRID_MASTER_WRITE_MIN_FRAMES = 20                 # the onroad icon's state is written at most every 0.2 s
+HYBRID_WARMUP_MAX_FRAMES = int(20.0 / DT_CTRL)      # the icon shows "radar not ready" at most this long after a restart
 HYBRID_HANDOVER_FRAMES = int(round(1.5 / DT_CTRL))  # blend from MRCC's last command after a takeover
 HYBRID_HANDOVER_RC = 0.3                            # s, time constant of that blend
 HYBRID_HANDOVER_ACCEL = (-3.5, 2.0)                 # clip on the blend's starting point
@@ -77,6 +78,7 @@ class CarController(CarControllerBase):
     self.cancel_stuck_mrcc = False
     self.cancel_stuck_mrcc_prev = False
     self.hybrid_master_written: int | None = None
+    self.hybrid_handback_frame: int | None = None
     self.hybrid_master_write_frame = 0
     self.handover_filter = FirstOrderFilter(0.0, HYBRID_HANDOVER_RC, DT_CTRL)
     self.handover_frames = 0
@@ -163,6 +165,8 @@ class CarController(CarControllerBase):
                       "mrccDriving": witness.mrcc_driving, "crzActive": witness.stock_cruise_active,
                       "stockAccelCmd": witness.stock_accel_cmd, "vEgo": round(CS.out.vEgo, 2)})
       self.mrcc_resync.note_handback()
+      if self.hybrid_handback_frame is None:
+        self.hybrid_handback_frame = self.frame
 
     # The radar sleeps through emulation, so after a hand-back it comes back in standby: cruise
     # still reads engaged but nothing brakes. Nudge it with RES; if it will not take over, keep
@@ -182,10 +186,20 @@ class CarController(CarControllerBase):
     self.cancel_stuck_mrcc_prev = self.cancel_stuck_mrcc
 
     radar = self.hybrid_radar
+    # After a restart the radar takes ~12 s before SET/RES work (see MrccSwitch): pulse the icon until it is
+    # ready, from its first frame (still RESTORING) so the icon does not flash solid in between.
+    if radar.state == RadarMaster.RESTORING and radar.restore_from_emulation and witness.alive and self.hybrid_handback_frame is None:
+      self.hybrid_handback_frame = self.frame
+    if self.hybrid_handback_frame is not None and (witness.set_allowed or CS.out.cruiseState.enabled or
+                                                   self.frame - self.hybrid_handback_frame > HYBRID_WARMUP_MAX_FRAMES):
+      self.hybrid_handback_frame = None
+    mrcc_warming_up = (self.hybrid_handback_frame is not None and witness.alive and
+                       radar.state in (RadarMaster.RESTORING, RadarMaster.MRCC))
     self._publish_hybrid_master(hybrid_master_status(
       radar.transmitting, self.hybrid_experimental, engaged,
       takeover_possible=not (radar.silence_failed or self.hybrid_arbiter.takeover_rejected),
-      handback_possible=not (radar.restore_failed or self.mrcc_switch.failed)))
+      handback_possible=not (radar.restore_failed or self.mrcc_switch.failed),
+      mrcc_warming_up=mrcc_warming_up))
 
     return self.hybrid_radar.transmitting
 
@@ -250,6 +264,9 @@ class CarController(CarControllerBase):
         if CS.out.standstill and CC.cruiseControl.resume and self.frame % 5 == 0:
           can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP, CS.crz_btns_counter, Buttons.RESUME))
           virtual_resume_sent = True
+        elif self.mrcc_switch.press_cancel and self.frame % 10 == 0:
+          # hybrid only: the driver chose MRCC, drop the car's cruise first (see hybrid.MrccSwitch)
+          can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP, CS.crz_btns_counter, Buttons.CANCEL))
       elif CC.cruiseControl.cancel or self.cancel_stuck_mrcc:
         # If brake is pressed, let us wait >70ms before trying to disable crz to avoid
         # a race condition with the stock system, where the second cancel from openpilot

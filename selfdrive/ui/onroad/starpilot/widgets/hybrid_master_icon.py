@@ -29,7 +29,8 @@ class HybridMasterIcon(Widget):
   """Mazda hybrid longitudinal: who has gas and brake right now. A car sending radar waves while the stock
   radar (MRCC) drives, an eye with a "c" while openpilot drives on comma's vision with the emulated radar.
   Pulses while a switch the driver asked for is still to come (deferred below 19 mph, at a stop, while
-  braking, or waiting for the radar)."""
+  braking, or waiting for the radar), and after a radar restart until it accepts SET/RES (about 12 s): a solid
+  car means RES will work."""
   SIZE = 144
   ICON_SIZE = 104
 

@@ -39,7 +39,8 @@ DESCRIPTIONS = {
   "MazdaHybridLong": tr_noop(
     "Requires Radar Emulation. Stock MRCC drives until you hold the distance button for half a second: openpilot then " +
     "takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot " +
-    "drops the cruise for a moment, then press RES."
+    "cancels the cruise and restarts the radar, which takes about 12 seconds before RES works (the radar icon " +
+    "pulses until then)."
   ),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
   "NoFSC": tr_noop("Enable if your car does not have stock FSC."),
