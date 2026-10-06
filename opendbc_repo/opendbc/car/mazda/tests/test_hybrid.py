@@ -3,7 +3,7 @@ from opendbc.car import uds
 from opendbc.car.mazda.hybrid import (CRZ_CTRL_ADDR, CRZ_INFO_ADDR, HEARTBEAT_ADDRS, RADAR_BUS, RADAR_COUNTER_ADDR, RADAR_UDS_ADDR,
                                       HybridArbiter, HybridRadarManager, MrccResync, RadarMaster, RadarWitness,
                                       MrccSwitch, ce_status_is_experimental, ce_status_is_forced_experimental, radar_session_msg,
-                                      HYBRID_MASTER_EMULATING, HYBRID_MASTER_PENDING, hybrid_master_status)
+                                      HYBRID_MASTER_ACTIVE, HYBRID_MASTER_EMULATING, HYBRID_MASTER_PENDING, hybrid_master_status)
 from opendbc.car.mazda.longitudinal import accel_cmd_to_accel, accel_to_accel_cmd, build_crz_ctrl, build_crz_info
 
 STOCK = 0      # src of the stock radar's frames
@@ -505,3 +505,11 @@ def test_warming_up_radar_is_pending_until_ready():
   assert hybrid_master_status(False, False, False, True, True, mrcc_warming_up=True) == HYBRID_MASTER_PENDING
   assert hybrid_master_status(False, True, False, True, True, mrcc_warming_up=True) == HYBRID_MASTER_PENDING
   assert hybrid_master_status(False, False, False, True, True, mrcc_warming_up=False) == 0
+
+
+def test_master_active_bit_rides_on_any_state():
+  A, E, P = HYBRID_MASTER_ACTIVE, HYBRID_MASTER_EMULATING, HYBRID_MASTER_PENDING
+  assert hybrid_master_status(False, False, True, True, True, master_active=True) == A          # MRCC driving
+  assert hybrid_master_status(True, True, True, True, True, master_active=True) == E | A        # openpilot driving
+  assert hybrid_master_status(True, False, True, True, True, master_active=True) == E | P | A   # still driving, switch coming
+  assert hybrid_master_status(False, False, False, True, True, mrcc_warming_up=True) == P       # warming up, nobody driving

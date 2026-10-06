@@ -195,11 +195,17 @@ class CarController(CarControllerBase):
       self.hybrid_handback_frame = None
     mrcc_warming_up = (self.hybrid_handback_frame is not None and witness.alive and
                        radar.state in (RadarMaster.RESTORING, RadarMaster.MRCC))
+    # Driving right now: openpilot commanding gas and brake through its frames, or MRCC holding the cruise with
+    # the radar commanding (not a radar in standby).
+    if radar.transmitting:
+      master_active = engaged and CC.longActive
+    else:
+      master_active = CS.out.cruiseState.enabled and witness.alive and witness.mrcc_driving
     self._publish_hybrid_master(hybrid_master_status(
       radar.transmitting, self.hybrid_experimental, engaged,
       takeover_possible=not (radar.silence_failed or self.hybrid_arbiter.takeover_rejected),
       handback_possible=not (radar.restore_failed or self.mrcc_switch.failed),
-      mrcc_warming_up=mrcc_warming_up))
+      mrcc_warming_up=mrcc_warming_up, master_active=master_active))
 
     return self.hybrid_radar.transmitting
 

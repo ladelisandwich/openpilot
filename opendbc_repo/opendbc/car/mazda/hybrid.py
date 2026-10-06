@@ -77,19 +77,23 @@ def ce_status_is_forced_experimental(status: int) -> bool:
 HYBRID_MASTER_PARAM = "MazdaHybridMaster"
 HYBRID_MASTER_EMULATING = 1  # openpilot's frames are the ACC master; clear: the stock radar (MRCC)
 HYBRID_MASTER_PENDING = 2    # the driver's choice is not in effect yet: a switch is coming, or deferred
+HYBRID_MASTER_ACTIVE = 4     # the master is driving: MRCC holds the cruise, or openpilot commands gas and brake
 
 
 def hybrid_master_status(transmitting: bool, driver_wants_emulation: bool, engaged: bool,
-                         takeover_possible: bool, handback_possible: bool, mrcc_warming_up: bool = False) -> int:
+                         takeover_possible: bool, handback_possible: bool, mrcc_warming_up: bool = False,
+                         master_active: bool = False) -> int:
   """The icon's view of the hybrid: who drives now, and whether the driver's choice is still to come.
   A takeover only happens while engaged, so a disengaged car in experimental mode is not pending; a switch
   that can no longer happen this drive (silence failed, takeover rejected, restore failed) is not pending.
-  mrcc_warming_up: the radar restarted and does not accept SET/RES yet -- pending until RES will work."""
+  mrcc_warming_up: the radar restarted and does not accept SET/RES yet -- pending until RES will work.
+  master_active: whoever is the master is driving the car right now (the icon animates only then)."""
+  active = HYBRID_MASTER_ACTIVE if master_active else 0
   if transmitting:
     pending = not driver_wants_emulation and handback_possible
-    return HYBRID_MASTER_EMULATING | (HYBRID_MASTER_PENDING if pending else 0)
+    return HYBRID_MASTER_EMULATING | (HYBRID_MASTER_PENDING if pending else 0) | active
   pending = mrcc_warming_up or (driver_wants_emulation and engaged and takeover_possible)
-  return HYBRID_MASTER_PENDING if pending else 0
+  return (HYBRID_MASTER_PENDING if pending else 0) | active
 
 
 def radar_session_msg(session_type: int) -> CanData:

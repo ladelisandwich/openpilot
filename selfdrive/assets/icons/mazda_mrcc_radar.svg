@@ -1,25 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- Stock MRCC: a car with its radar sending waves out ahead of it -->
-  <defs>
-    <mask id="body">
-      <rect width="512" height="512" fill="#fff"/>
-      <!-- side windows -->
-      <path d="M128 236 L158 196 Q164 188 175 188 L212 188 L212 236 Z" fill="#000"/>
-      <path d="M232 188 L262 188 Q273 188 280 196 L312 236 L232 236 Z" fill="#000"/>
-      <!-- wheel arches -->
-      <circle cx="112" cy="318" r="46" fill="#000"/>
-      <circle cx="296" cy="318" r="46" fill="#000"/>
-    </mask>
-  </defs>
-  <path mask="url(#body)" fill="#fff" d="
-    M28 318 L28 276 Q28 254 50 250 L104 240 L146 182 Q158 166 180 166 L264 166 Q286 166 298 182 L338 238
-    L364 244 Q384 249 384 272 L384 318 Z"/>
-  <circle cx="112" cy="318" r="34" fill="#fff"/>
-  <circle cx="296" cy="318" r="34" fill="#fff"/>
-  <!-- radar waves from the front of the car -->
-  <g fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round">
-    <path d="M410 238 A40 40 0 0 1 410 298"/>
+  <!-- Stock MRCC: a car with its radar sending waves out ahead of it. Layers: the car, and each wave on
+       its own (mazda_mrcc_car.png, mazda_mrcc_wave1..3.png) so the onroad icon can send the waves out
+       one after another while MRCC is driving. -->
+  <defs><mask id="body">
+    <rect width="512" height="512" fill="#fff"/>
+    <path d="M284 236 L254 196 Q248 188 237 188 L200 188 L200 236 Z" fill="#000"/>
+    <path d="M180 188 L150 188 Q139 188 132 196 L100 236 L180 236 Z" fill="#000"/>
+    <circle cx="116" cy="318" r="46" fill="#000"/>
+    <circle cx="300" cy="318" r="46" fill="#000"/>
+  </mask></defs>
+  <path mask="url(#body)" fill="#fff" d="M384 318 L384 276 Q384 254 362 250 L308 240 L266 182 Q254 166 232 166 L148 166
+    Q126 166 114 182 L74 238 L48 244 Q28 249 28 272 L28 318 Z"/>
+  <circle cx="116" cy="318" r="34" fill="#fff"/>
+  <circle cx="300" cy="318" r="34" fill="#fff"/>
+  <g fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"><path d="M410 238 A40 40 0 0 1 410 298"/>
     <path d="M436 210 A80 80 0 0 1 436 326"/>
-    <path d="M462 182 A120 120 0 0 1 462 354"/>
-  </g>
+    <path d="M462 182 A120 120 0 0 1 462 354"/></g>
 </svg>
