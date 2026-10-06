@@ -43,6 +43,8 @@ class WorldOptions:
   model: str = "groundtruth"             # groundtruth: modelV2 from the road itself. vision: the real driving model
   vision_device: str = "auto"            # auto | CUDA | AMD | CL | CPU  (tinygrad backend for the real model)
   dual_camera: bool = True               # also render the wide road camera
+  render_scale: float = 0.5              # render cameras at this fraction of 1928x1208, then upscale. The model looks
+                                         # at the road camera ~2.9x downsampled, so 0.5 loses nothing it would see
   frame_codec: str = "nv12"              # nv12 (raw, same machine) | jpeg (smaller, costs CPU)
 
 

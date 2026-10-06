@@ -176,20 +176,26 @@ class Harness:
       except OSError:
         pass
 
+  @staticmethod
+  def to_imu_axes(d: tuple[float, float, float]) -> list[float]:
+    """Device frame (x forward, y right, z down) -> the IMU chip's axes as sensord reports them on a comma 3/3X.
+    Inverse of locationd's `meas = [-v[2], -v[1], -v[0]]`."""
+    return [-d[2], -d[1], -d[0]]
+
   def publish_sensors(self, s: wire.Sensors) -> None:
     dat = messaging.new_message('accelerometer', valid=True)
     dat.accelerometer.sensor = 4
     dat.accelerometer.type = 0x10
     dat.accelerometer.timestamp = dat.logMonoTime
     dat.accelerometer.init('acceleration')
-    dat.accelerometer.acceleration.v = list(s.accel)
+    dat.accelerometer.acceleration.v = self.to_imu_axes(s.accel)
     self.pm.send('accelerometer', dat)
     dat = messaging.new_message('gyroscope', valid=True)
     dat.gyroscope.sensor = 5
     dat.gyroscope.type = 0x10
     dat.gyroscope.timestamp = dat.logMonoTime
     dat.gyroscope.init('gyroUncalibrated')
-    dat.gyroscope.gyroUncalibrated.v = list(s.gyro)
+    dat.gyroscope.gyroUncalibrated.v = self.to_imu_axes(s.gyro)
     self.pm.send('gyroscope', dat)
     self.sensor_n += 1
     if self.sensor_n % 10 == 0:

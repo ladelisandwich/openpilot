@@ -81,7 +81,9 @@ class Driver:
   manual: applies exactly the torque, gas and brake you give it (hands off otherwise)
   hold:   hands resting on the wheel: resists quick movements a little, plus whatever you add
   auto:   a virtual driver that keeps the lane and a speed whenever openpilot is not steering or not in control
-          of speed, so you can test engagement on the move without driving by hand. Your inputs still add on top.
+          of speed, so you can test engagement on the move without driving by hand. While openpilot steers it keeps
+          its hands off, but takes over (and so overrides) if the car drifts out of the lane, like a supervising
+          driver would. Your inputs still add on top.
   """
 
   MAX_NM = 6.0
@@ -94,6 +96,7 @@ class Driver:
     self.auto_speed_kph = 0.0    # 0: the road's speed limit
     self.angle_ref = 0.0
     self.e_int = 0.0
+    self.takeover = False        # auto: openpilot was steering but let the car leave the lane
     self.torque_nm = 0.0
     self.gas = 0.0
     self.brake = 0.0
@@ -105,15 +108,21 @@ class Driver:
     if self.mode == "hold":
       self.angle_ref += (veh.steer.angle - self.angle_ref) * min(1.0, dt / 1.5)
       hands = -0.6 * (veh.steer.angle - self.angle_ref) - 0.05 * veh.steer.rate
-    elif self.mode == "auto" and not op_steering:
-      hands = self._lane_keep_torque(car)
+    elif self.mode == "auto":
+      e = abs(car.road_pos[1] - car.road.lane_offset(car.lane))
+      if not op_steering or e > 0.9:
+        self.takeover = op_steering
+      elif e < 0.3:
+        self.takeover = False
+      if not op_steering or self.takeover:
+        hands = self._lane_keep_torque(car)
     target = user_nm + hands
     self.torque_nm += (target - self.torque_nm) * min(1.0, dt / 0.05)
     self.torque_nm = max(-self.MAX_NM, min(self.MAX_NM, self.torque_nm))
 
     gas, brake = self.gas_input, self.brake_input
     if self.mode == "auto" and not op_long and gas == 0.0 and brake == 0.0 and veh.gear == "D" and not car.pcm.engaged:
-      gas, brake = self._speed_keep(car)
+      gas, brake = self._speed_keep(car, 1.6 if op_steering else 2.2)
     self.gas, self.brake = gas, brake
 
   def _lane_keep_torque(self, car: MazdaCar) -> float:
@@ -146,14 +155,14 @@ class Driver:
     sw_target = math.atan(curv * WHEELBASE) * STEER_RATIO
     return max(-self.MAX_NM, min(self.MAX_NM, 1.5 * (sw_target - veh.steer.angle) - 0.15 * veh.steer.rate))
 
-  def _speed_keep(self, car: MazdaCar) -> tuple[float, float]:
+  def _speed_keep(self, car: MazdaCar, lat_accel: float) -> tuple[float, float]:
     veh = car.veh
     target = (self.auto_speed_kph or car.road.speed_limit_mph * 1.609) / 3.6
-    # slow for the curves ahead: 2.2 m/s^2 lateral, braking at 2 m/s^2 to reach them
+    # slow for the curves ahead (to what openpilot can hold while it steers), braking at 2 m/s^2 to reach them
     road = car.road
     ahead = np.arange(0.0, max(40.0, veh.speed ** 2 / 4.0 + 20.0), 2.0)
     k = np.abs(road.poses_at(car.road_pos[0] + ahead, road.lane_offset(car.lane))[3])
-    v_curve = np.sqrt(2.2 / np.maximum(k, 1e-4))
+    v_curve = np.sqrt(lat_accel / np.maximum(k, 1e-4))
     target = min(target, float(np.min(np.sqrt(v_curve ** 2 + 2.0 * 2.0 * ahead))))
     lead = car.lead_rel()
     a = 0.8 * (target - veh.speed)
@@ -402,7 +411,7 @@ class MazdaCar:
       "body": {"gear": self.body.gear, "ignition": self.body.ignition, "seatbelt": self.body.seatbelt,
                "doorOpen": self.body.door_open, "blinker": self.body.blinker, "highBeams": self.body.high_beams,
                "buttons": sorted(self.body.buttons.held)},
-      "driver": {"mode": self.driver.mode, "autoSpeedKph": self.driver.auto_speed_kph},
+      "driver": {"mode": self.driver.mode, "autoSpeedKph": self.driver.auto_speed_kph, "takeover": self.driver.takeover},
       "ti": self.ti.telemetry(), "eps": self.eps.telemetry(), "pcm": self.pcm.telemetry(),
       "radar": self.radar.telemetry(), "fsc": self.fsc.telemetry(),
       "cluster": {"handsOnWarning": self.cluster.hands_on_warning, "ldw": self.cluster.ldw},

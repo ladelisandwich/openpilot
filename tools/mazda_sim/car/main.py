@@ -12,6 +12,8 @@ import asyncio
 import json
 import os
 import queue
+import signal
+import sys
 import threading
 import time
 
@@ -210,8 +212,8 @@ class Sim:
       tel = self.car.telemetry()
       tel["op"] = self.car.op
       tel["panda"] = self.panda
-      tel["comma"] = {"connected": self.harness.connected, "loopMs": round(self.loop_ms, 2),
-                      "world": self.world.status() if self.world is not None else {"kind": "lite"}}
+      tel["comma"] = {"connected": self.harness.connected, "loopMs": round(self.loop_ms, 2)}
+      tel["world"] = self.world.status() if self.world is not None else {"kind": "lite"}
       tel["driverDistracted"] = self.driver_distracted
       tel["relayStuck"] = self.relay_stuck
       tel["paused"] = self.paused
@@ -291,6 +293,7 @@ def main() -> None:
   ap.add_argument("--control-port", type=int, default=wire.CONTROL_PORT)
   args = ap.parse_args()
   cfg = SimConfig.load(args.config)
+  signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))   # docker stop: exit cleanly so the renderer goes too
   world = None
   if cfg.world.world == "metadrive":
     from .world_metadrive import MetaDriveWorld
