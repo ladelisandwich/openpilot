@@ -136,7 +136,10 @@ class Link:
 
   def __init__(self, sock: socket.socket):
     self.sock = sock
-    self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    try:
+      self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    except OSError:
+      pass  # not TCP (a socketpair in tests)
     self._send_lock = threading.Lock()
     self.closed = False
 
