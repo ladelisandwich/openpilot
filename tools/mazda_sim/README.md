@@ -109,6 +109,27 @@ already includes the NVIDIA Container Toolkit.
 
    In Setup, under *This PC*, set GPU to **NVIDIA** and press Save, then Start.
 
+**If Docker won't start after the rebase.** Find dockerd's own error with
+`journalctl -u docker.service -b --no-pager | grep -i "failed to start daemon"`.
+
+If it says `INVALID_ZONE: docker`, the firewall (firewalld) couldn't load its settings, so Docker can't create
+its zone. Check what's broken:
+
+```
+sudo firewall-offline-cmd --check-config
+```
+
+A common cause is a zone that still names a service your old image provided and the new one doesn't. For
+example, WiVRn's `wivrn`: `INVALID_SERVICE: Zone 'FedoraWorkstation': 'wivrn' not among existing services`.
+Put that definition back in `/etc/firewalld/services/` (for WiVRn, it's the `firewalld-wivrn.xml` file from
+the WiVRn repo, ports 9757 TCP and UDP), or remove the reference. Then restart everything:
+
+```
+sudo systemctl restart firewalld
+sudo systemctl reset-failed docker.service docker.socket
+sudo systemctl restart docker
+```
+
 **Things the developer image changes.** It is built from Bazzite's handheld (deck) image:
 - The login manager changes.
 - Steam may start at every login.
