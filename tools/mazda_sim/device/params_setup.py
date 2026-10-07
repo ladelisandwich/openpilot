@@ -21,7 +21,7 @@ def _put(params, key: str, value) -> bool:
   try:
     if isinstance(value, bool):
       params.put_bool(key, value)
-    elif isinstance(value, bytes):
+    elif isinstance(value, (bytes, int, float)):
       params.put(key, value)
     else:
       params.put(key, value if isinstance(value, str) else str(value))
@@ -54,6 +54,9 @@ def apply(cfg: SimConfig) -> None:
   _put(params, "CalibrationParams", msg.to_bytes())
   # a fresh fingerprint every start: the simulated car may have been re-configured
   params.remove("CarParamsCache")
+  # StarPilot tars up the whole install (~1 GB, minutes of CPU) at every boot while there is room for three such
+  # backups: pointless for a build that is rebuilt from source here, and it fills the comma's volume
+  _put(params, "MinimumBackupSize", 1 << 50)
 
   car = cfg.car
   for key, attr in CAR_TOGGLES.items():

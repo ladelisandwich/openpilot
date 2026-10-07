@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mazda Sim</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand">Mazda Sim <span class="sub">CX-9 2023 · TI1 · comma 3X</span></div>
+  <div class="chips">
+    <span class="chip" id="chip-car" title="the simulated car">car</span>
+    <span class="chip" id="chip-comma" title="the comma, plugged into the car's harness">comma</span>
+    <span class="chip" id="chip-op" title="openpilot">openpilot</span>
+  </div>
+  <div class="actions launcher-only">
+    <span id="busy" class="busy"></span>
+    <button id="btn-start" class="primary" title="build images if needed, start the car and the comma">Start</button>
+    <button id="btn-reload" title="re-copy / re-fetch the build, rebuild what changed, restart the comma">Reload build</button>
+    <button id="btn-restart-car" title="restart the car with the current setup (world, track, car options)">Restart car</button>
+    <button id="btn-stop">Stop</button>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" data-tab="drive">Drive</button>
+  <button class="tab" data-tab="setup">Setup</button>
+  <button class="tab" data-tab="logs">Logs</button>
+  <span class="links">
+    <a id="link-screen" target="_blank" rel="noopener">comma screen ↗</a>
+    <a id="link-galaxy" target="_blank" rel="noopener">Galaxy ↗</a>
+  </span>
+</nav>
+
+<main>
+<!-- ============================== DRIVE ============================== -->
+<section id="tab-drive" class="tab-body active">
+  <div class="drive">
+    <div class="views">
+      <div class="viewbar">
+        <label><input type="radio" name="view" value="split" checked> road + screen</label>
+        <label><input type="radio" name="view" value="road"> road</label>
+        <label><input type="radio" name="view" value="screen"> comma screen</label>
+        <span class="hint">zoom: mouse wheel on the road</span>
+      </div>
+      <div class="view-area split" id="view-area">
+        <div class="road-view">
+          <canvas id="road"></canvas>
+          <img id="chase" alt="" hidden>
+          <div class="hud">
+            <div class="speed"><span id="hud-speed">--</span><small id="hud-unit">mph</small></div>
+            <div class="set">SET <span id="hud-set">--</span></div>
+            <div id="hud-alert" class="alert"></div>
+          </div>
+        </div>
+        <div class="screen-view">
+          <iframe id="screen" title="comma screen"></iframe>
+          <div class="screen-note" id="screen-note"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="panel wheel-panel">
+        <h3>Steering <small>← → / A D · gamepad stick</small></h3>
+        <div class="wheel-row">
+          <svg id="wheel" viewBox="-50 -50 100 100" width="88" height="88">
+            <circle r="44" fill="none" stroke="currentColor" stroke-width="7"/>
+            <circle r="9" fill="currentColor"/>
+            <path d="M -42 4 L -9 2 M 42 4 L 9 2 M 0 9 L 0 42" stroke="currentColor" stroke-width="7" fill="none"/>
+          </svg>
+          <div class="wheel-info">
+            <div>angle <b id="t-sw">--</b>°</div>
+            <div>your torque <b id="t-drvnm">--</b> Nm</div>
+            <div>TI <b id="t-tinm">--</b> · LKAS <b id="t-lkasnm">--</b> Nm</div>
+          </div>
+        </div>
+        <input type="range" id="in-steer" min="-100" max="100" value="0" class="steer" title="drag: your hands on the wheel (springs back)">
+        <label class="small"><input type="checkbox" id="in-steer-latch"> keep slider where I leave it</label>
+      </div>
+
+      <div class="panel pedals">
+        <h3>Pedals <small>↑ ↓ / W S · triggers</small></h3>
+        <div class="pedal-row">
+          <label>gas<input type="range" id="in-gas" min="0" max="100" value="0" orient="vertical" class="vertical"></label>
+          <label>brake<input type="range" id="in-brake" min="0" max="100" value="0" orient="vertical" class="vertical"></label>
+        </div>
+      </div>
+
+      <div class="panel buttons">
+        <h3>Wheel buttons</h3>
+        <div class="grid3">
+          <button data-btn="set_minus" title="1 / gamepad A">SET −</button>
+          <button data-btn="set_plus" title="2">SET +</button>
+          <button data-btn="resume" title="3 / gamepad X">RES</button>
+          <button data-btn="cancel" title="4 / gamepad B">CANCEL</button>
+          <button data-btn="distance" title="5 / gamepad Y">DIST</button>
+          <button data-btn="mode" title="6">MODE</button>
+        </div>
+        <label class="small"><input type="checkbox" id="in-hold"> hold (press again to release)</label>
+        <h3>Blinkers <small>Q E</small></h3>
+        <div class="grid3">
+          <button data-blink="left">◀</button>
+          <button data-blink="hazard">⚠</button>
+          <button data-blink="right">▶</button>
+        </div>
+      </div>
+
+      <div class="panel body-ctl">
+        <h3>Car</h3>
+        <div class="seg" id="gear">
+          <button data-gear="P">P</button><button data-gear="R">R</button><button data-gear="N">N</button><button data-gear="D">D</button>
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" data-set="ignition" checked> ignition</label>
+          <label><input type="checkbox" data-set="seatbelt" checked> seatbelt</label>
+          <label><input type="checkbox" data-set="door_open"> door open</label>
+          <label><input type="checkbox" data-set="high_beams"> high beams</label>
+          <label><input type="checkbox" data-set="blindspot_left"> BSM left</label>
+          <label><input type="checkbox" data-set="blindspot_right"> BSM right</label>
+          <label><input type="checkbox" data-set="driver_distracted"> driver distracted</label>
+          <label><input type="checkbox" data-set="paused"> pause</label>
+        </div>
+      </div>
+
+      <div class="panel driver">
+        <h3>Driver</h3>
+        <div class="row">
+          <select id="in-driver-mode" title="manual: only your inputs. hold: hands resting on the wheel. auto: a driver that keeps the lane and speed while openpilot isn't, and takes over if it drifts">
+            <option value="auto">auto driver</option>
+            <option value="hold">hands resting</option>
+            <option value="manual">manual</option>
+          </select>
+          <label>speed <input type="number" id="in-auto-speed" min="0" max="200" step="5" value="0" title="auto driver's speed (km/h); 0 = speed limit"> km/h</label>
+        </div>
+        <div class="row">
+          <label>lane <select id="in-lane"></select></label>
+          <button id="btn-reset-car" title="back to the start of the track, stopped">reset position</button>
+        </div>
+        <h3>Lead car</h3>
+        <div class="row">
+          <select id="in-lead-mode">
+            <option value="none">none</option><option value="cruise">cruise</option>
+            <option value="stopgo">stop &amp; go</option><option value="brake">hard brake</option>
+          </select>
+          <input type="number" id="in-lead-speed" value="80" min="0" max="160" step="5" title="km/h"> km/h
+          <input type="number" id="in-lead-gap" value="45" min="5" max="200" step="5" title="m"> m
+          <button id="btn-lead">apply</button>
+        </div>
+      </div>
+
+      <div class="panel faults">
+        <h3>Faults</h3>
+        <div class="toggles">
+          <label><input type="checkbox" data-fault="ti_unplugged"> TI unplugged</label>
+          <label><input type="checkbox" data-fault="ti_sensor_error"> TI sensor error</label>
+          <label><input type="checkbox" data-fault="ti_ignore_commands"> TI ignores commands</label>
+          <label><input type="checkbox" data-fault="eps_lockout"> EPS LKAS lockout</label>
+          <label><input type="checkbox" data-fault="radar_refuse_programming"> radar refuses programming</label>
+          <label><input type="checkbox" data-fault="radar_restart_in_standby"> radar restarts in standby</label>
+          <label><input type="checkbox" data-fault="relay_stuck"> harness relay stuck</label>
+        </div>
+        <button data-fault-once="radar_restart">restart radar now</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="telemetry">
+    <div class="panel"><h3>openpilot</h3><dl id="tel-op"></dl><div id="tel-events" class="events"></div></div>
+    <div class="panel"><h3>Car</h3><dl id="tel-car"></dl></div>
+    <div class="panel"><h3>Torque interceptor</h3><dl id="tel-ti"></dl></div>
+    <div class="panel"><h3>EPS</h3><dl id="tel-eps"></dl></div>
+    <div class="panel"><h3>Cruise (PCM · radar)</h3><dl id="tel-pcm"></dl></div>
+    <div class="panel"><h3>Panda</h3><dl id="tel-panda"></dl></div>
+    <div class="panel wide"><h3>Last 30 s <small><span class="k1">■</span> lane offset (m) <span class="k2">■</span> your torque (Nm) <span class="k3">■</span> openpilot torque <span class="k4">■</span> speed · set speed (0–160 km/h)</small></h3><canvas id="chart" height="140"></canvas></div>
+  </div>
+</section>
+
+<!-- ============================== SETUP ============================== -->
+<section id="tab-setup" class="tab-body">
+  <div class="readonly-note" id="readonly-note" hidden>
+    The launcher isn't running, so this page (served by the car) can't change the setup. Start it with
+    <code>python tools/mazda_sim/launcher/mazdasim.py</code>.
+  </div>
+  <form id="setup" class="setup">
+    <fieldset>
+      <legend>openpilot build</legend>
+      <div class="row"><label><input type="radio" name="build.source" value="git"> from GitHub</label>
+        <label><input type="radio" name="build.source" value="local"> a checkout on this PC</label></div>
+      <div class="row src-git"><label>repo <input type="text" name="build.repo" size="50"></label>
+        <label>branch / tag / commit <input type="text" name="build.ref" size="28"></label></div>
+      <div class="row src-local"><label>folder <input type="text" name="build.local_path" size="60" placeholder="C:\Users\you\openpilot  or  /home/you/openpilot"></label></div>
+      <p class="hint">Local checkouts are copied with your uncommitted edits: change code, press <b>Reload build</b>, and only what changed is rebuilt.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Car — what is fitted</legend>
+      <div class="cols">
+        <label><input type="checkbox" name="car.torque_interceptor"> torque interceptor</label>
+        <label>TI version <input type="number" name="car.ti_version" min="1" max="3" step="1"></label>
+        <label><input type="checkbox" name="car.radar_emulation"> radar emulation</label>
+        <label><input type="checkbox" name="car.hybrid_long"> hybrid long (MRCC ⇄ emulation)</label>
+        <label><input type="checkbox" name="car.no_fsc"> no FSC</label>
+        <label><input type="checkbox" name="car.no_mrcc"> no MRCC</label>
+        <label><input type="checkbox" name="car.manual_transmission"> manual transmission</label>
+        <label><input type="checkbox" name="car.experimental_mode"> experimental mode</label>
+        <label><input type="checkbox" name="car.lower_min_set_speed"> lower min set speed</label>
+        <label><input type="checkbox" name="car.imperial"> imperial units</label>
+        <label>VIN <input type="text" name="car.vin" size="20"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>World</legend>
+      <div class="cols">
+        <label>scene <select name="world.world"><option value="lite">lite (any PC)</option><option value="metadrive">rendered (MetaDrive)</option></select></label>
+        <label>track <select name="world.track"><option>highway</option><option>loop</option><option>twisty</option><option>city</option><option>straight</option></select></label>
+        <label>lanes <input type="number" name="world.lanes" min="1" max="4"></label>
+        <label>lane width <input type="number" name="world.lane_width" min="2.5" max="4.5" step="0.1"> m</label>
+        <label>start speed <input type="number" name="world.start_speed_kph" min="0" max="160" step="5"> km/h</label>
+        <label>lead <select name="world.lead"><option value="none">none</option><option value="cruise">cruise</option><option value="stopgo">stop &amp; go</option><option value="brake">hard brake</option></select></label>
+        <label>lead speed <input type="number" name="world.lead_speed_kph" min="0" max="160" step="5"> km/h</label>
+        <label>lead gap <input type="number" name="world.lead_gap_m" min="5" max="200" step="5"> m</label>
+        <label title="ground truth: a perfect model output from the road itself, any PC. The build's own model needs the rendered scene and a GPU">driving model <select name="world.model"><option value="groundtruth">ground truth</option><option value="vision">the build's own model</option></select></label>
+        <label>model device <select name="world.vision_device"><option>auto</option><option>CL</option><option>CUDA</option><option>AMD</option><option>CPU</option></select></label>
+        <label><input type="checkbox" name="world.dual_camera"> wide camera too</label>
+        <label>render scale <input type="number" name="world.render_scale" min="0.25" max="1" step="0.25"></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="launcher-only">
+      <legend>This PC</legend>
+      <div class="cols">
+        <label>run with <select name="settings.backend"><option value="docker">Docker</option><option value="native">native (Linux)</option></select></label>
+        <label>GPU <select name="settings.gpu"><option value="none">none</option><option value="nvidia">NVIDIA</option><option value="dri">Intel / AMD (/dev/dri)</option><option value="amd">AMD ROCm (/dev/kfd)</option></select></label>
+        <label>reachable from <select name="settings.bind"><option value="127.0.0.1">this PC only</option><option value="0.0.0.0">my network</option></select></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Everything (JSON) — plant tuning, extra params</legend>
+      <textarea id="json" rows="14" spellcheck="false"></textarea>
+      <p class="hint"><code>car.extra_params</code> are written as params before the build starts, e.g. <code>{"BlendedACC": true}</code>. <code>plant</code> tunes the car's physics.</p>
+    </fieldset>
+
+    <div class="row launcher-only">
+      <button type="submit" class="primary">Save</button>
+      <span id="save-msg" class="hint"></span>
+      <span class="hint">Build changes take effect on <b>Reload build</b>; car and world changes on <b>Restart car</b>.</span>
+    </div>
+  </form>
+</section>
+
+<!-- ============================== LOGS ============================== -->
+<section id="tab-logs" class="tab-body">
+  <div class="viewbar">
+    <label>show <select id="log-filter"><option value="">everything</option><option>comma</option><option>mazda</option><option>launcher</option><option>docker</option></select></label>
+    <label><input type="checkbox" id="log-follow" checked> follow</label>
+    <button id="log-clear">clear</button>
+    <span class="launcher-only hint">Stop and <button id="btn-wipe" class="danger">delete the build cache</button></span>
+  </div>
+  <pre id="log"></pre>
+</section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+# Two machines on one network: the simulated Mazda and the comma running your build.
+# Normally started by the launcher (launcher/mazdasim.py), which sets the variables below. By hand:
+#   MAZDA_SIM_HOME=~/.mazda_sim docker compose -f tools/mazda_sim/docker/compose.yml -p mazda-sim up --build
+#
+#   MAZDA_SIM_HOME          holds sim.json (the configuration both containers read)
+#   MAZDA_SIM_LOCAL_BUILD   a checkout on this PC to run (build.source = "local"), mounted read-only
+#   MAZDA_SIM_BIND          address the dashboard / comma screen / Galaxy listen on (default: this PC only)
+name: mazda-sim
+
+services:
+  mazda:
+    build: {context: ., dockerfile: mazda.Dockerfile}
+    image: mazda-sim/mazda:latest
+    init: true
+    environment:
+      MAZDA_SIM_CONFIG: /config/sim.json
+    volumes:
+      - ..:/sim/mazda_sim:ro                          # the simulator itself, straight from the repo
+      - ../../../opendbc_repo:/sim/opendbc_repo:ro    # the car's DBC
+      - ${MAZDA_SIM_HOME:?set MAZDA_SIM_HOME}:/config
+    ports:
+      - "${MAZDA_SIM_BIND:-127.0.0.1}:8770:8770"      # dashboard: websocket, chase view, status
+    stop_grace_period: 10s
+
+  comma:
+    build: {context: ., dockerfile: comma.Dockerfile}
+    image: mazda-sim/comma:latest
+    init: true
+    shm_size: 1gb                                     # msgq + VisionIPC buffers
+    environment:
+      MAZDA_SIM_CONFIG: /config/sim.json
+      MAZDA_SIM_CAR_HOST: mazda
+    volumes:
+      - ..:/sim/mazda_sim:ro
+      - ${MAZDA_SIM_HOME:?set MAZDA_SIM_HOME}:/config
+      - ${MAZDA_SIM_LOCAL_BUILD:-${MAZDA_SIM_HOME}/no-local-build}:/src:ro
+      - comma-work:/work                              # build, venv, compiled model, device state: kept between runs
+    ports:
+      - "${MAZDA_SIM_BIND:-127.0.0.1}:6080:6080"      # the comma's screen (noVNC)
+      - "${MAZDA_SIM_BIND:-127.0.0.1}:8082:8082"      # StarPilot's Galaxy
+    depends_on: [mazda]
+    stop_grace_period: 45s                            # the manager stops ~25 processes one by one
+
+volumes:
+  comma-work:

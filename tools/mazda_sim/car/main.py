@@ -16,6 +16,7 @@ import signal
 import sys
 import threading
 import time
+from pathlib import Path
 
 from ..common import wire
 from ..common.config import SimConfig
@@ -226,6 +227,9 @@ class Sim:
             "lanes": r.lanes, "laneWidth": r.lane_width, "closed": r.closed}
 
 
+WEB_DIR = Path(__file__).resolve().parents[1] / "launcher" / "web"
+
+
 async def serve_control(sim: Sim, port: int) -> None:
   from aiohttp import WSMsgType, web
 
@@ -240,15 +244,23 @@ async def serve_control(sim: Sim, port: int) -> None:
         await asyncio.sleep(0.05)
 
     task = asyncio.create_task(pump())
+    held: set[str] = set()
     try:
       async for msg in ws:
         if msg.type == WSMsgType.TEXT:
           try:
-            sim.command(json.loads(msg.data))
+            cmd = json.loads(msg.data)
+            sim.command(cmd)
+            if cmd.get("type") == "button" and "hold" in cmd:
+              (held.add if cmd["hold"] else held.discard)(str(cmd.get("name")))
           except Exception as e:  # a bad command must never stop the car
             await ws.send_str(json.dumps({"type": "error", "error": str(e)}))
     finally:
       task.cancel()
+      # a closed tab must not leave the wheel turned or a pedal pressed
+      sim.command({"type": "axes"})
+      for name in held:
+        sim.command({"type": "button", "name": name, "hold": False})
     return ws
 
   async def status(_request):
@@ -275,8 +287,14 @@ async def serve_control(sim: Sim, port: int) -> None:
       resp.headers["Access-Control-Allow-Origin"] = "*"
     return resp
 
+  async def index(_request):
+    return web.FileResponse(WEB_DIR / "index.html")
+
   app = web.Application(middlewares=[cors])
   app.router.add_get("/ws", ws_handler)
+  if WEB_DIR.is_dir():   # the dashboard, for when the launcher is not running (docker compose by hand)
+    app.router.add_get("/", index)
+    app.router.add_static("/", WEB_DIR)
   app.router.add_get("/status", status)
   app.router.add_get("/chase.mjpg", chase)
   runner = web.AppRunner(app)

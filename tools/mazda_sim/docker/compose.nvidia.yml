@@ -1,0 +1,8 @@
+# NVIDIA GPU (Linux with the NVIDIA Container Toolkit, or Windows + WSL2): the real driving model runs on it
+# (tinygrad over OpenCL). Added by the launcher when settings say gpu = nvidia.
+services:
+  comma:
+    deploy:
+      resources:
+        reservations:
+          devices: [{driver: nvidia, count: all, capabilities: [gpu, compute, utility, graphics]}]

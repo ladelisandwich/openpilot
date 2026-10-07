@@ -5,13 +5,14 @@ MetaDrive only draws. The car's motion comes from car/vehicle.py; each frame the
 so the road in the pictures is the road the ground truth and the physics use.
 
 The renderer runs in its own process, which also serves the optics link (frames go straight to the comma without
-crossing process boundaries). It needs an OpenGL context: a GPU, or Mesa under Xvfb (slower).
+crossing process boundaries). It renders through GLX on $DISPLAY: a desktop with a GPU when run natively, Xvfb
+with Mesa's llvmpipe in the container, which manages a few frames a second (MetaDrive's terrain shader is the
+cost; its PBR pipeline does not start on panda3d's EGL display).
 """
 from __future__ import annotations
 
 import math
 import multiprocessing as mp
-import os
 import queue
 import threading
 import time
@@ -316,6 +317,3 @@ class MetaDriveWorld:
   def status(self) -> dict:
     return dict(self._status)
 
-
-if __name__ == "__main__":
-  os.environ.setdefault("DISPLAY", ":99")
