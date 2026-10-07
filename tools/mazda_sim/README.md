@@ -27,6 +27,7 @@ what every module and openpilot are doing.
 ## Quick start
 
 1. Install **Docker Desktop** (Windows/macOS) or **Docker Engine** (Linux), plus **Python 3.10+**.
+   On Bazzite, see [below](#bazzite-and-other-fedora-atomic-systems-with-an-nvidia-gpu).
 2. Get this repository (any checkout of this branch) and run:
 
    ```
@@ -46,6 +47,87 @@ what every module and openpilot are doing.
 
 To test a code change: edit your checkout, then press **Reload build**. The sim copies only what changed and
 scons rebuilds only what changed, and the comma restarts while the car keeps running.
+
+### Bazzite (and other Fedora Atomic systems) with an NVIDIA GPU
+
+You don't need to install Python: Bazzite already has it. Check with `python3 --version`.
+
+**Don't use Docker Desktop on Bazzite.**
+- It can't pass an NVIDIA GPU to containers on Linux.
+- Its installer uses `dnf install`, which Bazzite blocks.
+- It isn't supported on immutable systems.
+
+**Use Bazzite's developer image instead.** It has Docker Engine and compose built in, and the NVIDIA image
+already includes the NVIDIA Container Toolkit.
+
+1. Check your GPU and current image:
+
+   ```
+   nvidia-smi --query-gpu=name --format=csv,noheader
+   rpm-ostree status
+   ```
+
+   The developer image uses NVIDIA's open driver, so it needs a GTX 16xx or any RTX card. On a GTX 900/1000,
+   follow "Older NVIDIA cards" below instead.
+   If `rpm-ostree status` lists LayeredPackages, remove them first with `rpm-ostree uninstall …`. Layered
+   packages can block a rebase.
+2. Keep your current setup as a fallback, then rebase. Use the GNOME image if you're on GNOME:
+
+   ```
+   sudo ostree admin pin 0
+   brh rebase bazzite-dx-nvidia:stable          # KDE   (GNOME: bazzite-dx-nvidia-gnome:stable)
+   systemctl reboot
+   ```
+
+3. Join the docker group. The developer image is meant to do this itself, but it has an open bug where the
+   group never gets created, so do it by hand:
+
+   ```
+   getent group docker || sudo groupadd --system docker
+   sudo usermod -aG docker "$USER"
+   sudo systemctl restart docker.socket
+   systemctl reboot
+   ```
+
+4. Check that Docker works, that the GPU reaches containers, and that `docker info` lists `nvidia.com/gpu=all`.
+   No `nvidia-ctk runtime configure` step is needed with Docker 29.2 or later.
+
+   ```
+   docker run --rm hello-world
+   docker run --rm --gpus all ubuntu:24.04 nvidia-smi
+   docker info | grep -i cdi
+   ```
+
+   If the GPU check fails after a driver update, run
+   `sudo systemctl restart nvidia-cdi-refresh.service docker` and try again.
+5. Get this branch, then start the launcher from a terminal opened after the reboot:
+
+   ```
+   git clone --branch mazda-long-ti1-testing https://github.com/ladelisandwich/openpilot.git
+   python3 openpilot/tools/mazda_sim/launcher/mazdasim.py
+   ```
+
+   In Setup, under *This PC*, set GPU to **NVIDIA** and press Save, then Start.
+
+**Things the developer image changes.** It is built from Bazzite's handheld (deck) image:
+- The login manager changes.
+- Steam may start at every login.
+- To undo it, rebase back to your old image (the one `rpm-ostree status` showed), e.g.
+  `brh rebase bazzite-nvidia-open:stable`. `brh rollback` also works.
+
+**Older NVIDIA cards (GTX 900/1000).** There is no developer image for the legacy driver. Bazzite calls
+layering a last resort, but it works: Docker's Fedora packages on top of your current `bazzite-nvidia` image,
+which already has the NVIDIA toolkit.
+
+```
+sudo dnf5 config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+sudo rpm-ostree install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl reboot
+sudo systemctl enable --now docker
+```
+
+Then do steps 3–5 above. To remove it later:
+`rpm-ostree uninstall docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`.
 
 ## Driving
 
@@ -80,7 +162,7 @@ scons rebuilds only what changed, and the comma restarts while the car keeps run
 | **Scene** | *Lite* runs on any PC, with no rendering. *Rendered (MetaDrive)* draws the same road for the cameras and the chase view. Without a GPU it manages only a few frames a second (MetaDrive's terrain shader on Mesa's software rasterizer). |
 | **Track** | highway (8 km loop), loop, twisty, city, straight. Lanes, lane width and start speed. |
 | **Driving model** | *Ground truth* (any PC): a perfect model output computed from the road: plan, lanes, edges, lead, and the v15 `action`. It tests everything downstream of the model. *The build's own model* needs the rendered scene and a GPU. See the note below. |
-| **This PC** | Docker or native (Linux). GPU: NVIDIA (Container Toolkit / WSL2), Intel/AMD through `/dev/dri`, AMD ROCm through `/dev/kfd`. Reachable from this PC only, or from your network. |
+| **This PC** | Docker or native (Linux). GPU: NVIDIA (Container Toolkit / WSL2), Intel through `/dev/dri`, AMD ROCm through `/dev/kfd`. Reachable from this PC only, or from your network. |
 | **plant** (JSON) | The car's physics: mass, EPS assist curve, TI and LKAS torque scales, column friction, LKAS speed window, hands-off lockout, TI thresholds. The defaults reproduce this CX-9's learned lateral response (`LAT_ACCEL_FACTOR` ≈ 1.76 m/s²). Tune them against your own logs. |
 
 Build changes take effect on **Reload build**; car and world changes on **Restart car**.

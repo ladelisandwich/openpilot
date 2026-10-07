@@ -18,14 +18,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       xvfb x11vnc novnc websockify libgl1-mesa-dri libglx-mesa0 \
     && rm -rf /var/lib/apt/lists/* \
     && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen \
-    && mkdir -p /etc/OpenCL/vendors && echo libnvidia-opencl.so.1 > /etc/OpenCL/vendors/nvidia.icd
+    && mkdir -p /etc/OpenCL/vendors && echo libnvidia-opencl.so.1 > /etc/OpenCL/vendors/nvidia.icd \
+    && mkdir -p /etc/OpenCL/only-nvidia /etc/OpenCL/only-intel \
+    && cp /etc/OpenCL/vendors/nvidia.icd /etc/OpenCL/only-nvidia/ \
+    && find /etc/OpenCL/vendors -name 'intel*.icd' -exec cp {} /etc/OpenCL/only-intel/ \;
 
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 
 # uv, which the build's uv.lock is resolved with
 RUN python3 -m venv /opt/uv && /opt/uv/bin/pip install --no-cache-dir "uv>=0.8,<1" && ln -s /opt/uv/bin/uv /usr/local/bin/uv
 
-# NVIDIA GPUs (compose.nvidia.yml): driver libraries for OpenCL + GL come in through the container runtime
+# NVIDIA GPUs (compose.nvidia.yml): driver libraries for OpenCL + GL come in through the container runtime.
+# tinygrad only ever uses the first OpenCL platform, and pocl (CPU) is installed too: the GPU overrides point
+# OCL_ICD_VENDORS at a folder holding just their vendor's ICD, so the model can't silently land on the CPU.
 ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
 
 RUN git config --global --add safe.directory '*' && git config --global init.defaultBranch master \

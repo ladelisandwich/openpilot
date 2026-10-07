@@ -2,6 +2,8 @@
 # (tinygrad over OpenCL). Added by the launcher when settings say gpu = nvidia.
 services:
   comma:
+    environment:
+      OCL_ICD_VENDORS: /etc/OpenCL/only-nvidia   # the NVIDIA driver as OpenCL platform 0, not pocl's CPU
     deploy:
       resources:
         reservations:

@@ -1,5 +1,7 @@
-# Intel / AMD GPU on Linux through /dev/dri: the real driving model runs on it (tinygrad over OpenCL).
-# Added by the launcher when settings say gpu = dri.
+# Intel GPU on Linux through /dev/dri: the real driving model runs on it (tinygrad over OpenCL, Intel's driver).
+# AMD GPUs: use compose.amd.yml (ROCm). Added by the launcher when settings say gpu = dri.
 services:
   comma:
     devices: ["/dev/dri:/dev/dri"]
+    environment:
+      OCL_ICD_VENDORS: /etc/OpenCL/only-intel    # Intel's OpenCL as platform 0, not pocl's CPU

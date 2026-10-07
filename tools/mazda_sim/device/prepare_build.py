@@ -180,7 +180,8 @@ def pc_model(build: Path, venv: Path, cache: Path, device: str) -> None:
   if not (vision.is_file() and policy.is_file() and compiler.is_file()):
     raise SystemExit("[prepare] vision mode needs selfdrive/modeld/models/driving_{vision,policy}.onnx and " +
                      "selfdrive/modeld/compile_modeld.py in the build")
-  key = file_hash([vision, policy, compiler], device)
+  # compiled kernels are specific to the OpenCL driver too (compose.nvidia.yml / compose.dri.yml pick it)
+  key = file_hash([vision, policy, compiler], f"{device}|{os.environ.get('OCL_ICD_VENDORS', '')}")
   out = cache / "models" / key / "driving_tinygrad.pkl"
   if not out.is_file():
     log(f"compiling the driving model for {device} (first time for this model + device; can take a while)")

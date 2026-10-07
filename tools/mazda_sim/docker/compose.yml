@@ -12,6 +12,7 @@ services:
     build: {context: ., dockerfile: mazda.Dockerfile}
     image: mazda-sim/mazda:latest
     init: true
+    security_opt: ["label=disable"]                # read the repo and ~/.mazda_sim even if the engine enforces SELinux
     environment:
       MAZDA_SIM_CONFIG: /config/sim.json
     volumes:
@@ -26,6 +27,7 @@ services:
     build: {context: ., dockerfile: comma.Dockerfile}
     image: mazda-sim/comma:latest
     init: true
+    security_opt: ["label=disable"]                # read the repo and ~/.mazda_sim even if the engine enforces SELinux
     shm_size: 1gb                                     # msgq + VisionIPC buffers
     environment:
       MAZDA_SIM_CONFIG: /config/sim.json
