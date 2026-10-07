@@ -42,11 +42,19 @@
         <label><input type="radio" name="view" value="split" checked> road + screen</label>
         <label><input type="radio" name="view" value="road"> road</label>
         <label><input type="radio" name="view" value="screen"> comma screen</label>
-        <span class="hint">zoom: mouse wheel on the road</span>
+        <label>camera <select id="cam">
+          <option value="chase">3D chase</option>
+          <option value="far">3D far chase</option>
+          <option value="overhead">3D overhead</option>
+          <option value="map">2D map</option>
+          <option value="metadrive" disabled>MetaDrive render</option>
+        </select></label>
+        <span class="hint" id="cam-hint">drag to look around · wheel to zoom · double-click to reset</span>
       </div>
       <div class="view-area split" id="view-area">
         <div class="road-view">
-          <canvas id="road"></canvas>
+          <div id="road3d"></div>
+          <canvas id="road" hidden></canvas>
           <img id="chase" alt="" hidden>
           <div class="hud">
             <div class="speed"><span id="hud-speed">--</span><small id="hud-unit">mph</small></div>
@@ -56,7 +64,11 @@
         </div>
         <div class="screen-view">
           <iframe id="screen" title="comma screen"></iframe>
-          <div class="screen-note" id="screen-note"></div>
+          <div class="screen-status" id="screen-status">
+            <div class="title" id="screen-title">Waiting for the comma</div>
+            <div class="detail" id="screen-detail"></div>
+          </div>
+          <button class="screen-reload" id="screen-reload" title="reload the comma's screen">↻</button>
         </div>
       </div>
     </div>
@@ -264,6 +276,7 @@
 </section>
 </main>
 
+<script src="view3d.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

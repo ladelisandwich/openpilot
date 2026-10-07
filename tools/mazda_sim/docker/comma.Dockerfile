@@ -38,4 +38,4 @@ RUN git config --global --add safe.directory '*' && git config --global init.def
 
 WORKDIR /work
 EXPOSE 6080 8082
-ENTRYPOINT ["bash", "/sim/mazda_sim/docker/comma_entrypoint.sh"]
+ENTRYPOINT ["bash", "/sim/mazda_sim/docker/entrypoint-comma.sh"]

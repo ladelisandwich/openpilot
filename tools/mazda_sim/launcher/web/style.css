@@ -56,10 +56,19 @@ main { padding: 12px 14px; }
 .view-area.split { grid-template-columns: 1fr 1fr; }
 .view-area.road .screen-view, .view-area.screen .road-view { display: none; }
 .road-view, .screen-view { position: relative; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); min-height: 0; }
-#road, #chase { width: 100%; height: 100%; display: block; object-fit: contain; }
+#road, #chase, #road3d { width: 100%; height: 100%; display: block; object-fit: contain; }
+#road[hidden], #chase[hidden], #road3d[hidden] { display: none; }
+#road3d canvas { cursor: grab; }
+#road3d canvas:active { cursor: grabbing; }
 #screen { width: 100%; height: 100%; border: 0; background: #000; }
-.screen-note { position: absolute; inset: auto 0 0 0; padding: 6px 10px; color: var(--dim); font-size: 12px; background: rgba(0,0,0,.6); }
-.screen-note:empty { display: none; }
+.screen-status { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 24px; text-align: center; background: #0b0e12; }
+.screen-status[hidden] { display: none; }
+.screen-status .title { font-size: 16px; font-weight: 600; }
+.screen-status .detail { color: var(--dim); font-size: 12px; max-width: 90%; white-space: pre-wrap; word-break: break-word;
+  font-family: ui-monospace, Menlo, Consolas, monospace; }
+.screen-reload { position: absolute; top: 6px; right: 6px; padding: 2px 8px; opacity: .7; }
+.screen-reload:hover { opacity: 1; }
 .hud { position: absolute; top: 8px; left: 10px; right: 10px; pointer-events: none; display: flex; gap: 14px; align-items: flex-start; }
 .hud .speed { font-size: 34px; font-weight: 700; text-shadow: 0 1px 4px #000; }
 .hud .speed small { font-size: 13px; margin-left: 4px; color: #cfd6de; }

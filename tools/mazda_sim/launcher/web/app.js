@@ -18,6 +18,8 @@ let tel = null;               // latest telemetry
 let road = null;              // road shape {x, y, lanes, laneWidth, closed, s}
 let carCfg = null;            // the car's config (from the road message)
 let screenWanted = true;      // show the comma's screen (not in native runs: it is a desktop window there)
+let commaLast = "";           // the comma's latest log line (build progress), from the launcher
+let commaRunning = null;      // launcher: is the comma container/process up (null: unknown, no launcher)
 
 // ------------------------------------------------------------------ tabs + view layout
 $$(".tab").forEach(b => b.addEventListener("click", () => {
@@ -29,6 +31,7 @@ $$("input[name=view]").forEach(r => r.addEventListener("change", () => {
   $("#view-area").className = "view-area " + r.value;
   try { localStorage.setItem("mazdasim.view", r.value); } catch (e) { /* private mode */ }
   resizeRoad();
+  if (v3d) v3d.resize();
 }));
 try {
   const v = localStorage.getItem("mazdasim.view");
@@ -47,7 +50,7 @@ function connect() {
   ws.onmessage = ev => {
     const m = JSON.parse(ev.data);
     if (m.type === "tel") { tel = m; onTelemetry(); }
-    else if (m.type === "road") { setRoad(m.road); carCfg = m.config; onCarConfig(); }
+    else if (m.type === "road") { setRoad(m.road); if (v3d) v3d.setRoad(m.road); carCfg = m.config; onCarConfig(); }
     else if (m.type === "error") console.warn("car:", m.error);
   };
   ws.onclose = () => { tel = null; setChip("#chip-car", "car: offline", "bad"); setTimeout(connect, 1500); };
@@ -178,10 +181,34 @@ function onCarConfig() {
     lane.appendChild(o);
   }
   const rendered = w.world === "metadrive";
-  $("#chase").hidden = !rendered;
-  $("#road").hidden = rendered;
-  if (rendered && !$("#chase").src) $("#chase").src = `${CAR_HTTP}/chase.mjpg`;
+  $('#cam option[value="metadrive"]').disabled = !rendered;
+  if (!rendered && $("#cam").value === "metadrive") $("#cam").value = "chase";
+  applyCam();
 }
+
+// ------------------------------------------------------------------ road camera: 3D (WebGL), 2D map, or MetaDrive's feed
+let v3d = null;
+try {
+  if (window.MazdaView3D) { v3d = new MazdaView3D.View3D($("#road3d")); v3d.start(); }
+} catch (e) {
+  console.warn("3D view unavailable (no WebGL?)", e);
+}
+function applyCam() {
+  let cam = $("#cam").value;
+  if (!v3d && ["chase", "far", "overhead"].includes(cam)) cam = $("#cam").value = "map";
+  const is3d = ["chase", "far", "overhead"].includes(cam);
+  $("#road3d").hidden = !is3d;
+  $("#road").hidden = cam !== "map";
+  $("#chase").hidden = cam !== "metadrive";
+  if (cam === "metadrive" && !$("#chase").src) $("#chase").src = `${CAR_HTTP}/chase.mjpg`;
+  if (is3d) { v3d.setMode(cam); v3d.resize(); }
+  if (cam === "map") resizeRoad();
+  $("#cam-hint").textContent = is3d ? "drag to look around · wheel to zoom · double-click to reset" :
+    cam === "map" ? "mouse wheel zooms" : "MetaDrive's camera, rendered by the car";
+  try { localStorage.setItem("mazdasim.cam", cam); } catch (e) { /* private mode */ }
+}
+$("#cam").addEventListener("change", applyCam);
+try { const c = localStorage.getItem("mazdasim.cam"); if (c && c !== "metadrive") $("#cam").value = c; } catch (e) { /* ignore */ }
 
 // ------------------------------------------------------------------ telemetry
 function dl(id, rows) {
@@ -205,7 +232,7 @@ function syncControl(el, value) {
 }
 
 function onTelemetry() {
-  const t = tel, op = t.op, p = t.panda || {};
+  const t = tel, op = t.op && t.op.connected ? t.op : null, p = t.panda || {};   // {} until a comma is plugged in
   const imperial = carCfg ? carCfg.car.imperial : true;
   const toUnit = kph => imperial ? kph / 1.609 : kph;
   $("#hud-speed").textContent = fmt(toUnit(t.speedKph), 0);
@@ -286,6 +313,7 @@ function onTelemetry() {
   $$("[data-fault]").forEach(c => { if (c.dataset.fault in faultMap) syncControl(c, faultMap[c.dataset.fault]); });
 
   chartPush(t);
+  if (v3d) v3d.push(t);
 }
 
 // ------------------------------------------------------------------ top-down road (lite world)
@@ -378,7 +406,7 @@ requestAnimationFrame(drawRoad);
 const chart = $("#chart"), cctx = chart.getContext("2d");
 const hist = [];
 function chartPush(t) {
-  const op = t.op;
+  const op = t.op && t.op.connected ? t.op : null;
   hist.push([t.t, t.pose.laneOffset, t.steer.driverNm, op ? op.torque : 0, t.speedKph, t.pcm.setSpeedKph]);
   while (hist.length && hist[hist.length - 1][0] - hist[0][0] > 30) hist.shift();
 }
@@ -494,8 +522,7 @@ async function refreshState(refill = false) {
     $("#btn-restart-car").disabled = !!st.busy || !running;
     const comma = svc.comma;
     const native = launcher.settings.backend === "native";
-    $("#screen-note").textContent = native ? "native run: the comma's screen is a window on your desktop" :
-      (!comma ? "not running: press Start" : (tel && tel.op ? "" : "the comma is getting its build ready (see Logs); its screen appears when openpilot starts"));
+    commaRunning = !!comma && comma.state === "running";
     screenWanted = !native;
   } catch (e) {
     if (launcher === null) {
@@ -506,14 +533,48 @@ async function refreshState(refill = false) {
   }
 }
 
-// the comma's screen (noVNC) comes up with its manager, after the build is ready: load it then, drop it when it goes
+// the comma's screen (noVNC) comes up with its manager, after the build is ready: load it then, drop it when it
+// goes. Until then the pane says what the comma is doing instead of staying black.
 function updateScreen() {
-  const iframe = $("#screen"), up = screenWanted && tel && tel.comma && tel.comma.connected;
+  const iframe = $("#screen");
+  const connected = !!(tel && tel.comma && tel.comma.connected);
+  const up = screenWanted && connected;
   if (up && !iframe.getAttribute("src")) iframe.setAttribute("src", SCREEN_URL);
   else if (!up && iframe.getAttribute("src")) iframe.removeAttribute("src");
+  let title = "", detail = "";
+  if (!screenWanted) {
+    title = "The comma's screen is a window on your desktop";
+    detail = "native run";
+  } else if (!connected) {
+    if (commaRunning === false) {
+      title = "The comma isn't running";
+      detail = "press Start";
+    } else if (!tel) {
+      title = "Waiting for the car";
+      detail = "the dashboard connects to the car on port 8770";
+    } else if (commaRunning === null) {
+      title = "Waiting for the comma";
+      detail = "It plugs into the car once its build is ready and openpilot starts. The launcher's Logs tab shows the build.";
+    } else {
+      title = "The comma is getting its build ready";
+      detail = (commaLast ? commaLast + "\n\n" : "") + "The first build of a checkout takes 20–40 minutes; the Logs tab shows all of it. " +
+        "The screen appears here when openpilot starts.";
+    }
+  }
+  $("#screen-status").hidden = !title;
+  $("#screen-title").textContent = title;
+  $("#screen-detail").textContent = detail;
 }
+$("#screen-reload").addEventListener("click", () => {
+  const iframe = $("#screen");
+  if (iframe.getAttribute("src")) { iframe.removeAttribute("src"); setTimeout(updateScreen, 100); }
+});
 setInterval(updateScreen, 1500);
-setInterval(refreshState, 2000);
+// served by the car itself (no launcher): there is no /api to ask
+const statePoll = setInterval(() => {
+  if (launcher === null && document.body.classList.contains("no-launcher") && location.port === "8770") clearInterval(statePoll);
+  else refreshState();
+}, 2000);
 refreshState();
 
 // logs
@@ -528,6 +589,7 @@ async function pollLogs() {
     const frag = document.createDocumentFragment();
     for (const [seq, src, line] of r.lines) {
       logSeq = Math.max(logSeq, seq);
+      if (src === "comma" && line.trim() && !line.startsWith("running: ")) commaLast = line.trim().slice(0, 240);
       const div = document.createElement("div");
       div.dataset.src = src;
       if (filter && src !== filter) div.hidden = true;
@@ -551,3 +613,5 @@ setInterval(pollLogs, 1000);
 
 connect();
 resizeRoad();
+applyCam();
+updateScreen();

@@ -182,10 +182,11 @@ class DockerBackend(Backend):
 
   def reload_build(self) -> bool:
     # the comma's entrypoint re-syncs the build and lets scons rebuild what changed; the car keeps running
-    return self._task("reloading the build", lambda: self.run("up", "-d", "--force-recreate", "--no-deps", "comma"))
+    # --build: picks up image changes from a `git pull` of the simulator (a cached no-op otherwise)
+    return self._task("reloading the build", lambda: self.run("up", "-d", "--build", "--force-recreate", "--no-deps", "comma"))
 
   def restart_car(self) -> bool:
-    return self._task("restarting the car", lambda: self.run("up", "-d", "--force-recreate", "--no-deps", "mazda"))
+    return self._task("restarting the car", lambda: self.run("up", "-d", "--build", "--force-recreate", "--no-deps", "mazda"))
 
   def status(self) -> dict:
     out = {"backend": self.name, "busy": self.busy, "services": {}}

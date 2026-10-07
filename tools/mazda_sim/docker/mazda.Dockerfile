@@ -20,4 +20,4 @@ ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=graphics,utility
 
 WORKDIR /sim
 EXPOSE 8770
-ENTRYPOINT ["bash", "/sim/mazda_sim/docker/mazda_entrypoint.sh"]
+ENTRYPOINT ["bash", "/sim/mazda_sim/docker/entrypoint-mazda.sh"]

@@ -173,7 +173,17 @@ Then do steps 3–5 above. To remove it later:
   - Radar: refuses programming, restarts in standby, restart now.
   - Harness relay stuck.
 - **Telemetry:** what openpilot is doing (state, alerts, events, torque and accel commands), the car, TI, EPS, PCM and radar, the panda (safety mode, controls allowed, blocked messages), and a 30 s strip chart.
-- **Views:** a top-down road (lite world, mouse wheel zooms) or the MetaDrive chase camera, next to the comma's own screen. **comma screen ↗** opens it full size; **Galaxy ↗** opens StarPilot's web UI for toggles.
+- **Views:** the road next to the comma's own screen. Pick the road camera in the bar above it:
+  - **3D chase** (the default), **3D far chase** and **3D overhead**: your browser draws these with your GPU
+    (WebGL), smooth at any world setting. Drag to look around the car, use the wheel to zoom, double-click to reset.
+    The car shows its steering, brake lights and blinkers, and the lead car rides at its real gap.
+  - **2D map**: top-down, with the mouse wheel zooming.
+  - **MetaDrive render**: the rendered scene's own camera.
+
+  While the comma is still building, its pane shows the build's progress instead of a black screen.
+  **comma screen ↗** opens it full size; **Galaxy ↗** opens StarPilot's web UI for toggles.
+  The 3D view lives in `launcher/web/src/view3d.js`. `launcher/web/build.sh` bundles it with three.js into the
+  committed `view3d.js`, so the launcher needs no build step.
 
 ## Setup options
 
