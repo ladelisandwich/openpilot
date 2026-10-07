@@ -202,7 +202,8 @@
         <label><input type="radio" name="build.source" value="local"> a checkout on this PC</label></div>
       <div class="row src-git"><label>repo <input type="text" name="build.repo" size="50"></label>
         <label>branch / tag / commit <input type="text" name="build.ref" size="28"></label></div>
-      <div class="row src-local"><label>folder <input type="text" name="build.local_path" size="60" placeholder="C:\Users\you\openpilot  or  /home/you/openpilot"></label></div>
+      <div class="row src-local"><label>folder <input type="text" name="build.local_path" size="60" placeholder="/home/you/openpilot"></label>
+        <span class="hint">the top of the repository: the folder with SConstruct in it</span></div>
       <p class="hint">Local checkouts are copied with your uncommitted edits: change code, press <b>Reload build</b>, and only what changed is rebuilt.</p>
     </fieldset>
 

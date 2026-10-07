@@ -224,6 +224,10 @@ def main() -> None:
   else:
     log(f"build: {b['repo']} @ {b['ref']}")
     sync_git(b["repo"], b["ref"], build)
+  if not ((build / "SConstruct").is_file() and (build / "pyproject.toml").is_file()):
+    where = b.get("local_path") or args.src if b["source"] == "local" else f"{b['repo']} @ {b['ref']}"
+    raise SystemExit(f"[prepare] {where} is not an openpilot checkout: its top has no SConstruct and pyproject.toml. " +
+                     "In the launcher's Setup, choose the top folder of the repository.")
   head = subprocess.run(["git", "-C", build, "log", "-1", "--format=%h %s"], capture_output=True, text=True).stdout.strip()
   log(f"source ready: {head or '(no git metadata)'}")
 

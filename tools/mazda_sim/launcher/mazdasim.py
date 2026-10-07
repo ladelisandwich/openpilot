@@ -54,6 +54,23 @@ ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 PROCESS_LIST = re.compile(r"^[a-z0-9_ ]+$")
 
 
+def checkout_problem(path: str) -> str | None:
+  """Why `path` can't be the build under test, or None. A build is the top folder of an openpilot repository."""
+  p = Path(path).expanduser()
+  if not p.is_dir():
+    return f"{path} is not a folder on this PC"
+  if (p / "SConstruct").is_file() and (p / "pyproject.toml").is_file():
+    return None
+  hint = ""
+  top = subprocess.run(["git", "-C", str(p), "rev-parse", "--show-toplevel"], capture_output=True, text=True) \
+    if shutil.which("git") else None
+  if top is not None and top.returncode == 0 and top.stdout.strip():
+    root = Path(top.stdout.strip())
+    if root.resolve() != p.resolve() and (root / "SConstruct").is_file():
+      hint = f" It is inside the repository {root}: choose that folder."
+  return f"{path} is not an openpilot checkout: its top has no SConstruct and pyproject.toml.{hint}"
+
+
 class Logs:
   """Recent output from the launcher, docker and both halves of the sim, for the page's log view."""
 
@@ -124,8 +141,8 @@ class DockerBackend(Backend):
   def env(self) -> dict:
     cfg = self.config()
     local = cfg.build.local_path if cfg.build.source == "local" and cfg.build.local_path else ""
-    if local and not Path(local).is_dir():
-      raise RuntimeError(f"local build {local} does not exist")
+    if local and (problem := checkout_problem(local)):
+      raise RuntimeError(problem)
     (self.home / "no-local-build").mkdir(exist_ok=True)
     return {**os.environ, "MAZDA_SIM_HOME": str(self.home), "MAZDA_SIM_BIND": self.settings.get("bind", "127.0.0.1"),
             "MAZDA_SIM_LOCAL_BUILD": str(Path(local).resolve()) if local else str(self.home / "no-local-build")}
@@ -416,8 +433,10 @@ def make_handler(launcher: Launcher):
       try:
         if path == "/api/config":
           cfg = SimConfig.from_dict(body)
-          if cfg.build.source == "local" and cfg.build.local_path and not Path(cfg.build.local_path).is_dir():
-            return self.reply({"error": f"{cfg.build.local_path} is not a folder on this PC"}, HTTPStatus.BAD_REQUEST)
+          if cfg.build.source == "local":
+            problem = checkout_problem(cfg.build.local_path) if cfg.build.local_path else "choose the folder of your openpilot checkout"
+            if problem:
+              return self.reply({"error": problem}, HTTPStatus.BAD_REQUEST)
           cfg.save(str(launcher.home / "sim.json"))
           return self.reply({"ok": True, "config": cfg.to_dict()})
         if path == "/api/settings":

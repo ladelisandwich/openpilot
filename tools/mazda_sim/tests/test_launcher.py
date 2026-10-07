@@ -56,3 +56,14 @@ def test_logs_collapse_the_process_list():
   logs.add("comma", "hello")
   _, lines = logs.since(0)
   assert [line for _s, _src, line in lines] == ["running: pandad card", "hello"]
+
+
+def test_local_build_must_be_a_checkout_top(tmp_path):
+  from mazda_sim.launcher.mazdasim import checkout_problem
+  repo = tmp_path / "op"
+  (repo / "tools" / "x").mkdir(parents=True)
+  assert "not a folder" in checkout_problem(str(tmp_path / "missing"))
+  assert "not an openpilot checkout" in checkout_problem(str(repo / "tools" / "x"))
+  (repo / "SConstruct").write_text("")
+  (repo / "pyproject.toml").write_text("")
+  assert checkout_problem(str(repo)) is None
