@@ -1,0 +1,6 @@
+# AMD GPU on Linux through ROCm's /dev/kfd: the real driving model runs on tinygrad's AMD backend.
+# Added by the launcher when settings say gpu = amd.
+services:
+  comma:
+    devices: ["/dev/kfd:/dev/kfd", "/dev/dri:/dev/dri"]
+    group_add: [video]

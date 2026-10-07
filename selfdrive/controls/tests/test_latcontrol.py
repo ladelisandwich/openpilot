@@ -1,3 +1,5 @@
+import math
+import numpy as np
 import pytest
 from parameterized import parameterized
 from types import SimpleNamespace
@@ -14,6 +16,7 @@ from opendbc.car.toyota.values import CAR as TOYOTA
 from opendbc.car.nissan.values import CAR as NISSAN
 from opendbc.car.gm.values import CAR as GM
 from opendbc.car.hyundai.values import CAR as HYUNDAI
+from opendbc.car.mazda.values import CAR as MAZDA, MazdaSafetyFlags
 from opendbc.car.subaru.values import CAR as SUBARU
 from opendbc.car.vehicle_model import VehicleModel
 from openpilot.common.realtime import DT_CTRL
@@ -33,6 +36,8 @@ from openpilot.selfdrive.controls.lib.latcontrol_vehicle_tunes import (
   get_kona_non_scc_friction_threshold,
   get_kona_non_scc_highway_transition_output_scale,
   get_kia_ev6_center_output_scale,
+  get_mazda_ti_error_scale,
+  get_mazda_ti_ff_scale,
   get_sonata_hybrid_center_output_scale,
   get_prius_center_taper_scale,
   KIA_FORTE_BASE_LAT_ACCEL_FACTOR_MULT,
@@ -2116,6 +2121,101 @@ class TestLatControl:
     tuned_output, _, _ = controller.update(True, CS, VM, params, False, 0.006, False, 0.2, None, None, starpilot_toggles)
 
     assert abs(tuned_output) >= abs(base_output)
+
+  def test_mazda_ti_scales_fade_out_by_30_mph(self):
+    assert get_mazda_ti_error_scale(0.0) == pytest.approx(0.15)
+    assert get_mazda_ti_error_scale(7.5) == pytest.approx(0.15)
+    assert get_mazda_ti_error_scale(10.0) == pytest.approx(0.4)
+    assert get_mazda_ti_ff_scale(0.0) == pytest.approx(0.5)
+    assert get_mazda_ti_ff_scale(7.5) == pytest.approx(0.5)
+    for v_ego in (13.5, 20.0, 35.0):
+      assert get_mazda_ti_error_scale(v_ego) == 1.0
+      assert get_mazda_ti_ff_scale(v_ego) == 1.0
+    speeds = np.linspace(0.0, 20.0, 81)
+    assert np.all(np.diff([get_mazda_ti_error_scale(v) for v in speeds]) >= 0.0)
+    assert np.all(np.diff([get_mazda_ti_ff_scale(v) for v in speeds]) >= 0.0)
+
+  @staticmethod
+  def _run_mazda_torque(v_ego, torque_interceptor, curvature, curvature_error, frames=150, steer_kp=0.6, friction=None):
+    # Both variants are set up the way the interface sets up a TI car (steering down to a stop), so the
+    # flag is the only difference. controlsd replaces the gain table with the SteerKP toggle every cycle.
+    # The controller first settles on the requested curvature, then holds curvature_error short of it
+    # with the integrator starting from zero.
+    CarInterface = interfaces[MAZDA.MAZDA_CX9_2021]
+    CP = CarInterface.get_non_essential_params(MAZDA.MAZDA_CX9_2021)
+    CP.flags = int(CP.flags) & ~int(MazdaSafetyFlags.TORQUE_INTERCEPTOR) & 0xFFFFFFFF
+    if torque_interceptor:
+      CP.flags = int(CP.flags) | int(MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+    CP.minSteerSpeed = 0.0
+    CP.steerAtStandstill = True
+    if friction is not None:
+      CP.lateralTuning.torque.friction = friction
+    CI = CarInterface(CP, custom.StarPilotCarParams.new_message())
+    controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL)
+    VM = VehicleModel(CP)
+
+    CS = car.CarState.new_message()
+    CS.vEgo = v_ego
+    CS.steeringPressed = False
+
+    params = log.LiveParametersData.new_message()
+    params.steerRatio = CP.steerRatio
+    params.stiffnessFactor = 1.0
+    params.roll = 0.0
+    params.angleOffsetDeg = 0.0
+
+    output = 0.0
+    for settled, error in ((False, 0.0), (True, curvature_error)):
+      CS.steeringAngleDeg = math.degrees(VM.get_steer_from_curvature(-(curvature - error), v_ego, 0.0))
+      if settled:
+        controller.pid.i = 0.0
+      for _ in range(frames):
+        controller.pid._k_p = [[0], [steer_kp]]
+        output, _, _ = controller.update(True, CS, VM, params, False, curvature, False, 0.2, None, None, SimpleNamespace())
+    return controller, output
+
+  @parameterized.expand([(3.0,), (5.0,), (8.5,), (10.0,), (12.0,)])
+  def test_mazda_ti_softens_low_speed_error_response(self, v_ego):
+    # 0.005 1/m short of the request: the proportional response is scaled for the TI only
+    ti, _ = self._run_mazda_torque(v_ego, True, 0.02, 0.005)
+    stock, _ = self._run_mazda_torque(v_ego, False, 0.02, 0.005)
+    assert ti.is_mazda_ti and not stock.is_mazda_ti
+    assert abs(stock.pid.p) > 0.0
+    assert ti.pid.p == pytest.approx(stock.pid.p * get_mazda_ti_error_scale(v_ego), rel=1e-6)
+
+  @parameterized.expand([(3.0,), (5.0,), (8.5,), (12.0,)])
+  def test_mazda_ti_softens_low_speed_integral(self, v_ego):
+    # a small, unsaturated error held for 1.5 s: the integral builds at the scaled rate
+    ti, ti_out = self._run_mazda_torque(v_ego, True, 0.01, 0.0005, friction=0.0)
+    stock, stock_out = self._run_mazda_torque(v_ego, False, 0.01, 0.0005, friction=0.0)
+    assert abs(ti_out) < 1.0 and abs(stock_out) < 1.0
+    assert abs(stock.pid.i) > 1e-4
+    assert ti.pid.i == pytest.approx(stock.pid.i * get_mazda_ti_error_scale(v_ego), rel=1e-6)
+
+  @parameterized.expand([(3.0,), (5.0,), (8.5,), (10.0,), (12.0,)])
+  def test_mazda_ti_trims_low_speed_feedforward(self, v_ego):
+    # with friction compensation off, pid.f is the feedforward alone
+    ti, _ = self._run_mazda_torque(v_ego, True, 0.02, 0.0, friction=0.0)
+    stock, _ = self._run_mazda_torque(v_ego, False, 0.02, 0.0, friction=0.0)
+    assert abs(stock.pid.f) > 0.0
+    assert ti.pid.f == pytest.approx(stock.pid.f * get_mazda_ti_ff_scale(v_ego), rel=1e-6)
+
+  @parameterized.expand([(13.5,), (20.0,), (31.0,)])
+  def test_mazda_ti_unchanged_from_30_mph(self, v_ego):
+    for curvature_error in (0.0, 0.0005, -0.0008):
+      ti, ti_out = self._run_mazda_torque(v_ego, True, 0.004, curvature_error)
+      stock, stock_out = self._run_mazda_torque(v_ego, False, 0.004, curvature_error)
+      assert ti_out == stock_out
+      assert ti.pid.i == stock.pid.i
+
+  def test_mazda_ti_flag_is_ignored_on_other_brands(self):
+    controller, _, _, _, _ = self._build_torque_controller(TOYOTA.TOYOTA_RAV4)
+    assert not controller.is_mazda_ti
+    CarInterface = interfaces[TOYOTA.TOYOTA_RAV4]
+    CP = CarInterface.get_non_essential_params(TOYOTA.TOYOTA_RAV4)
+    CP.flags = int(CP.flags) | int(MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+    CI = CarInterface(CP, custom.StarPilotCarParams.new_message())
+    assert not LatControlTorque(CP.as_reader(), CI, DT_CTRL).is_mazda_ti
 
   @parameterized.expand([(HONDA.HONDA_CIVIC, LatControlPID), (TOYOTA.TOYOTA_RAV4, LatControlTorque),
                          (NISSAN.NISSAN_LEAF, LatControlAngle), (GM.CHEVROLET_BOLT_ACC_2022_2023, LatControlTorque)])

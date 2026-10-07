@@ -430,6 +430,24 @@ class VehicleSettingsManagerView(PanelManagerView):
         "set_state": lambda s: self._controller._on_toggle("TorqueInterceptorEnabled"),
       })
       toggles.append({
+        "title": tr("Enable Radar Emulation"),
+        "subtitle": tr("Silence the stock radar and let openpilot control gas and brake. No extra hardware. Do not use with a Radar Interceptor."),
+        "get_state": lambda: self._controller._params.get_bool("RadarEmulationEnabled"),
+        "set_state": lambda s: self._controller._on_toggle("RadarEmulationEnabled"),
+      })
+      toggles.append({
+        "title": tr("Hybrid Longitudinal"),
+        "subtitle": tr("Requires Radar Emulation. Stock MRCC drives until you hold the distance button for half a second: openpilot then takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot cancels the cruise and restarts the radar, which takes about 12 seconds before RES works (the radar icon pulses until then)."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaHybridLong"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaHybridLong"),
+      })
+      toggles.append({
+        "title": tr("Lower Minimum Set Speed"),
+        "subtitle": tr("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash will keep showing 19 mph; the openpilot screen shows the real target."),
+        "get_state": lambda: self._controller._params.get_bool("LowerMinSetSpeed"),
+        "set_state": lambda s: self._controller._on_toggle("LowerMinSetSpeed"),
+      })
+      toggles.append({
         "title": tr("Enable Radar Interceptor"),
         "subtitle": tr("Enable if you have installed a radar interceptor."),
         "get_state": lambda: self._controller._params.get_bool("RadarInterceptorEnabled"),

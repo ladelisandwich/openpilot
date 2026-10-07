@@ -18,6 +18,11 @@ from openpilot.starpilot.common.experimental_state import (
 from openpilot.starpilot.common.favorite_slots import FAVORITE_ACTION_TRAFFIC_MODE_COUNTER, toggle_favorite_slot
 from openpilot.starpilot.common.starpilot_utilities import is_FrogsGoMoo
 from openpilot.starpilot.common.starpilot_variables import ERROR_LOGS_PATH, GearShifter, NON_DRIVING_GEARS
+from openpilot.starpilot.controls.lib.mazda_hybrid_buttons import (
+  hybrid_forced_experimental,
+  mazda_hybrid_buttons_active,
+  set_hybrid_forced_experimental,
+)
 
 HYUNDAI_MAIN_CRUISE_AOL_CONFIRM_TIMEOUT_FRAMES = 100
 
@@ -69,6 +74,8 @@ class StarPilotCard:
     self._favorite_traffic_mode_counter = self.params_memory.get_int(FAVORITE_ACTION_TRAFFIC_MODE_COUNTER)
 
     self.gap_counter = 0
+    self.mazda_hybrid = mazda_hybrid_buttons_active(CP)
+    self.hybrid_press_consumed = False
     self.cancel_counter = 0
     self._distance_poll_counter = 0
     self._onroad_distance_pressed = False
@@ -135,6 +142,35 @@ class StarPilotCard:
       sync_manual_cc_state(self.params, override_value)
     else:
       self.params.put_bool_nonblocking("ExperimentalMode", not sm["selfdriveState"].experimentalMode)
+
+  def update_hybrid_distance(self, carState, distance_released, sm, starpilot_toggles):
+    """Mazda hybrid longitudinal: the distance button picks emulation or MRCC (see mazda_hybrid_buttons)."""
+    if self.gap_counter == 0:
+      self.hybrid_press_consumed = False
+      return
+
+    forced = hybrid_forced_experimental(self.params, self.params_memory, starpilot_toggles)
+    # A press made in forced experimental, and every long press, belongs to the mode switch,
+    # so its release must not also step the driving personality.
+    self.hybrid_press_consumed |= forced or self.gap_counter >= self.long_press_threshold
+
+    if distance_released:
+      if self.gap_counter < self.long_press_threshold:
+        if forced:
+          set_hybrid_forced_experimental(self.params, self.params_memory, starpilot_toggles, False)
+        else:
+          self.handle_button_event("distance", sm, starpilot_toggles)
+      elif self.gap_counter < self.very_long_press_threshold:
+        set_hybrid_forced_experimental(self.params, self.params_memory, starpilot_toggles, not forced)
+    elif self.gap_counter == self.very_long_press_threshold:
+      # The mode switch happens on release, so unlike the stock long press there is nothing to undo here
+      self.handle_button_event("distance_very_long", sm, starpilot_toggles)
+
+    if self.hybrid_press_consumed:
+      carState.buttonEvents = [
+        be for be in carState.buttonEvents
+        if not (self._button_type_raw(be) == int(ButtonType.gapAdjustCruise) and not be.pressed)
+      ]
 
   def update(self, carState, starpilotCarState, sm, starpilot_toggles):
     self.switchback_mode_enabled = self.params_memory.get_bool("SwitchbackModeEnabled")
@@ -291,7 +327,10 @@ class StarPilotCard:
 
     self.distancePressed_previously = starpilotCarState.distancePressed
 
-    if not starpilotCarState.distancePressed and 1 <= self.gap_counter < self.long_press_threshold:
+    hybrid_distance = self.mazda_hybrid and not getattr(starpilot_toggles, "safe_mode", False)
+    if hybrid_distance:
+      self.update_hybrid_distance(carState, distance_released, sm, starpilot_toggles)
+    elif not starpilotCarState.distancePressed and 1 <= self.gap_counter < self.long_press_threshold:
       self.handle_button_event("distance", sm, starpilot_toggles)
     elif self.gap_counter == self.long_press_threshold:
       self.handle_button_event("distance_long", sm, starpilot_toggles)
@@ -370,7 +409,8 @@ class StarPilotCard:
     starpilotCarState.cancelLongPressed = self.very_long_press_threshold > self.cancel_counter >= self.long_press_threshold
     starpilotCarState.cancelVeryLongPressed = self.cancel_counter >= self.very_long_press_threshold
     starpilotCarState.decelPressed = self.decel_pressed
-    starpilotCarState.distanceLongPressed = self.very_long_press_threshold > self.gap_counter >= self.long_press_threshold
+    # With the Mazda hybrid the long press is the mode switch alone, never also a personality change
+    starpilotCarState.distanceLongPressed = not hybrid_distance and self.very_long_press_threshold > self.gap_counter >= self.long_press_threshold
     starpilotCarState.distanceVeryLongPressed = self.gap_counter >= self.very_long_press_threshold
     starpilotCarState.forceCoast = self.force_coast
     starpilotCarState.pulseAndGlide = self.pulse_and_glide
