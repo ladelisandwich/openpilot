@@ -37,7 +37,7 @@ DESCRIPTIONS = {
   "RadarInterceptorEnabled": tr_noop("Enable if you have installed the radar Iterceptor."),
   "RadarEmulationEnabled": tr_noop("Silence the stock radar and let openpilot control gas and brake. No extra hardware required. Do not enable together with the Radar Interceptor."),
   "MazdaHybridLong": tr_noop(
-    "Requires Radar Emulation. Stock MRCC drives until you hold the distance button for half a second: openpilot then " +
+    "Requires Radar Emulation. Stock MRCC drives until you hold distance increase (▲) for half a second: openpilot then " +
     "takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot " +
     "cancels the cruise and restarts the radar, which takes about 12 seconds before RES works (the radar icon " +
     "pulses until then)."

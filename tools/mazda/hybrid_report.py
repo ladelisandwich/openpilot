@@ -375,15 +375,16 @@ class Scan:
             self.cancel_open = self.t
           else:
             self.cancel_open = None
-          # the distance button (DISTANCE_LESS; DISTANCE_MORE on cars that have it): hold time tells a tap
-          # (personality, or back to MRCC from forced experimental) from a long press (hybrid mode toggle)
-          if d[0] & 0xC0:
+          # the distance rocker: DISTANCE_LESS (0x80, decrease: the personality) and DISTANCE_MORE (0x40,
+          # increase: the hybrid mode switch, a long press toggles, a tap in forced experimental goes to MRCC)
+          side = "decrease" if d[0] & 0x80 else ("increase" if d[0] & 0x40 else None)
+          if side is not None:
             if self.distance_open is None:
-              self.distance_open = self.t
+              self.distance_open = (self.t, side)
           elif self.distance_open is not None:
-            held = self.t - self.distance_open
-            kind = "tap" if held < 0.5 else ("long press" if held < 2.5 else "very long press")
-            self.note(f"driver distance button {kind} ({held:.1f} s)")
+            held = self.t - self.distance_open[0]
+            kind = "tap" if held < 0.5 else "long press"
+            self.note(f"driver distance {self.distance_open[1]} {kind} ({held:.1f} s)")
             self.distance_open = None
         elif c.src == STOCK and c.address == PEDALS and len(d) >= 1:
           cruise = bool(d[0] & 0x08)

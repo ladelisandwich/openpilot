@@ -26,6 +26,7 @@ class CarState(CarStateBase):
     self.params = CarControllerParams(CP)
 
     self.distance_button = 0
+    self.distance_increase_button = 0
     # physical RES / SET+ press on the wheel; used by the radar emulation HOLD release
     self.accel_button = 0
     # When openpilot owns the set speed (pcmCruiseSpeed=False) the wheel buttons have to
@@ -72,6 +73,8 @@ class CarState(CarStateBase):
 
     prev_distance_button = self.distance_button
     self.distance_button = cp.vl["CRZ_BTNS"]["DISTANCE_LESS"]
+    # the other side of the distance rocker (distance increase): the hybrid longitudinal mode switch
+    self.distance_increase_button = cp.vl["CRZ_BTNS"]["DISTANCE_MORE"]
 
     # CX-9 has a dedicated RES button; some Mazdas emit SET_P for the wheel "+" instead
     self.accel_button = int(cp.vl["CRZ_BTNS"]["RES"] == 1 or cp.vl["CRZ_BTNS"]["SET_P"] == 1)
@@ -232,6 +235,7 @@ class CarState(CarStateBase):
     fp_ret = custom.StarPilotCarState.new_message()
 
     fp_ret.dashboardStopSign = 1 if cp_cam.vl["CAM_TRAFFIC_SIGNS"]["STOP_SIGN"] == 9 else 0
+    fp_ret.distanceIncreasePressed = bool(self.distance_increase_button)
 
     return ret, fp_ret
 

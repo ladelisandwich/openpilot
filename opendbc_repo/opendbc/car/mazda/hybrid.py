@@ -31,9 +31,10 @@ MrccSwitch          an engaged switch to MRCC: drops the cruise first, so the re
                     up available, and leaves the RES press to the driver.
 HybridRadarManager  runs the transitions over UDS and says when replacement frames may be sent.
 
-The mode is the driver's, not automatic: a long press of the distance button (held 0.5-2.5 s) toggles
-forced experimental mode (emulation) and standard mode (MRCC), and a short press while in forced
-experimental goes back to standard (starpilot/controls/lib/mazda_hybrid_buttons.py). Conditional
+The mode is the driver's, not automatic: a long press of distance increase (the rocker's DISTANCE_MORE side,
+held 0.5 s or more) toggles forced experimental mode (emulation) and standard mode (MRCC), and a short press
+while in forced experimental goes back to standard (starpilot/controls/lib/mazda_hybrid_buttons.py).
+Distance decrease keeps its StarPilot job (the personality). Conditional
 Experimental Mode's automatic triggers still steer the planner but never switch the radar.
 """
 from __future__ import annotations

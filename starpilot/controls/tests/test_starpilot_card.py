@@ -1034,19 +1034,22 @@ def make_mazda_hybrid_card(monkeypatch, tmp_path, flags=MAZDA_HYBRID_FLAGS):
   return spc.StarPilotCard(SimpleNamespace(brand="mazda", flags=flags), SimpleNamespace(alternativeExperience=0))
 
 
-def press_distance(card, frames, toggles, sm=None):
-  """Hold the distance button for `frames` card cycles, then release it. Returns the release
-  frame's car state, and whether the card reported a long press while it was held."""
+def press_distance(card, frames, toggles, sm=None, increase=False):
+  """Hold one side of the distance rocker for `frames` card cycles, then release it. increase=False is the
+  distance(-decrease) button (gapAdjustCruise events), increase=True the distance-increase side. Returns the
+  release frame's car state, and whether the card reported a long press while it was held."""
   sm = sm or make_sm()
-  starpilot_car_state = SimpleNamespace(distancePressed=False)
+  starpilot_car_state = SimpleNamespace(distancePressed=False, distanceIncreasePressed=False)
+  field = "distanceIncreasePressed" if increase else "distancePressed"
   long_pressed = False
   for i in range(frames):
-    starpilot_car_state.distancePressed = True
-    events = [SimpleNamespace(type=spc.ButtonType.gapAdjustCruise, pressed=True)] if i == 0 else []
+    setattr(starpilot_car_state, field, True)
+    events = [SimpleNamespace(type=spc.ButtonType.gapAdjustCruise, pressed=True)] if i == 0 and not increase else []
     card.update(make_car_state(button_events=events), starpilot_car_state, sm, toggles)
     long_pressed |= starpilot_car_state.distanceLongPressed
-  starpilot_car_state.distancePressed = False
-  release = make_car_state(button_events=[SimpleNamespace(type=spc.ButtonType.gapAdjustCruise, pressed=False)])
+  setattr(starpilot_car_state, field, False)
+  events = [] if increase else [SimpleNamespace(type=spc.ButtonType.gapAdjustCruise, pressed=False)]
+  release = make_car_state(button_events=events)
   card.update(release, starpilot_car_state, sm, toggles)
   card.update(make_car_state(), starpilot_car_state, sm, toggles)
   return release, long_pressed
@@ -1056,41 +1059,48 @@ def has_distance_release(car_state):
   return any(be.type == spc.ButtonType.gapAdjustCruise and not be.pressed for be in car_state.buttonEvents)
 
 
+LONG = spc.CRUISE_LONG_PRESS + 10
+
+
 def test_mazda_hybrid_buttons_need_both_flags(monkeypatch, tmp_path):
   assert make_mazda_hybrid_card(monkeypatch, tmp_path).mazda_hybrid
   assert not make_mazda_hybrid_card(monkeypatch, tmp_path, flags=256).mazda_hybrid
   assert not make_mazda_hybrid_card(monkeypatch, tmp_path, flags=512).mazda_hybrid
 
 
-def test_mazda_hybrid_distance_button_with_conditional_experimental(monkeypatch, tmp_path):
+def test_mazda_hybrid_distance_increase_button_switches_the_mode(monkeypatch, tmp_path):
   card = make_mazda_hybrid_card(monkeypatch, tmp_path)
   toggles = make_distance_toggles(conditional_experimental_mode=True)
 
   def ce_status():
     return card.params_memory.get_int("CEStatus")
 
-  # Short tap in standard (MRCC): its normal job, the release still reaches the personality change
-  release, _ = press_distance(card, 10, toggles)
+  press_distance(card, 10, toggles, increase=True)            # tap in standard: nothing here
   assert ce_status() == spc.CEStatus["OFF"]
+  press_distance(card, LONG, toggles, increase=True)          # long press: forced experimental (emulation)
+  assert ce_status() == spc.CEStatus["USER_OVERRIDDEN"]
+  press_distance(card, 10, toggles, increase=True)            # tap in forced experimental: back to standard (MRCC)
+  assert ce_status() == spc.CEStatus["OFF"]
+  press_distance(card, LONG, toggles, increase=True)
+  press_distance(card, LONG, toggles, increase=True)          # long press toggles back
+  assert ce_status() == spc.CEStatus["OFF"]
+  press_distance(card, 5 * LONG, toggles, increase=True)      # any hold past half a second toggles, on release
+  assert ce_status() == spc.CEStatus["USER_OVERRIDDEN"]
+
+
+def test_mazda_hybrid_distance_decrease_button_stays_stock(monkeypatch, tmp_path):
+  card = make_mazda_hybrid_card(monkeypatch, tmp_path)
+  toggles = make_distance_toggles(conditional_experimental_mode=True, bookmark_via_distance_long=True)
+  card.params_memory.put_int("CEStatus", spc.CEStatus["USER_OVERRIDDEN"])
+
+  release, _ = press_distance(card, 10, toggles)              # tap: the personality change, not the mode
   assert has_distance_release(release)
+  assert card.params_memory.get_int("CEStatus") == spc.CEStatus["USER_OVERRIDDEN"]
 
-  # Long press: forced experimental (emulation), and only that -- no personality step
-  release, long_pressed = press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
-  assert ce_status() == spc.CEStatus["USER_OVERRIDDEN"]
-  assert not has_distance_release(release)
-  assert not long_pressed
-
-  # Short tap in forced experimental: back to standard (MRCC), the tap is used up
-  release, _ = press_distance(card, 10, toggles)
-  assert ce_status() == spc.CEStatus["OFF"]
-  assert not has_distance_release(release)
-
-  # Long press toggles back and forth
-  press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
-  assert ce_status() == spc.CEStatus["USER_OVERRIDDEN"]
-  release, _ = press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
-  assert ce_status() == spc.CEStatus["OFF"]
-  assert not has_distance_release(release)
+  _, long_pressed = press_distance(card, LONG, toggles)       # long press: its configured action
+  assert long_pressed
+  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 1
+  assert card.params_memory.get_int("CEStatus") == spc.CEStatus["USER_OVERRIDDEN"]
 
 
 def test_mazda_hybrid_automatic_ce_trigger_counts_as_standard(monkeypatch, tmp_path):
@@ -1098,11 +1108,9 @@ def test_mazda_hybrid_automatic_ce_trigger_counts_as_standard(monkeypatch, tmp_p
   toggles = make_distance_toggles(conditional_experimental_mode=True)
   card.params_memory.put_int("CEStatus", spc.CEStatus["LEAD"])
 
-  release, _ = press_distance(card, 10, toggles)
+  press_distance(card, 10, toggles, increase=True)
   assert card.params_memory.get_int("CEStatus") == spc.CEStatus["LEAD"]
-  assert has_distance_release(release)
-
-  press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
+  press_distance(card, LONG, toggles, increase=True)
   assert card.params_memory.get_int("CEStatus") == spc.CEStatus["USER_OVERRIDDEN"]
 
 
@@ -1111,51 +1119,29 @@ def test_mazda_hybrid_mode_persists_when_asked(monkeypatch, tmp_path):
   toggles = make_distance_toggles(conditional_experimental_mode=True)
   card.params.put_bool("PersistExperimentalState", True)
 
-  press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
+  press_distance(card, LONG, toggles, increase=True)
   assert card.params.get_int("PersistedCEStatus") == spc.CEStatus["USER_OVERRIDDEN"]
-  press_distance(card, 10, toggles)
+  press_distance(card, 10, toggles, increase=True)
   assert card.params.get_int("PersistedCEStatus") == spc.CEStatus["OFF"]
 
 
-def test_mazda_hybrid_distance_button_without_conditional_experimental(monkeypatch, tmp_path):
+def test_mazda_hybrid_mode_button_without_conditional_experimental(monkeypatch, tmp_path):
   card = make_mazda_hybrid_card(monkeypatch, tmp_path)
   toggles = make_distance_toggles()
 
-  press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
+  press_distance(card, LONG, toggles, increase=True)
   assert card.params.get_bool("ExperimentalMode")
-  release, _ = press_distance(card, 10, toggles)
+  press_distance(card, 10, toggles, increase=True)
   assert not card.params.get_bool("ExperimentalMode")
-  assert not has_distance_release(release)
 
 
-def test_mazda_hybrid_very_long_press_leaves_the_mode_alone(monkeypatch, tmp_path):
-  card = make_mazda_hybrid_card(monkeypatch, tmp_path)
-  toggles = make_distance_toggles(conditional_experimental_mode=True, bookmark_via_distance_very_long=True)
-
-  release, _ = press_distance(card, card.very_long_press_threshold + 10, toggles)
-  assert card.params_memory.get_int("CEStatus") == spc.CEStatus["OFF"]
-  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 1
-  assert not has_distance_release(release)
-
-
-def test_mazda_hybrid_forced_experimental_tap_skips_the_short_press_action(monkeypatch, tmp_path):
-  card = make_mazda_hybrid_card(monkeypatch, tmp_path)
-  toggles = make_distance_toggles(conditional_experimental_mode=True, bookmark_via_distance=True)
-
-  press_distance(card, 10, toggles)
-  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 1
-
-  press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
-  press_distance(card, 10, toggles)
-  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 1
-  assert card.params_memory.get_int("CEStatus") == spc.CEStatus["OFF"]
-
-
-def test_mazda_hybrid_distance_button_is_stock_in_safe_mode(monkeypatch, tmp_path):
+def test_mazda_hybrid_mode_button_does_nothing_in_safe_mode_or_without_hybrid(monkeypatch, tmp_path):
   card = make_mazda_hybrid_card(monkeypatch, tmp_path)
   toggles = make_distance_toggles(conditional_experimental_mode=True, safe_mode=True)
-
-  release, long_pressed = press_distance(card, spc.CRUISE_LONG_PRESS + 10, toggles)
+  press_distance(card, LONG, toggles, increase=True)
   assert card.params_memory.get_int("CEStatus") == spc.CEStatus["OFF"]
-  assert has_distance_release(release)
-  assert long_pressed
+
+  card = make_mazda_hybrid_card(monkeypatch, tmp_path, flags=256)
+  toggles = make_distance_toggles(conditional_experimental_mode=True)
+  press_distance(card, LONG, toggles, increase=True)
+  assert card.params_memory.get_int("CEStatus") == spc.CEStatus["OFF"]

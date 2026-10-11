@@ -139,13 +139,14 @@ class Radar(Ecu):
       self.set_speed_kph = decode("CRZ_EVENTS", f.dat)["CRZ_SPEED"]
     elif f.addr == CRZ_BTNS_ADDR and len(f.dat) == 8:
       s = decode("CRZ_BTNS", f.dat)
-      for k in ("RES", "DISTANCE_LESS"):
+      for k in ("RES", "DISTANCE_LESS", "DISTANCE_MORE"):
         v = int(s[k])
         if v and not self.btn_prev.get(k, 0):
           if k == "RES":
             self.res_edge = True
-          elif not self.silent:
-            self.distance_code = 1 + (self.distance_code % 4)
+          elif not self.silent:   # the rocker steps the gap one way or the other (code 1 = 4 bars)
+            step = 1 if k == "DISTANCE_LESS" else -1
+            self.distance_code = 1 + ((self.distance_code - 1 + step) % 4)
         self.btn_prev[k] = v
 
   # ---- ACC ----

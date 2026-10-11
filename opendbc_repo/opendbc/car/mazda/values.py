@@ -85,7 +85,7 @@ class MazdaSafetyFlags(IntFlag):
   # over UDS and openpilot impersonates it. Mutually exclusive with RADAR_INTERCEPTOR.
   RADAR_EMULATION = 256
   # Software hybrid longitudinal: stock MRCC and radar emulation, switched at runtime by the
-  # driver's mode choice on the distance button (see hybrid.py). CarParams flag only -- it is never ORed
+  # driver's mode choice on the distance-increase button (see hybrid.py). CarParams flag only -- it is never ORed
   # into safetyParam: the panda runs the RADAR_EMULATION safety mode in both sub-modes.
   HYBRID_LONG = 512
 

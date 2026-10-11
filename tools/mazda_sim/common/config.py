@@ -19,7 +19,7 @@ class CarOptions:
   torque_interceptor: bool = True        # TorqueInterceptorEnabled
   ti_version: int = 1                    # TI1 has no RAMP_DOWN; 2+ reports it
   radar_emulation: bool = False          # RadarEmulationEnabled: openpilot silences the radar and impersonates it
-  hybrid_long: bool = False              # MazdaHybridLong: MRCC or emulation, chosen with the distance button
+  hybrid_long: bool = False              # MazdaHybridLong: MRCC or emulation, chosen with the distance-increase button
   no_fsc: bool = False                   # NoFSC: car without a Forward Sensing Camera
   no_mrcc: bool = False                  # NoMRCC: car without radar cruise
   manual_transmission: bool = False      # ManualTransmission

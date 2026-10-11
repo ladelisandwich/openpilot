@@ -83,7 +83,7 @@ springBack($("#in-brake"));
 
 const KEYMAP = { ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", ArrowUp: "gas", KeyW: "gas",
                  ArrowDown: "brake", KeyS: "brake" };
-const KEY_BUTTONS = { Digit1: "set_minus", Digit2: "set_plus", Digit3: "resume", Digit4: "cancel", Digit5: "distance", Digit6: "mode" };
+const KEY_BUTTONS = { Digit1: "set_minus", Digit2: "set_plus", Digit3: "resume", Digit4: "cancel", Digit5: "distance", Digit6: "mode", Digit7: "distance_up" };
 
 document.addEventListener("keydown", e => {
   if (e.target.matches("input[type=text], input[type=number], textarea, select")) return;
@@ -103,7 +103,7 @@ function readGamepad() {
     if (!p) continue;
     const ax = Math.abs(p.axes[0]) > 0.06 ? p.axes[0] : 0;
     const gas = p.buttons[7] ? p.buttons[7].value : 0, brake = p.buttons[6] ? p.buttons[6].value : 0;
-    const map = { 0: "set_minus", 1: "cancel", 2: "resume", 3: "distance" };
+    const map = { 0: "set_minus", 1: "cancel", 2: "resume", 3: "distance", 12: "distance_up" };
     p.buttons.forEach((b, i) => {
       if (b.pressed && !padButtons[i]) {
         if (map[i]) pressButton(map[i]);

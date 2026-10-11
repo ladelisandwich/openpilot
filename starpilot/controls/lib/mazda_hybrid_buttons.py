@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""The distance button as the Mazda hybrid longitudinal mode switch.
+"""The distance-increase button as the Mazda hybrid longitudinal mode switch.
 
 With hybrid longitudinal the driver, not an automatic trigger, picks the ACC master:
 forced Experimental Mode drives with openpilot emulating the radar, anything else hands the
-car back to the stock radar (MRCC). The card maps the distance button onto that choice:
+car back to the stock radar (MRCC). The card maps the distance-increase side of the wheel's
+distance rocker (CRZ_BTNS.DISTANCE_MORE) onto that choice, acted on at release:
 
-  - short tap while forced experimental: back to standard (MRCC). The tap is used up, so it
-    does not also change the driving personality. A short tap in standard keeps its normal job.
-  - long press (released between the long and very long thresholds): toggles forced
-    experimental (emulation) <-> standard (MRCC).
-  - very long press: only its own configured action; the mode is left alone.
+  - long press (0.5 s or more): toggles forced experimental (emulation) <-> standard (MRCC).
+  - short tap while forced experimental: back to standard (MRCC); in standard it does nothing here.
+
+The distance-decrease side (openpilot's gapAdjustCruise) keeps its StarPilot functions, the driving
+personality on a tap. While MRCC drives, the stock radar sees either side of the rocker itself and
+steps its own following distance; nothing on this side can stop that.
 
 The mode lives where the car controller reads it (carcontroller._hybrid_experimental): CEStatus
 with Conditional Experimental Mode, the ExperimentalMode param without it.

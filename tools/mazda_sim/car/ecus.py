@@ -532,7 +532,7 @@ class BodyModule(Ecu):
   def _crz_btns(self) -> bytes:
     b = self.body.buttons
     vals = {"CAN_OFF": "cancel" in b, "SET_P": "set_plus" in b, "SET_M": "set_minus" in b, "RES": "resume" in b,
-            "DISTANCE_LESS": "distance" in b, "DISTANCE_MORE": False, "MODE_X": "mode" in b, "MODE_Y": False}
+            "DISTANCE_LESS": "distance" in b, "DISTANCE_MORE": "distance_up" in b, "MODE_X": "mode" in b, "MODE_Y": False}
     sig = {}
     for k, v in vals.items():
       sig[k] = int(v)
