@@ -44,6 +44,12 @@ class CarControllerParams:
       self.TI_STEER_DRIVER_MULTIPLIER = 40     # weight driver torque
       self.TI_STEER_DRIVER_FACTOR = 1         # from dbc
       self.TI_STEER_ERROR_MAX = 350           # max delta between torque cmd and torque motor
+
+      # The TI faults for ~31 s after ~1.85 s at STEER_MAX (torque_interceptor.TiCeilingGuard): a held
+      # ceiling is dipped to TI_CEILING_DIP for TI_CEILING_DIP_FRAMES after TI_CEILING_HOLD_FRAMES.
+      self.TI_CEILING_DIP = 780               # within one STEER_DELTA_DOWN step of the ceiling
+      self.TI_CEILING_HOLD_FRAMES = 120       # 1.2 s
+      self.TI_CEILING_DIP_FRAMES = 20         # 0.2 s
     if CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):
       self.STEER_MAX = 8000
       self.STEER_DELTA_UP = 45              # torque increase per refresh

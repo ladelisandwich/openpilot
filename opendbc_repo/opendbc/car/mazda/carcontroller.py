@@ -11,6 +11,7 @@ from opendbc.car.mazda.longitudinal import CAM_BUS, LONG_COMMAND_STEP, NEAR_STOP
                                            create_longitudinal_messages, create_radar_heartbeat_messages, \
                                            create_radar_tester_present, hold_brake_accel, hold_latched_accel, \
                                            near_stop_brake_accel, update_captured_radar_frames
+from opendbc.car.mazda.torque_interceptor import TiCeilingGuard
 from opendbc.car.mazda.values import CarControllerParams, Buttons, MazdaSafetyFlags
 from openpilot.common.realtime import DT_CTRL
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -43,6 +44,10 @@ class CarController(CarControllerBase):
     self.packer = CANPacker(dbc_names[Bus.pt])
     self.brake_counter = 0
     self.ccp = CarControllerParams(CP)
+    self.ti_ceiling_guard = None
+    if CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR and CP.flags & MazdaSafetyFlags.GEN1:
+      self.ti_ceiling_guard = TiCeilingGuard(self.ccp.TI_CEILING_DIP, self.ccp.TI_CEILING_HOLD_FRAMES,
+                                             self.ccp.TI_CEILING_DIP_FRAMES)
     self.hold_timer_frame = 0
     self.hold_delay_frame = 0
     self.resume_timer_frame = 0
@@ -244,6 +249,14 @@ class CarController(CarControllerBase):
           ti_new_torque = int(round(CC.actuators.torque * self.ccp.STEER_MAX))
           ti_apply_torque = apply_driver_steer_torque_limits(ti_new_torque, self.apply_torque_last,
                                                     CS.out.steeringTorque, self.ccp)
+
+    if self.ti_ceiling_guard is not None:
+      # A command held at the ceiling faults the TI for ~31 s: dip both channels a moment first, so
+      # they stay one command and the next frame's ramp starts from what was sent.
+      ti_cap = self.ti_ceiling_guard.update(ti_apply_torque)
+      if ti_cap is not None:
+        ti_apply_torque = max(-ti_cap, min(ti_cap, ti_apply_torque))
+        apply_torque = max(-ti_cap, min(ti_cap, apply_torque))
 
     self.apply_torque_last = apply_torque
     self.ti_apply_torque_last = ti_apply_torque

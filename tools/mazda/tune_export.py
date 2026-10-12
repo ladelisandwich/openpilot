@@ -157,7 +157,8 @@ class Export:
     self.prev = {}
     self.btn_prev = {STOCK: 0, OP_ECHO: 0}
     self.meta = {"build": None, "branch": None, "carParams": None, "params": {}, "segments": []}
-    self.counts = {"rows": 0, "lat_s": 0.0, "ceil_s": 0.0, "sat_s": 0.0, "lowspeed_lat_s": 0.0, "takeovers": 0, "handbacks": 0}
+    self.counts = {"rows": 0, "lat_s": 0.0, "ceil_s": 0.0, "sat_s": 0.0, "lowspeed_lat_s": 0.0, "takeovers": 0, "handbacks": 0,
+                   "ti_faults": 0}
 
   def event(self, kind: str, detail) -> None:
     self.events_out.write(f"{self.t:.3f},{kind},{json.dumps(detail)}\n")
@@ -260,6 +261,8 @@ class Export:
       for c in evt.can:
         a, d, src = c.address, c.dat, c.src
         if src == 1 and a == TI_FEEDBACK and len(d) >= 7:
+          if d[4] and not r["ti_vi"]:
+            self.counts["ti_faults"] += 1   # a VIOL code raised (0x11: the ceiling held too long)
           r["ti_drv"], r["ti_st"], r["ti_vi"] = d[0] - 127, d[3], d[4]
           self.edge("ti", (d[3], d[4], d[5]), "ti", lambda v: f"TI state {v[0]} VIOL 0x{v[1]:02x} ERROR 0x{v[2]:02x}")
         elif src == STOCK and a == STEER_TORQUE:
@@ -369,7 +372,8 @@ def main():
     s = meta["summary"]
     print(f"{n}  build {meta['build']}  {meta['seconds'] / 60:.1f} min  lateral {s['lat_s'] / 60:.1f} min " +
           f"(below 20 mph {s['lowspeed_lat_s'] / 60:.1f})  TI near its ceiling {s['ceil_s']:.0f} s  saturated {s['sat_s']:.0f} s  " +
-          f"takeovers {s['takeovers']:.0f} hand-backs {s['handbacks']:.0f}  ({meta['export_s']:.0f} s to read)")
+          f"TI faults {s['ti_faults']:.0f}  takeovers {s['takeovers']:.0f} hand-backs {s['handbacks']:.0f}  " +
+          f"({meta['export_s']:.0f} s to read)")
 
 
 if __name__ == "__main__":

@@ -1215,13 +1215,20 @@ TRAILER_LATERAL_FRICTION_GAIN = 0.03
 # error near the apex of a turn swung the request from full into the turn toward full out of it. The TI
 # released, the wheel unwound, and the turn was lost while the TI climbed back (CX-9 routes
 # 00000067/00000068, 12-16 mph). Scaling the low-speed error (P, I and the friction input, on top of
-# whatever SteerKP is set) keeps the loop proportional there. The feedforward trim stops a sharp turn's
-# request from pinning the TI at its ceiling, which turns the car tighter than planned. Both are exactly
-# 1.0 from 30 mph up, where the unscaled gains tracked smoothly with the TI alone (route 68, 31-34 mph).
-MAZDA_TI_ERROR_SCALE_BP = [7.5, 10.0, 13.5]  # m/s
-MAZDA_TI_ERROR_SCALE_V = [0.15, 0.4, 1.0]
+# whatever SteerKP is set) keeps the loop proportional there. Both are exactly 1.0 from 30 mph up, where
+# the unscaled gains tracked smoothly with the TI alone (route 68, 31-34 mph).
+# A week on these scales at first (routes 00000022-00000035, 0.15 error and 0.5 feedforward up to
+# 17 mph) showed the opposite problem: no oscillation (the error was slow, not 0.5-3 Hz), but the car
+# reached only 81-88% of the lateral accel asked for below 17 mph against ~100% above 30 mph, and the
+# proportional gain with the low-speed factor dipped at 17 mph to about a third of its 30 mph value.
+# Every time the TI let go in a turn that week it was its ceiling fault (opendbc mazda
+# torque_interceptor.TiCeilingGuard), which the car controller now avoids. So the feedforward trim is
+# eased and the error scale keeps its parking-speed value only below 11 mph, which evens the gain out
+# from there to 30 mph.
+MAZDA_TI_ERROR_SCALE_BP = [5.0, 7.5, 10.0, 13.5]  # m/s
+MAZDA_TI_ERROR_SCALE_V = [0.15, 0.3, 0.55, 1.0]
 MAZDA_TI_FF_SCALE_BP = [7.5, 13.5]  # m/s
-MAZDA_TI_FF_SCALE_V = [0.5, 1.0]
+MAZDA_TI_FF_SCALE_V = [0.8, 1.0]
 
 _FLM_ACTIVE_OVERRIDES_TEXT = ""
 _FLM_ACTIVE_OVERRIDES = {}

@@ -2124,10 +2124,11 @@ class TestLatControl:
 
   def test_mazda_ti_scales_fade_out_by_30_mph(self):
     assert get_mazda_ti_error_scale(0.0) == pytest.approx(0.15)
-    assert get_mazda_ti_error_scale(7.5) == pytest.approx(0.15)
-    assert get_mazda_ti_error_scale(10.0) == pytest.approx(0.4)
-    assert get_mazda_ti_ff_scale(0.0) == pytest.approx(0.5)
-    assert get_mazda_ti_ff_scale(7.5) == pytest.approx(0.5)
+    assert get_mazda_ti_error_scale(5.0) == pytest.approx(0.15)
+    assert get_mazda_ti_error_scale(7.5) == pytest.approx(0.3)
+    assert get_mazda_ti_error_scale(10.0) == pytest.approx(0.55)
+    assert get_mazda_ti_ff_scale(0.0) == pytest.approx(0.8)
+    assert get_mazda_ti_ff_scale(7.5) == pytest.approx(0.8)
     for v_ego in (13.5, 20.0, 35.0):
       assert get_mazda_ti_error_scale(v_ego) == 1.0
       assert get_mazda_ti_ff_scale(v_ego) == 1.0
@@ -2182,6 +2183,15 @@ class TestLatControl:
     assert ti.is_mazda_ti and not stock.is_mazda_ti
     assert abs(stock.pid.p) > 0.0
     assert ti.pid.p == pytest.approx(stock.pid.p * get_mazda_ti_error_scale(v_ego), rel=1e-6)
+
+  def test_mazda_ti_low_speed_gain_has_no_hole(self):
+    # The proportional response per unit of lateral-accel error, low-speed factor included, from 11 to 30
+    # mph. The first scales left it at a third of 30 mph's at 17 mph, where routes 00000022-35 undershot.
+    gains = {}
+    for v_ego in (5.0, 6.0, 7.5, 8.75, 10.0, 12.0, 13.5):
+      ti, _ = self._run_mazda_torque(v_ego, True, 0.02, 0.005)
+      gains[v_ego] = abs(ti.pid.p) / (0.005 * v_ego ** 2)
+    assert min(gains.values()) >= 0.7 * gains[13.5], gains
 
   @parameterized.expand([(3.0,), (5.0,), (8.5,), (12.0,)])
   def test_mazda_ti_softens_low_speed_integral(self, v_ego):
