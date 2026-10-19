@@ -383,6 +383,12 @@ class CarController(CarControllerBase):
             self.resume_release_frames = RESUME_RELEASE_FRAMES
           elif self.resume_release_frames > 0:
             self.resume_release_frames -= 1
+            if self.resume_release_frames == 0 and CS.out.standstill and planner_release_requested and not stopping:
+              # Still standing when the window runs out: the car's hold can take longer than that to
+              # let go, and the standstill hold below would then brake against openpilot's own start.
+              # Stay released while openpilot still asks to go (routes 0000002b at 426 s, 0000002e at
+              # 880 s: the command went back to the hold brake and the driver had to press the gas).
+              self.resume_release_frames = 1
 
           release_brake = self.resume_release_frames > 0
           release_hold_requested = base_release_hold_requested or resume_unlatch_requested or release_brake
