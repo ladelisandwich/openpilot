@@ -32,6 +32,11 @@ Row columns (units: m/s, m/s^2, deg, TI/EPS counts; flags 0/1):
   st_alive op_alive rlead      stock radar sending CRZ_INFO, openpilot's replacement frames on the bus, radar lead
   ld ld_d ld_v                 vision lead status, distance, relative speed (radarState.leadOne)
   exp pers                     experimental mode, driving personality
+  stand res sstop              car standstill, openpilot asking to resume (carControl.cruiseControl.resume), planner shouldStop
+  st_hold op_hold op_unl       CRZ_INFO stop request (STOPPING_MAYBE) from the stock radar / ours, ours RESUME_UNLATCHING_MAYBE
+  st_ph op_ph                  CRZ_CTRL stop phase (RADAR_LEAD_RELATIVE_DISTANCE: 4 hold, 3 stop-go/resume), stock / ours
+Each engaged stop is also an event ("stop") saying how it ended: openpilot RES, on its own, the driver's gas or RES,
+or never (disengaged at a standstill), and when openpilot first asked to go.
 """
 import argparse
 import gzip
@@ -65,7 +70,8 @@ PARAM_KEYS = re.compile("|".join(("Steer", "Lateral", "Torque", "Lat", "NNFF", "
 
 COLUMNS = ("t seg v a steer rate drv prs lat en long cc_tq out_tq sp got err p i d f out sat dcurv curv mcurv roll laf fric " +
            "ti_cmd stock_cmd ti_st ti_vi ti_drv eps_sen eps_mot blk eff blink flt cc_acc out_acc lstate atgt " +
-           "gas brk gas_pct brk_p acc_x cruise vset st_cmd st_ok op_cmd st_alive op_alive rlead ld ld_d ld_v exp pers").split()
+           "gas brk gas_pct brk_p acc_x cruise vset st_cmd st_ok op_cmd st_alive op_alive rlead ld ld_d ld_v exp pers " +
+           "stand res sstop st_hold op_hold op_unl st_ph op_ph").split()
 ROUND = {"t": 3, "v": 3, "a": 3, "steer": 2, "rate": 1, "drv": 1, "cc_tq": 4, "out_tq": 4, "sp": 3, "got": 3, "err": 3,
          "p": 4, "i": 4, "d": 4, "f": 4, "out": 4, "dcurv": 6, "curv": 6, "mcurv": 6, "roll": 4, "laf": 3, "fric": 3,
          "eps_sen": 1, "eps_mot": 1, "cc_acc": 3, "out_acc": 3, "atgt": 3, "gas_pct": 1, "acc_x": 2, "vset": 2,
@@ -146,8 +152,9 @@ class Export:
   def __init__(self, events_out):
     self.r = dict.fromkeys(COLUMNS)
     flags = ("lat", "en", "long", "prs", "sat", "gas", "brk", "cruise", "st_alive", "op_alive", "rlead", "ld", "exp", "flt", "blink",
-             "st_ok")
+             "st_ok", "stand", "res", "sstop", "st_hold", "op_hold", "op_unl")
     self.r.update(dict.fromkeys(flags, 0))
+    self.stop = None                # the engaged stop in progress (see track_stop)
     self.events_out = events_out
     self.t0 = None
     self.t = 0.0
@@ -158,7 +165,7 @@ class Export:
     self.btn_prev = {STOCK: 0, OP_ECHO: 0}
     self.meta = {"build": None, "branch": None, "carParams": None, "params": {}, "segments": []}
     self.counts = {"rows": 0, "lat_s": 0.0, "ceil_s": 0.0, "sat_s": 0.0, "lowspeed_lat_s": 0.0, "takeovers": 0, "handbacks": 0,
-                   "ti_faults": 0}
+                   "ti_faults": 0, "stops": 0, "stops_openpilot_went": 0, "stops_driver_went": 0, "stops_never_went": 0}
 
   def event(self, kind: str, detail) -> None:
     self.events_out.write(f"{self.t:.3f},{kind},{json.dumps(detail)}\n")
@@ -197,7 +204,7 @@ class Export:
       r["seg"] = seg
       r["v"], r["a"], r["steer"], r["rate"] = cs.vEgo, cs.aEgo, cs.steeringAngleDeg, cs.steeringRateDeg
       r["drv"], r["prs"], r["gas"], r["brk"] = cs.steeringTorque, cs.steeringPressed, cs.gasPressed, cs.brakePressed
-      r["vset"], r["flt"] = cs.cruiseState.speed, cs.steerFaultTemporary
+      r["vset"], r["flt"], r["stand"] = cs.cruiseState.speed, cs.steerFaultTemporary, cs.standstill
       r["blink"] = -1 if cs.leftBlinker else (1 if cs.rightBlinker else 0)
       if self.t >= self.next_row:
         busy = r["en"] or r["lat"] or r["cruise"]
@@ -205,11 +212,13 @@ class Export:
         r["t"] = self.t
         rows_out.write(",".join(fmt(c, r[c]) for c in COLUMNS) + "\n")
         self.count_row()
+      self.track_stop()
     elif w == "carControl":
       cc = evt.carControl
       r["lat"], r["en"], r["long"] = cc.latActive, cc.enabled, cc.longActive
       r["cc_tq"], r["cc_acc"] = cc.actuators.torque, cc.actuators.accel
       r["lstate"] = str(cc.actuators.longControlState)
+      r["res"] = cc.cruiseControl.resume
       self.edge("en", bool(cc.enabled), "engaged", lambda v: "openpilot engaged" if v else "openpilot disengaged")
       self.edge("lat", bool(cc.latActive), "lateral", lambda v: "lateral active" if v else "lateral off")
     elif w == "carOutput":
@@ -232,6 +241,7 @@ class Export:
       r["laf"], r["fric"] = ltp.latAccelFactorFiltered, ltp.frictionCoefficientFiltered
     elif w == "longitudinalPlan":
       r["atgt"] = float(getattr(evt.longitudinalPlan, "aTarget", 0.0))
+      r["sstop"] = bool(getattr(evt.longitudinalPlan, "shouldStop", False))
     elif w == "radarState":
       lead = evt.radarState.leadOne
       r["ld"], r["ld_d"], r["ld_v"] = lead.status, lead.dRel, lead.vRel
@@ -273,11 +283,17 @@ class Export:
           if src == STOCK:
             self.stock_last = self.tc
             r["st_cmd"], r["st_ok"] = accel_cmd(d), bool(d[4] & 0x04)
+            r["st_hold"] = int(sig(a, d, "STOPPING_MAYBE"))
           else:
             self.op_last = self.tc
             r["op_cmd"] = accel_cmd(d)
-        elif src == STOCK and a == CRZ_CTRL and len(d) >= 8:
-          r["rlead"] = bool(sig(a, d, "RADAR_HAS_LEAD"))
+            r["op_hold"], r["op_unl"] = int(sig(a, d, "STOPPING_MAYBE")), int(sig(a, d, "RESUME_UNLATCHING_MAYBE"))
+        elif a == CRZ_CTRL and src in (STOCK, OP_ECHO) and len(d) >= 8:
+          if src == STOCK:
+            r["rlead"] = bool(sig(a, d, "RADAR_HAS_LEAD"))
+            r["st_ph"] = int(sig(a, d, "RADAR_LEAD_RELATIVE_DISTANCE"))
+          else:
+            r["op_ph"] = int(sig(a, d, "RADAR_LEAD_RELATIVE_DISTANCE"))
         elif src == STOCK and a == PEDALS and len(d) >= 1:
           r["cruise"] = bool(d[0] & 0x08)
           self.edge("cruise", r["cruise"], "cruise", lambda v: "cruise ENGAGED (car)" if v else "cruise DROPPED (car)")
@@ -292,6 +308,8 @@ class Export:
             if changed & mask:
               who = "driver" if src == STOCK else "openpilot"
               self.event("button", f"{who} {name} {'down' if b & mask else 'up'}")
+              if self.stop is not None and b & mask and name == "RES":
+                self.stop["driver_res" if src == STOCK else "openpilot_res"] = True
           self.btn_prev[src] = b
         elif src == OP_ECHO and a == RADAR_UDS and len(d) >= 3 and d[0] == 2 and (d[1], d[2]) in UDS_NAMES:
           self.event("uds", f"openpilot -> radar: {UDS_NAMES[(d[1], d[2])]}")
@@ -305,6 +323,40 @@ class Export:
           r["ti_cmd"] = lkas_request(c.dat)
         elif c.src == 0 and c.address == STOCK_COMMAND:
           r["stock_cmd"] = lkas_request(c.dat)
+
+  def track_stop(self) -> None:
+    """An engaged stop runs from the car standing still to it moving off (or openpilot disengaging)."""
+    r, s = self.r, self.stop
+    v = r["v"] or 0.0
+    if s is None:
+      if r["en"] and r["stand"]:
+        self.stop = {"t": self.t, "mode": "openpilot" if r["op_alive"] else "MRCC", "asked": None, "gas": False,
+                     "driver_res": False, "openpilot_res": False}
+      return
+    if r["res"] and s["asked"] is None:
+      s["asked"] = self.t
+    s["gas"] |= bool(r["gas"])
+    if v > 0.5 or not r["en"]:
+      self.end_stop(moved=v > 0.5)
+
+  def end_stop(self, moved: bool, why: str = "") -> None:
+    s, k = self.stop, self.counts
+    self.stop = None
+    if not moved:
+      went, key = why or "never: openpilot disengaged at a standstill", "stops_never_went"
+    elif s["gas"]:
+      went, key = "driver's gas", "stops_driver_went"
+    elif s["driver_res"]:
+      went, key = "driver's RES", "stops_driver_went"
+    elif s["openpilot_res"]:
+      went, key = "openpilot's RES", "stops_openpilot_went"
+    else:
+      went, key = "on its own", "stops_openpilot_went"
+    k["stops"] += 1
+    k[key] += 1
+    asked = None if s["asked"] is None else round(self.t - s["asked"], 1)
+    self.event("stop", {"mode": s["mode"], "stopped_s": round(self.t - s["t"], 1), "went": went,
+                        "openpilot_asked_to_go_s_before": asked})
 
   def count_row(self) -> None:
     r, dt, k = self.r, 1.0 / ROW_HZ, self.counts   # lateral is only active on busy (ROW_HZ) rows
@@ -336,6 +388,8 @@ def export_route(name: str, segs: list, out_dir: str) -> dict:
           ex.feed(evt, seg, rows_out)
       except Exception as e:   # a truncated last segment is normal after a power cut
         ex.meta["segments"][-1]["error"] = str(e)
+    if ex.stop is not None:
+      ex.end_stop(moved=False, why="never: the route ended at a standstill")
   for p, final in zip(tmp, (rows_path, events_path), strict=True):
     os.replace(p, final)
   ex.meta.update({"route": name, "seconds": round(ex.t, 1), "export_s": round(time.monotonic() - start, 1), "rowHz": ROW_HZ, "idleRowHz": IDLE_ROW_HZ,
@@ -372,7 +426,8 @@ def main():
     s = meta["summary"]
     print(f"{n}  build {meta['build']}  {meta['seconds'] / 60:.1f} min  lateral {s['lat_s'] / 60:.1f} min " +
           f"(below 20 mph {s['lowspeed_lat_s'] / 60:.1f})  TI near its ceiling {s['ceil_s']:.0f} s  saturated {s['sat_s']:.0f} s  " +
-          f"TI faults {s['ti_faults']:.0f}  takeovers {s['takeovers']:.0f} hand-backs {s['handbacks']:.0f}  " +
+          f"TI faults {s['ti_faults']:.0f}  stops {s['stops']:.0f} (openpilot went {s['stops_openpilot_went']:.0f}, " +
+          f"you went {s['stops_driver_went']:.0f}, never {s['stops_never_went']:.0f})  takeovers {s['takeovers']:.0f} hand-backs {s['handbacks']:.0f}  " +
           f"({meta['export_s']:.0f} s to read)")
 
 
