@@ -18,6 +18,11 @@ from openpilot.starpilot.common.experimental_state import (
 from openpilot.starpilot.common.favorite_slots import FAVORITE_ACTION_TRAFFIC_MODE_COUNTER, toggle_favorite_slot
 from openpilot.starpilot.common.starpilot_utilities import is_FrogsGoMoo
 from openpilot.starpilot.common.starpilot_variables import ERROR_LOGS_PATH, GearShifter, NON_DRIVING_GEARS
+from openpilot.starpilot.controls.lib.mazda_hybrid_buttons import (
+  hybrid_forced_experimental,
+  mazda_hybrid_buttons_active,
+  set_hybrid_forced_experimental,
+)
 
 HYUNDAI_MAIN_CRUISE_AOL_CONFIRM_TIMEOUT_FRAMES = 100
 
@@ -69,6 +74,9 @@ class StarPilotCard:
     self._favorite_traffic_mode_counter = self.params_memory.get_int(FAVORITE_ACTION_TRAFFIC_MODE_COUNTER)
 
     self.gap_counter = 0
+    self.mazda_hybrid = mazda_hybrid_buttons_active(CP)
+    self.distance_increase_counter = 0
+    self.distance_increase_previously = False
     self.cancel_counter = 0
     self._distance_poll_counter = 0
     self._onroad_distance_pressed = False
@@ -135,6 +143,24 @@ class StarPilotCard:
       sync_manual_cc_state(self.params, override_value)
     else:
       self.params.put_bool_nonblocking("ExperimentalMode", not sm["selfdriveState"].experimentalMode)
+
+  def update_hybrid_mode_button(self, starpilotCarState, starpilot_toggles):
+    """Mazda hybrid longitudinal: the distance-increase button picks emulation or MRCC (see mazda_hybrid_buttons).
+    Acted on at release: a long press toggles the mode, a tap in forced experimental goes back to standard."""
+    pressed = bool(getattr(starpilotCarState, "distanceIncreasePressed", False))
+    if pressed:
+      self.distance_increase_counter += 1
+    released = self.distance_increase_previously and not pressed
+    self.distance_increase_previously = pressed
+    if not released:
+      return
+
+    held, self.distance_increase_counter = self.distance_increase_counter, 0
+    forced = hybrid_forced_experimental(self.params, self.params_memory, starpilot_toggles)
+    if held >= self.long_press_threshold:
+      set_hybrid_forced_experimental(self.params, self.params_memory, starpilot_toggles, not forced)
+    elif forced:
+      set_hybrid_forced_experimental(self.params, self.params_memory, starpilot_toggles, False)
 
   def update(self, carState, starpilotCarState, sm, starpilot_toggles):
     self.switchback_mode_enabled = self.params_memory.get_bool("SwitchbackModeEnabled")
@@ -290,6 +316,9 @@ class StarPilotCard:
       ]
 
     self.distancePressed_previously = starpilotCarState.distancePressed
+
+    if self.mazda_hybrid and not getattr(starpilot_toggles, "safe_mode", False):
+      self.update_hybrid_mode_button(starpilotCarState, starpilot_toggles)
 
     if not starpilotCarState.distancePressed and 1 <= self.gap_counter < self.long_press_threshold:
       self.handle_button_event("distance", sm, starpilot_toggles)

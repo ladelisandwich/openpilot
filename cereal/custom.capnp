@@ -99,6 +99,7 @@ struct StarPilotCarState @0xf35cc4560bbf6ec2 {
   accelHardCruise @28 :Bool;  # current/releasing accel cruise button came from GM hard-press signal
   decelHardCruise @29 :Bool;  # current/releasing decel cruise button came from GM hard-press signal
   pulseAndGlide @30 :Bool;  # developer-only wheel-button pulse-and-glide mode is enabled
+  distanceIncreasePressed @31 :Bool;  # a separate distance-increase button is held (Mazda GEN1: CRZ_BTNS.DISTANCE_MORE)
 }
 
 struct StarPilotDeviceState @0xda96579883444c35 {

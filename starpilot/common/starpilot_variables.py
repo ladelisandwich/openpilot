@@ -683,6 +683,7 @@ class StarPilotVariables:
     toggle.force_offroad = self.params.get_bool("ForceOffroad")
     toggle.force_onroad = self.params.get_bool("ForceOnroad")
     toggle.safe_mode = self.params.get_bool("SafeMode")
+    toggle.mazda_steer_limit_classifier = self.params.get_bool("MazdaSteerLimitClassifier")
     toggle.simple_mode = self.params.get_bool("SimpleMode")
 
     toggle.is_metric = self.params.get_bool("IsMetric")
