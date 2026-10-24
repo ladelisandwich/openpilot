@@ -45,9 +45,15 @@ class CarControllerParams:
       self.TI_STEER_DRIVER_FACTOR = 1         # from dbc
       self.TI_STEER_ERROR_MAX = 350           # max delta between torque cmd and torque motor
 
-      # The TI faults for ~31 s after ~1.85 s at STEER_MAX (torque_interceptor.TiCeilingGuard): a held
-      # ceiling is dipped to TI_CEILING_DIP for TI_CEILING_DIP_FRAMES after TI_CEILING_HOLD_FRAMES.
-      self.TI_CEILING_DIP = 780               # within one STEER_DELTA_DOWN step of the ceiling
+      # The TI's input to the EPS stops growing at about 650 counts of command: the EPS torque sensor
+      # reads 32-34 from 600 up and no more at 800 (CX-9 routes 00000022-35, 11 h), and the TI faults
+      # for ~31 s after ~1.85 s at 800 (torque_interceptor.TiCeilingGuard). So both channels are
+      # clamped at TI_CEILING, and the torque controller's limit sits there as well (latcontrol_torque:
+      # steer_max = TI_CEILING / STEER_MAX), so a pinned TI is reported as saturation instead of hidden
+      # behind the command/output mismatch. As a backstop, a command held above TI_CEILING_DIP is
+      # dipped to it for TI_CEILING_DIP_FRAMES after TI_CEILING_HOLD_FRAMES.
+      self.TI_CEILING = 700
+      self.TI_CEILING_DIP = 680               # within one STEER_DELTA_DOWN step of the ceiling
       self.TI_CEILING_HOLD_FRAMES = 120       # 1.2 s
       self.TI_CEILING_DIP_FRAMES = 20         # 0.2 s
     if CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):

@@ -37,7 +37,8 @@ from openpilot.selfdrive.controls.lib.latcontrol_vehicle_tunes import (
   get_kona_non_scc_highway_transition_output_scale,
   get_kia_ev6_center_output_scale,
   get_mazda_ti_error_scale,
-  get_mazda_ti_ff_scale,
+  get_mazda_ti_friction_scale,
+  get_mazda_ti_lat_accel_factor_scale,
   get_sonata_hybrid_center_output_scale,
   get_prius_center_taper_scale,
   KIA_FORTE_BASE_LAT_ACCEL_FACTOR_MULT,
@@ -171,6 +172,21 @@ from openpilot.selfdrive.controls.lib.latcontrol_torque import (
   get_volt_plexy_friction_scale,
   get_volt_plexy_friction_threshold,
 )
+
+
+
+def CarInterface_cx9_params(torque_interceptor=True, friction=None):
+  """A CX-9 2021 CarParams the way the interface sets up a TI car (steering down to a stop), with or without the TI flag."""
+  CarInterface = interfaces[MAZDA.MAZDA_CX9_2021]
+  CP = CarInterface.get_non_essential_params(MAZDA.MAZDA_CX9_2021)
+  CP.flags = int(CP.flags) & ~int(MazdaSafetyFlags.TORQUE_INTERCEPTOR) & 0xFFFFFFFF
+  if torque_interceptor:
+    CP.flags = int(CP.flags) | int(MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+  CP.minSteerSpeed = 0.0
+  CP.steerAtStandstill = True
+  if friction is not None:
+    CP.lateralTuning.torque.friction = friction
+  return CP
 
 
 class TestLatControl:
@@ -2123,18 +2139,23 @@ class TestLatControl:
     assert abs(tuned_output) >= abs(base_output)
 
   def test_mazda_ti_scales_fade_out_by_30_mph(self):
-    assert get_mazda_ti_error_scale(0.0) == pytest.approx(0.15)
-    assert get_mazda_ti_error_scale(5.0) == pytest.approx(0.15)
-    assert get_mazda_ti_error_scale(7.5) == pytest.approx(0.3)
-    assert get_mazda_ti_error_scale(10.0) == pytest.approx(0.55)
-    assert get_mazda_ti_ff_scale(0.0) == pytest.approx(0.8)
-    assert get_mazda_ti_ff_scale(7.5) == pytest.approx(0.8)
+    assert get_mazda_ti_error_scale(0.0) == pytest.approx(0.2)
+    assert get_mazda_ti_error_scale(5.0) == pytest.approx(0.2)
+    assert get_mazda_ti_error_scale(7.5) == pytest.approx(0.4)
+    assert get_mazda_ti_error_scale(10.0) == pytest.approx(0.65)
     for v_ego in (13.5, 20.0, 35.0):
       assert get_mazda_ti_error_scale(v_ego) == 1.0
-      assert get_mazda_ti_ff_scale(v_ego) == 1.0
     speeds = np.linspace(0.0, 20.0, 81)
     assert np.all(np.diff([get_mazda_ti_error_scale(v) for v in speeds]) >= 0.0)
-    assert np.all(np.diff([get_mazda_ti_ff_scale(v) for v in speeds]) >= 0.0)
+    # the measured plant: more lateral accel per unit of torque and more friction at low speed, a dip near 15 m/s,
+    # the learned highway value from 18.75 m/s (gain) and 21 m/s (friction) up
+    assert get_mazda_ti_lat_accel_factor_scale(0.0) == get_mazda_ti_lat_accel_factor_scale(8.75) == pytest.approx(1.3)
+    assert get_mazda_ti_lat_accel_factor_scale(15.0) == pytest.approx(0.9)
+    assert get_mazda_ti_friction_scale(0.0) == get_mazda_ti_friction_scale(5.0) == pytest.approx(1.6)
+    assert get_mazda_ti_friction_scale(13.5) == pytest.approx(1.5)
+    for v_ego in (21.0, 25.0, 35.0):
+      assert get_mazda_ti_lat_accel_factor_scale(v_ego) == 1.0
+      assert get_mazda_ti_friction_scale(v_ego) == 1.0
 
   @staticmethod
   def _run_mazda_torque(v_ego, torque_interceptor, curvature, curvature_error, frames=150, steer_kp=0.6, friction=None):
@@ -2143,14 +2164,7 @@ class TestLatControl:
     # The controller first settles on the requested curvature, then holds curvature_error short of it
     # with the integrator starting from zero.
     CarInterface = interfaces[MAZDA.MAZDA_CX9_2021]
-    CP = CarInterface.get_non_essential_params(MAZDA.MAZDA_CX9_2021)
-    CP.flags = int(CP.flags) & ~int(MazdaSafetyFlags.TORQUE_INTERCEPTOR) & 0xFFFFFFFF
-    if torque_interceptor:
-      CP.flags = int(CP.flags) | int(MazdaSafetyFlags.TORQUE_INTERCEPTOR)
-    CP.minSteerSpeed = 0.0
-    CP.steerAtStandstill = True
-    if friction is not None:
-      CP.lateralTuning.torque.friction = friction
+    CP = CarInterface_cx9_params(torque_interceptor, friction)
     CI = CarInterface(CP, custom.StarPilotCarParams.new_message())
     controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL)
     VM = VehicleModel(CP)
@@ -2190,7 +2204,8 @@ class TestLatControl:
     gains = {}
     for v_ego in (5.0, 6.0, 7.5, 8.75, 10.0, 12.0, 13.5):
       ti, _ = self._run_mazda_torque(v_ego, True, 0.02, 0.005)
-      gains[v_ego] = abs(ti.pid.p) / (0.005 * v_ego ** 2)
+      # in torque terms: the lateral-accel correction is converted by the speed-shaped latAccelFactor
+      gains[v_ego] = abs(ti.pid.p) / float(ti.torque_params.latAccelFactor) / (0.005 * v_ego ** 2)
     assert min(gains.values()) >= 0.7 * gains[13.5], gains
 
   @parameterized.expand([(3.0,), (5.0,), (8.5,), (12.0,)])
@@ -2202,19 +2217,51 @@ class TestLatControl:
     assert abs(stock.pid.i) > 1e-4
     assert ti.pid.i == pytest.approx(stock.pid.i * get_mazda_ti_error_scale(v_ego), rel=1e-6)
 
-  @parameterized.expand([(3.0,), (5.0,), (8.5,), (10.0,), (12.0,)])
-  def test_mazda_ti_trims_low_speed_feedforward(self, v_ego):
-    # with friction compensation off, pid.f is the feedforward alone
-    ti, _ = self._run_mazda_torque(v_ego, True, 0.02, 0.0, friction=0.0)
-    stock, _ = self._run_mazda_torque(v_ego, False, 0.02, 0.0, friction=0.0)
+  @parameterized.expand([(3.0,), (5.0,), (8.5,), (10.0,), (12.0,), (15.0,)])
+  def test_mazda_ti_shapes_the_torque_by_speed(self, v_ego):
+    # with friction compensation off, pid.f is the feedforward alone: the same lateral accel (0.5 m/s^2, inside the TI
+    # car's limit at every speed) is asked for, converted to torque by the speed-shaped latAccelFactor
+    ti, ti_out = self._run_mazda_torque(v_ego, True, 0.5 / v_ego ** 2, 0.0, friction=0.0)
+    stock, stock_out = self._run_mazda_torque(v_ego, False, 0.5 / v_ego ** 2, 0.0, friction=0.0)
     assert abs(stock.pid.f) > 0.0
-    assert ti.pid.f == pytest.approx(stock.pid.f * get_mazda_ti_ff_scale(v_ego), rel=1e-6)
+    assert ti.pid.f == pytest.approx(stock.pid.f, rel=1e-6)
+    assert ti_out == pytest.approx(stock_out / get_mazda_ti_lat_accel_factor_scale(v_ego), rel=1e-4)   # a Float32 field
+    assert float(ti.torque_params.friction) == 0.0
 
-  @parameterized.expand([(13.5,), (20.0,), (31.0,)])
-  def test_mazda_ti_unchanged_from_30_mph(self, v_ego):
-    for curvature_error in (0.0, 0.0005, -0.0008):
-      ti, ti_out = self._run_mazda_torque(v_ego, True, 0.004, curvature_error)
-      stock, stock_out = self._run_mazda_torque(v_ego, False, 0.004, curvature_error)
+  @parameterized.expand([(5.0,), (12.0,), (25.0,)])
+  def test_mazda_ti_speed_shape_rides_on_the_live_params(self, v_ego):
+    ti, _ = self._run_mazda_torque(v_ego, True, 0.01, 0.0)
+    ti.update_live_torque_params(2.0, 0.0, 0.2)
+    ti.update(True, car.CarState.new_message(vEgo=v_ego), VehicleModel(CarInterface_cx9_params()), log.LiveParametersData.new_message(),
+              False, 0.0, False, 0.2, None, None, SimpleNamespace())
+    assert float(ti.torque_params.latAccelFactor) == pytest.approx(2.0 * get_mazda_ti_lat_accel_factor_scale(v_ego), rel=1e-6)
+    assert float(ti.torque_params.friction) == pytest.approx(0.2 * get_mazda_ti_friction_scale(v_ego), rel=1e-6)
+    # the PID limits follow: the TI ceiling (700 of 800 counts) at the shaped gain
+    assert ti.steer_max == pytest.approx(700 / 800)
+    assert ti.pid.pos_limit == pytest.approx(ti.steer_max * float(ti.torque_params.latAccelFactor), rel=1e-6)
+
+  def test_mazda_ti_saturates_at_the_ti_ceiling(self):
+    # a turn no torque can make: the TI car's output stops at 700/800 and reports saturation, the stock EPS car's at 1.0
+    outputs = {}
+    for torque_interceptor in (True, False):
+      CP = CarInterface_cx9_params(torque_interceptor)
+      CI = interfaces[MAZDA.MAZDA_CX9_2021](CP, custom.StarPilotCarParams.new_message())
+      controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL)
+      CS = car.CarState.new_message(vEgo=30.0)
+      params = log.LiveParametersData.new_message(steerRatio=CP.steerRatio, stiffnessFactor=1.0)
+      for _ in range(1000):
+        out, _, lac_log = controller.update(True, CS, VehicleModel(CP), params, False, 0.01, False, 0.2, None, None, SimpleNamespace())
+      outputs[torque_interceptor] = (abs(out), lac_log.saturated)
+    assert outputs[True] == (pytest.approx(700 / 800), True)
+    assert outputs[False] == (pytest.approx(1.0), True)
+
+  @parameterized.expand([(21.0,), (25.0,), (31.0,)])
+  def test_mazda_ti_unchanged_from_47_mph(self, v_ego):
+    # a gentle curve, inside the TI car's 700-count limit at every speed here: the only difference left is that limit
+    for curvature_error in (0.0, 0.0002, -0.0003):
+      ti, ti_out = self._run_mazda_torque(v_ego, True, 0.001, curvature_error)
+      stock, stock_out = self._run_mazda_torque(v_ego, False, 0.001, curvature_error)
+      assert abs(ti_out) < 0.8 and abs(stock_out) < 0.8
       assert ti_out == stock_out
       assert ti.pid.i == stock.pid.i
 

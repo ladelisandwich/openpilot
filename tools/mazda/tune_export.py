@@ -61,6 +61,7 @@ IDLE_ROW_HZ = 2      # otherwise: context only
 ALIVE_S = 0.06       # a 50 Hz CRZ_INFO stream counts as gone after three missed frames (as in hybrid.py)
 STOCK, OP_ECHO = 0, 128
 TI_FEEDBACK, TI_COMMAND, STOCK_COMMAND, STEER_TORQUE, STEER_RATE = 0x24A, 0x249, 0x243, 0x240, 0x241
+TI_CEILING = 700     # CarControllerParams.TI_CEILING: the car controller's clamp on the TI command (was the 800 scale max)
 CRZ_INFO, CRZ_CTRL, CRZ_BTNS, PEDALS, ENGINE_DATA, BRAKE, RADAR_UDS = 0x21B, 0x21C, 0x09D, 0x165, 0x202, 0x078, 0x764
 BUTTONS = ((0x01, "CANCEL"), (0x04, "RES"), (0x10, "SET+"), (0x20, "SET-"), (0x80, "DIST_DECREASE"), (0x40, "DIST_INCREASE"))
 UDS_NAMES = {(0x10, 0x02): "programming session (silence)", (0x10, 0x01): "default session (restart)"}
@@ -364,7 +365,7 @@ class Export:
     if r["lat"]:
       k["lat_s"] += dt
       k["sat_s"] += dt * bool(r["sat"])
-      k["ceil_s"] += dt * (r["ti_cmd"] is not None and abs(r["ti_cmd"]) >= 760)
+      k["ceil_s"] += dt * (r["ti_cmd"] is not None and abs(r["ti_cmd"]) >= TI_CEILING - 25)   # within one STEER_DELTA_DOWN
       k["lowspeed_lat_s"] += dt * ((r["v"] or 0.0) < 9.0)
 
 

@@ -237,6 +237,10 @@ class CarController(CarControllerBase):
     if CC.latActive:
       # calculate steer and also set limits due to driver torque
       new_torque = int(round(CC.actuators.torque * self.ccp.STEER_MAX))
+      if self.ti_ceiling_guard is not None:
+        # The TI's authority ends at TI_CEILING (values.py), where the torque controller's own limit
+        # sits; this catches a request from anywhere else. Before the driver limits, on both channels.
+        new_torque = max(-self.ccp.TI_CEILING, min(self.ccp.TI_CEILING, new_torque))
       apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last,
                                                       CS.out.steeringTorque, self.ccp)
       if self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR:
@@ -246,13 +250,13 @@ class CarController(CarControllerBase):
           # limited against the stock channel's last output. So it is never ramped on its own: when
           # the TI comes back from DRIVER_OVER or a ramp-down it resumes at the stock command instead
           # of climbing from zero. TI_STEER_* in CarControllerParams are unused, as in his build.
-          ti_new_torque = int(round(CC.actuators.torque * self.ccp.STEER_MAX))
-          ti_apply_torque = apply_driver_steer_torque_limits(ti_new_torque, self.apply_torque_last,
-                                                    CS.out.steeringTorque, self.ccp)
+          ti_apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last,
+                                                             CS.out.steeringTorque, self.ccp)
 
     if self.ti_ceiling_guard is not None:
-      # A command held at the ceiling faults the TI for ~31 s: dip both channels a moment first, so
-      # they stay one command and the next frame's ramp starts from what was sent.
+      # A command held at 800 faulted the TI for ~31 s. The ceiling is 700 now, which never tripped it,
+      # and a hold there is still dipped a moment as a backstop: both channels, so they stay one
+      # command and the next frame's ramp starts from what was sent.
       ti_cap = self.ti_ceiling_guard.update(ti_apply_torque)
       if ti_cap is not None:
         ti_apply_torque = max(-ti_cap, min(ti_cap, ti_apply_torque))

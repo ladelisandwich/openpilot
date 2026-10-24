@@ -1209,26 +1209,32 @@ TRAILER_LATERAL_FF_GAIN = 0.05
 TRAILER_LATERAL_FRICTION_GAIN = 0.03
 
 # Mazda with a Torque Interceptor (CarParams flag MazdaSafetyFlags.TORQUE_INTERCEPTOR). The TI adds its
-# request to the EPS torque-sensor signal, so the full power-steering assist answers it. At turning speeds
-# the wheel responds to a unit of torque request several times harder than on the EPS-limited cars the
-# low-speed factor was set for, and it sticks and slips through a wide friction band. Unscaled, a small
-# error near the apex of a turn swung the request from full into the turn toward full out of it. The TI
-# released, the wheel unwound, and the turn was lost while the TI climbed back (CX-9 routes
-# 00000067/00000068, 12-16 mph). Scaling the low-speed error (P, I and the friction input, on top of
-# whatever SteerKP is set) keeps the loop proportional there. Both are exactly 1.0 from 30 mph up, where
-# the unscaled gains tracked smoothly with the TI alone (route 68, 31-34 mph).
-# A week on these scales at first (routes 00000022-00000035, 0.15 error and 0.5 feedforward up to
-# 17 mph) showed the opposite problem: no oscillation (the error was slow, not 0.5-3 Hz), but the car
-# reached only 81-88% of the lateral accel asked for below 17 mph against ~100% above 30 mph, and the
-# proportional gain with the low-speed factor dipped at 17 mph to about a third of its 30 mph value.
-# Every time the TI let go in a turn that week it was its ceiling fault (opendbc mazda
-# torque_interceptor.TiCeilingGuard), which the car controller now avoids. So the feedforward trim is
-# eased and the error scale keeps its parking-speed value only below 11 mph, which evens the gain out
-# from there to 30 mph.
+# request to the EPS torque-sensor signal, so the full power-steering assist answers it, and on top of
+# that openpilot's low-speed factor (LOW_SPEED_X/Y in latcontrol_torque, written for EPS-limited cars)
+# multiplies the error by 4.5x at 7.5 m/s and 25x at 3 m/s. Unscaled, a small error near the apex of a
+# low-speed turn swung the request from full into the turn toward full out of it (CX-9 routes
+# 00000067/00000068, 12-16 mph). The error scale takes most of that factor back out below 30 mph (P, I
+# and the friction input, on top of whatever SteerKP is set) and is exactly 1.0 from 30 mph up, where the
+# unscaled gains tracked smoothly (route 68, 31-34 mph). A week on the first values (0.15 up to 7.5 m/s,
+# routes 00000022-35) undershot below 17 mph with no oscillation and left the gain at 17 mph a third of
+# its 30 mph value; these even it out from 11 to 30 mph (test_mazda_ti_low_speed_gain_has_no_hole),
+# in torque terms, with the lateral-accel-factor shape below folded in.
 MAZDA_TI_ERROR_SCALE_BP = [5.0, 7.5, 10.0, 13.5]  # m/s
-MAZDA_TI_ERROR_SCALE_V = [0.15, 0.3, 0.55, 1.0]
-MAZDA_TI_FF_SCALE_BP = [7.5, 13.5]  # m/s
-MAZDA_TI_FF_SCALE_V = [0.8, 1.0]
+MAZDA_TI_ERROR_SCALE_V = [0.2, 0.4, 0.65, 1.0]
+
+# The plant itself changes with speed. Fitted on routes 00000022-35 (lateral accel against the torque
+# sent 0.45 s earlier, outside the friction dead band): lateral accel per unit of torque is about 2.6 at
+# 5-10 m/s, 2.05 at 10-13.5, 1.5 at 13.5-16.5 and 1.75-1.9 from 16.5 to 32 m/s, where torqued learns its
+# one global value (1.4-2.1 over the week, 1.83 median); friction is about 0.30 of full torque below
+# 13.5 m/s against 0.18 on the highway. zoompilot's learned per-speed table for the 2022 CX-5 EPS has
+# the same shape (a peak near 9 m/s, a dip near 16 m/s). So the live or tune values are taken as the
+# highway base and shaped by speed, which converts the P and I corrections and the feedforward alike
+# (latcontrol_torque._apply_mazda_ti_speed_shape). The shapes sit about a third of the way back from
+# the fit toward 1.0: the fit is noise-limited below 10 m/s.
+MAZDA_TI_LAT_ACCEL_FACTOR_SCALE_BP = [8.75, 11.75, 15.0, 18.75]  # m/s
+MAZDA_TI_LAT_ACCEL_FACTOR_SCALE_V = [1.3, 1.1, 0.9, 1.0]
+MAZDA_TI_FRICTION_SCALE_BP = [5.0, 13.5, 21.0]  # m/s
+MAZDA_TI_FRICTION_SCALE_V = [1.6, 1.5, 1.0]
 
 _FLM_ACTIVE_OVERRIDES_TEXT = ""
 _FLM_ACTIVE_OVERRIDES = {}
@@ -1384,8 +1390,12 @@ def get_mazda_ti_error_scale(v_ego: float) -> float:
   return float(np.interp(v_ego, MAZDA_TI_ERROR_SCALE_BP, MAZDA_TI_ERROR_SCALE_V))
 
 
-def get_mazda_ti_ff_scale(v_ego: float) -> float:
-  return float(np.interp(v_ego, MAZDA_TI_FF_SCALE_BP, MAZDA_TI_FF_SCALE_V))
+def get_mazda_ti_lat_accel_factor_scale(v_ego: float) -> float:
+  return float(np.interp(v_ego, MAZDA_TI_LAT_ACCEL_FACTOR_SCALE_BP, MAZDA_TI_LAT_ACCEL_FACTOR_SCALE_V))
+
+
+def get_mazda_ti_friction_scale(v_ego: float) -> float:
+  return float(np.interp(v_ego, MAZDA_TI_FRICTION_SCALE_BP, MAZDA_TI_FRICTION_SCALE_V))
 
 
 def _prius_sigmoid(x: float) -> float:
