@@ -42,6 +42,11 @@ DESCRIPTIONS = {
     "cancels the cruise and restarts the radar, which takes about 12 seconds before RES works (the radar icon " +
     "pulses until then)."
   ),
+  "MazdaSteerLimitClassifier": tr_noop(
+    "Only freeze the steering integrator when a torque mismatch would wind it further. Without this every " +
+    "rate-limited step counts as a limit, and the integrator sits frozen on up to 30% of highway steering. " +
+    "Ported from zoompilot; try it for a week."
+  ),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
   "NoFSC": tr_noop("Enable if your car does not have stock FSC."),
   "ManualTransmission": tr_noop("Enable if your car has a manual transmission."),
@@ -131,6 +136,12 @@ class TogglesLayout(Widget):
       "MazdaHybridLong": (
         lambda: tr("Hybrid Longitudinal"),
         DESCRIPTIONS["MazdaHybridLong"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaSteerLimitClassifier": (
+        lambda: tr("Smarter Steer Limit Flag"),
+        DESCRIPTIONS["MazdaSteerLimitClassifier"],
         "chffr_wheel.png",
         True,
       ),

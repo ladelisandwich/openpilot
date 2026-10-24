@@ -442,6 +442,12 @@ class VehicleSettingsManagerView(PanelManagerView):
         "set_state": lambda s: self._controller._on_toggle("MazdaHybridLong"),
       })
       toggles.append({
+        "title": tr("Smarter Steer Limit Flag"),
+        "subtitle": tr("Freeze the steering integrator only when a mismatch would wind it further, not on every rate-limited step. From zoompilot."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaSteerLimitClassifier"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaSteerLimitClassifier"),
+      })
+      toggles.append({
         "title": tr("Lower Minimum Set Speed"),
         "subtitle": tr("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash will keep showing 19 mph; the openpilot screen shows the real target."),
         "get_state": lambda: self._controller._params.get_bool("LowerMinSetSpeed"),
