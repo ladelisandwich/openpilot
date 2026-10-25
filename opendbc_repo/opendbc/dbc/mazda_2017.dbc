@@ -122,6 +122,7 @@ BO_ 577 STEER_RATE: 8 XXX
  SG_ LKAS_BLOCK : 50|1@1+ (1,0) [0|3] "" XXX
  SG_ LKAS_TRACK_STATE : 52|1@0+ (1,0) [0|3] "" XXX
  SG_ CHKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+ SG_ LKAS_FAULT : 53|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 582 CAM_LANEMAYBE: 8 XXX
  SG_ NEW_SIGNAL_4 : 40|8@1+ (1,0) [0|127] "" XXX
@@ -131,6 +132,7 @@ BO_ 582 CAM_LANEMAYBE: 8 XXX
  SG_ NEW_SIGNAL_3 : 15|16@0+ (1,0) [0|65535] "" XXX
 
 BO_ 541 CAM_EMPTY: 8 XXX
+ SG_ STATUS : 7|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 605 CAM_PEDESTRIAN: 8 XXX
  SG_ CTR : 17|4@0+ (1,0) [0|255] "" XXX
@@ -193,6 +195,7 @@ BO_ 863 CAM_TRAFFIC_SIGNS: 8 XXX
  SG_ SPEED_SIGN_ON : 12|1@0+ (1,0) [0|3] "" XXX
  SG_ STOP_SIGN : 31|4@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_4 : 33|1@0+ (1,0) [0|1] "" XXX
+ SG_ SPEED_SIGN_UNIT : 13|2@0+ (1,0) [0|3] "" XXX
 
 BO_ 1157 CAM_SETTINGS: 8 XXX
  SG_ SBS_WARNING_DISTANCE : 25|2@0+ (1,0) [0|127] "" XXX
@@ -260,6 +263,8 @@ BO_ 977 TWO_STATES: 8 XXX
  SG_ NEW_SIGNAL_6 : 36|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_7 : 47|8@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_8 : 51|1@0+ (1,0) [0|1] "" XXX
+ SG_ SPEED_SIGN_UNIT : 37|2@0+ (1,0) [0|3] "" XXX
+ SG_ SPEED_SIGN : 28|7@0+ (1,0) [0|127] "" XXX
 
 BO_ 1085 MSG_12: 8 XXX
  SG_ NEW_SIGNAL_3 : 36|1@0+ (1,0) [0|255] "" XXX
@@ -398,6 +403,8 @@ BO_ 157 CRZ_BTNS: 8 XXX
  SG_ MODE_Y_INV : 30|1@0+ (1,0) [0|1] "" XXX
  SG_ MODE_X_INV : 31|1@0+ (1,0) [0|1] "" XXX
  SG_ CTR : 29|4@0+ (1,0) [0|15] "" XXX
+ SG_ BIT1_INV : 15|1@0+ (1,0) [0|1] "" XXX
+ SG_ TJA_BUTTON : 11|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 154 BLINK_INFO: 8 XXX
  SG_ LEFT_BLINK : 18|1@1+ (1,0) [0|3] "" XXX
@@ -471,6 +478,7 @@ BO_ 552 GEAR: 8 XXX
  SG_ MORE_GEAR : 7|4@0+ (1,0) [0|15] "" XXX
  SG_ GEAR : 2|3@0+ (1,0) [0|7] "" XXX
  SG_ GEAR_BOX : 36|4@0+ (1,0) [0|15] "" XXX
+ SG_ BRAKE_HOLD : 20|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 543 CRZ_EVENTS: 8 XXX
  SG_ CTR : 51|4@0+ (1,0) [0|15] "" XXX
@@ -530,6 +538,14 @@ BO_ 540 CRZ_CTRL: 8 XXX
  SG_ NEW_SIGNAL_6 : 49|3@1+ (1,0) [0|3] "" XXX
  SG_ ACC_ACTIVE_2 : 52|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_4 : 63|8@0+ (1,0) [0|3] "" XXX
+ SG_ HANDS_ON_STEER_WARN : 59|4@0+ (1,0) [0|255] "" XXX
+ SG_ 5_SEC_DISABLE_TIMER : 45|3@0+ (1,0) [0|7] "" XXX
+ SG_ NEW_SIGNAL_10 : 30|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_3 : 13|1@0+ (1,0) [0|3] "" XXX
+ SG_ MSG_1_COPY : 9|1@0+ (1,0) [0|1] "" XXX
+ SG_ MSG_1_INV_COPY : 8|1@0+ (1,0) [0|7] "" XXX
+ SG_ MSG_1_INV : 1|1@0+ (1,0) [0|1] "" XXX
+ SG_ MSG_1 : 0|1@0+ (1,0) [0|3] "" XXX
 
 BO_ 539 CRZ_INFO: 8 XXX
  SG_ STATUS : 7|8@0+ (1,0) [0|255] "" XXX
@@ -545,6 +561,7 @@ BO_ 539 CRZ_INFO: 8 XXX
  SG_ STOPPING_MAYBE2 : 52|1@0+ (1,0) [0|1] "" XXX
  SG_ RESUME_UNLATCHING_MAYBE : 54|1@0+ (1,0) [0|1] "" XXX
  SG_ CHECKSUM : 56|8@1+ (1,0) [0|255] "" XXX
+ SG_ CHKSUM : 63|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 121 EPB: 8 XXX
  SG_ NEW_SIGNAL_1 : 4|4@0+ (1,0) [0|255] "" XXX
@@ -559,6 +576,7 @@ BO_ 121 EPB: 8 XXX
  SG_ NEW_SIGNAL_10 : 46|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_11 : 45|1@0+ (1,0) [0|1] "" XXX
  SG_ EPB_ACTIVE : 29|1@0+ (1,0) [0|15] "" XXX
+ SG_ HOLD_STATE : 19|4@0+ (1,0) [0|15] "" XXX
 
 BO_ 1070 2017_1: 8 XXX
 
@@ -718,32 +736,90 @@ BO_ 865 RADAR_361: 8 XXX
  SG_ INVERSE_SPEED : 43|12@0- (1,0) [0|4095] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
  SG_ BIT : 63|1@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC : 36|3@0+ (1,0) [0|31] "" XXX
+ SG_ DISTANCE_RELATED : 33|4@0+ (1,0) [0|3] "" XXX
+ SG_ RELATIVE_VEL_LEAD : 31|11@0- (1,0) [0|255] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ DISTANCE_LEAD : 7|24@0+ (1,0) [0|31] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 866 RADAR_362: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|12@0+ (1,0) [0|268435455] "" XXX
  SG_ CLIPPED_STEER_ANGLE : 43|12@0+ (1,0) [0|4095] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC_2 : 63|4@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_1 : 44|1@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_4 : 34|3@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 : 33|4@0+ (1,0) [0|3] "" XXX
+ SG_ CURVE_3 : 31|11@0- (1,0) [0|63] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ CURVE_2 : 11|12@0- (1,0) [0|127] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ CURVE_1 : 7|12@0+ (1,0) [0|131071] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 867 RADAR_363: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_2 : 47|1@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_3 : 46|1@0+ (1,0) [0|3] "" XXX
+ SG_ FLIPPY_4 : 44|1@0+ (1,0) [0|3] "" XXX
+ SG_ STATIC_4 : 43|16@0+ (1,0) [0|255] "" XXX
+ SG_ FLIPPY_1 : 31|3@0+ (1,0) [0|7] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ CURVE_3 : 28|13@0+ (1,0) [0|255] "" XXX
+ SG_ CURVE_2 : 11|12@0+ (1,0) [0|255] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ CURVE_1 : 7|12@0+ (1,0) [0|255] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 868 RADAR_364: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC_1 : 47|1@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_1 : 46|1@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 44|1@1+ (1,0) [0|3] "" XXX
+ SG_ STATIC_2 : 43|16@0+ (1,0) [0|7] "" XXX
+ SG_ FLIPPERS_1 : 31|4@0+ (1,0) [0|15] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ NEW_SIGNAL_3 : 27|12@0- (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 11|12@0- (1,0) [0|15] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ NEW_SIGNAL_1 : 7|12@0+ (1,0) [0|255] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 869 RADAR_365: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_2 : 63|2@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC : 61|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 39|6@0+ (1,0) [0|63] "" XXX
+ SG_ RELATED_2 : 33|18@0+ (1,0) [0|15] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ RELATED_1 : 9|18@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 : 7|14@0+ (1,0) [0|65535] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 870 RADAR_366: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_7 : 55|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_6 : 47|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_5 : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_4 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 1177 RADAR_499_STATIC: 8 XXX
 
@@ -781,3 +857,4 @@ VAL_ 540 RADAR_HAS_LEAD 0 "NO LEAD" 1 "HAS LEAD" ;
 VAL_ 540 RADAR_LEAD_RELATIVE_DISTANCE 0 "NO LEAD" 1 "FARTHEST" 2 "4" 3 "3" 4 "2" 5 "NEAREST" ;
 VAL_ 1143 LEFT_BS_STATUS 0 "No object detected" 1 "Object detected in left blindspot" 2 "Object detected in left blindspot with blinker - warning"
 VAL_ 1143 RIGHT_BS_STATUS 0 "No object detected" 1 "Object detected in right blindspot" 2 "Object detected in right blindspot with blinker - warning"
+CM_ BO_ 977 "the nav unit's speed limit (zoompilot names it NAV_SPEED_LIMIT): SPEED_SIGN 0 = none, SPEED_SIGN_UNIT as CAM_TRAFFIC_SIGNS";
