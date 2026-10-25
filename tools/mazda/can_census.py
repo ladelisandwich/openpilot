@@ -280,7 +280,9 @@ def describe(store: Capped, grid, knowns) -> dict:
   rate = store.n / max(ts[-1] - ts[0], 1e-3) if n > 1 else 0.0
   out = {"rate": rate, "dlc": dlc, "n": store.n, "pages": []}
   out["bytes"], out["hints"] = describe_bytes(ts, data, grid, knowns)
-  # multiplexed: describe the other bytes page by page
+  # multiplexed: describe the other bytes page by page. A page hint that only repeats a whole-message hint
+  # (the "page index" was a counter and the byte is the same signal on every page) is dropped.
+  whole = {h.split(" (r=")[0] for h in out["hints"]}
   for b, desc in enumerate(out["bytes"]):
     if desc.startswith(f"b{b}=MUX"):
       col = data[:, b]
@@ -290,7 +292,7 @@ def describe(store: Capped, grid, knowns) -> dict:
           continue
         pd_, ph = describe_bytes(ts[m], data[m], grid, knowns, page=f"page{int(v)}:")
         out["pages"].append((int(v), int(m.sum()), [x for i, x in enumerate(pd_) if i != b]))
-        out["hints"].extend(ph)
+        out["hints"].extend(h for h in ph if h.split(":", 1)[1].split(" (r=")[0] not in whole)
       break
   text = bytes(data[0]).decode("ascii", errors="replace")
   if n > 0 and all(32 <= x < 127 for x in data[0]) and len(np.unique(data, axis=0)) <= 2:
