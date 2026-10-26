@@ -35,8 +35,11 @@ Row columns (units: m/s, m/s^2, deg, TI/EPS counts; flags 0/1):
   stand res sstop              car standstill, openpilot asking to resume (carControl.cruiseControl.resume), planner shouldStop
   st_hold op_hold op_unl       CRZ_INFO stop request (STOPPING_MAYBE) from the stock radar / ours, ours RESUME_UNLATCHING_MAYBE
   st_ph op_ph                  CRZ_CTRL stop phase (RADAR_LEAD_RELATIVE_DISTANCE: 4 hold, 3 stop-go/resume), stock / ours
+  hold epb haz wipe lamp       the car's auto hold (EPB.HOLD_STATE: 2 standby, 3 holding), parking brake applied, hazards on,
+                               front wipers sweeping, exterior lamps on
 Each engaged stop is also an event ("stop") saying how it ended: openpilot RES, on its own, the driver's gas or RES,
-or never (disengaged at a standstill), and when openpilot first asked to go.
+or never (disengaged at a standstill), when openpilot first asked to go, and whether the car's auto hold held or the
+hazards were on during the stop (either can explain a resume that did not happen).
 """
 import argparse
 import gzip
@@ -63,6 +66,7 @@ STOCK, OP_ECHO = 0, 128
 TI_FEEDBACK, TI_COMMAND, STOCK_COMMAND, STEER_TORQUE, STEER_RATE = 0x24A, 0x249, 0x243, 0x240, 0x241
 TI_CEILING = 700     # CarControllerParams.TI_CEILING: the car controller's clamp on the TI command (was the 800 scale max)
 CRZ_INFO, CRZ_CTRL, CRZ_BTNS, PEDALS, ENGINE_DATA, BRAKE, RADAR_UDS = 0x21B, 0x21C, 0x09D, 0x165, 0x202, 0x078, 0x764
+EPB, TURN_SWITCH, BLINK_INFO, LAMPS = 0x079, 0x091, 0x09A, 0x09F   # the body switches openpilot now reads (auto hold, hazards, wipers, lamps)
 BUTTONS = ((0x01, "CANCEL"), (0x04, "RES"), (0x10, "SET+"), (0x20, "SET-"), (0x80, "DIST_DECREASE"), (0x40, "DIST_INCREASE"))
 UDS_NAMES = {(0x10, 0x02): "programming session (silence)", (0x10, 0x01): "default session (restart)"}
 PARAM_KEYS = re.compile("|".join(("Steer", "Lateral", "Torque", "Lat", "NNFF", "Longitudinal", "Personality", "Experimental",
@@ -72,7 +76,7 @@ PARAM_KEYS = re.compile("|".join(("Steer", "Lateral", "Torque", "Lat", "NNFF", "
 COLUMNS = ("t seg v a steer rate drv prs lat en long cc_tq out_tq sp got err p i d f out sat dcurv curv mcurv roll laf fric " +
            "ti_cmd stock_cmd ti_st ti_vi ti_drv eps_sen eps_mot blk eff blink flt cc_acc out_acc lstate atgt " +
            "gas brk gas_pct brk_p acc_x cruise vset st_cmd st_ok op_cmd st_alive op_alive rlead ld ld_d ld_v exp pers " +
-           "stand res sstop st_hold op_hold op_unl st_ph op_ph").split()
+           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp").split()
 ROUND = {"t": 3, "v": 3, "a": 3, "steer": 2, "rate": 1, "drv": 1, "cc_tq": 4, "out_tq": 4, "sp": 3, "got": 3, "err": 3,
          "p": 4, "i": 4, "d": 4, "f": 4, "out": 4, "dcurv": 6, "curv": 6, "mcurv": 6, "roll": 4, "laf": 3, "fric": 3,
          "eps_sen": 1, "eps_mot": 1, "cc_acc": 3, "out_acc": 3, "atgt": 3, "gas_pct": 1, "acc_x": 2, "vset": 2,
@@ -153,7 +157,7 @@ class Export:
   def __init__(self, events_out):
     self.r = dict.fromkeys(COLUMNS)
     flags = ("lat", "en", "long", "prs", "sat", "gas", "brk", "cruise", "st_alive", "op_alive", "rlead", "ld", "exp", "flt", "blink",
-             "st_ok", "stand", "res", "sstop", "st_hold", "op_hold", "op_unl")
+             "st_ok", "stand", "res", "sstop", "st_hold", "op_hold", "op_unl", "hold", "epb", "haz", "wipe", "lamp")
     self.r.update(dict.fromkeys(flags, 0))
     self.stop = None                # the engaged stop in progress (see track_stop)
     self.events_out = events_out
@@ -302,6 +306,14 @@ class Export:
           r["gas_pct"] = sig(a, d, "PEDAL_GAS")
         elif src == STOCK and a == BRAKE and len(d) >= 8:
           r["brk_p"], r["acc_x"] = int(sig(a, d, "BRAKE_PRESSURE")), sig(a, d, "VEHICLE_ACC_X")
+        elif src == STOCK and a == EPB and len(d) >= 8:
+          r["hold"], r["epb"] = int(sig(a, d, "HOLD_STATE")), int(sig(a, d, "EPB_ACTIVE"))
+        elif src == STOCK and a == TURN_SWITCH and len(d) >= 8:
+          r["haz"] = int(sig(a, d, "HAZARD"))
+        elif src == STOCK and a == BLINK_INFO and len(d) >= 8:
+          r["wipe"] = int(bool(sig(a, d, "WIPER_LO")) or bool(sig(a, d, "WIPER_HI")))
+        elif src == STOCK and a == LAMPS and len(d) >= 8:
+          r["lamp"] = int(sig(a, d, "LAMPS_ON"))
         elif a == CRZ_BTNS and src in (STOCK, OP_ECHO) and len(d) >= 1:
           b = d[0] & 0xF5
           changed = b ^ self.btn_prev[src]
@@ -332,11 +344,13 @@ class Export:
     if s is None:
       if r["en"] and r["stand"]:
         self.stop = {"t": self.t, "mode": "openpilot" if r["op_alive"] else "MRCC", "asked": None, "gas": False,
-                     "driver_res": False, "openpilot_res": False}
+                     "driver_res": False, "openpilot_res": False, "auto_hold": False, "hazards": False}
       return
     if r["res"] and s["asked"] is None:
       s["asked"] = self.t
     s["gas"] |= bool(r["gas"])
+    s["auto_hold"] |= r["hold"] == 3
+    s["hazards"] |= bool(r["haz"])
     if v > 0.5 or not r["en"]:
       self.end_stop(moved=v > 0.5)
 
@@ -357,7 +371,7 @@ class Export:
     k[key] += 1
     asked = None if s["asked"] is None else round(self.t - s["asked"], 1)
     self.event("stop", {"mode": s["mode"], "stopped_s": round(self.t - s["t"], 1), "went": went,
-                        "openpilot_asked_to_go_s_before": asked})
+                        "openpilot_asked_to_go_s_before": asked, "auto_hold": s["auto_hold"], "hazards": s["hazards"]})
 
   def count_row(self) -> None:
     r, dt, k = self.r, 1.0 / ROW_HZ, self.counts   # lateral is only active on busy (ROW_HZ) rows

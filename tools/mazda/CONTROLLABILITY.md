@@ -120,3 +120,21 @@ not command it, and the panda blocks transmitting them regardless.
   (most body functions have none on the comfort bus the comma can see — they are driven inside
   the module from the physical switch), and a new entry in the panda transmit allowlist. The
   switch-report bits we named are not those command frames.
+
+## What the fork now does with them (as inputs)
+
+Added on `mazda-long-ti1-testing` after this reference was written. None of it transmits anything new.
+
+| Input | Where it goes | Effect |
+|---|---|---|
+| EPB.EPB_ACTIVE | `carState.parkingBrake` | openpilot will not engage with the parking brake applied (the standard parkBrake event) |
+| DOORS.LIFTGATE_OPEN | `carState.doorOpen` | counts as a door open: no engagement with the gate up |
+| EPB.HOLD_STATE = 3 | `starpilotCarState.autoHoldActive`, the tune export `hold` column | logged, so the next stop-and-go drive shows whether auto hold interferes with a resume; deliberately not the standard brakeHoldActive field, which would refuse engagement while it holds |
+| TRACTION.TCS_OFF | `carState.espDisabled` | the standard warning and soft disengage, but only with the "Traction Control Off Alert" toggle on (off by default: the DSC OFF button stays usable off-road) |
+| TURN_SWITCH stalk bits | `carState.leftBlinker` / `rightBlinker` | the stalk itself gives a clean edge; the lamps still bridge a one-touch three-flash signal |
+| TURN_SWITCH.HAZARD | `starpilotCarState.hazardLights`, the car controller | hazards flashing both lamps no longer read as both blinkers, and at a standstill they hold the hybrid resume: no RES press and no planner release until the driver's gas, an override or a wheel RES |
+| MSG_05.LAS_BUTTON | `carState.buttonEvents` as the LKAS button | the StarPilot LKAS-button functions (always-on-lateral toggle, pause lateral, experimental mode, bookmark, personality) now have a button on this car |
+| BLINK_INFO.WIPER_LO/HI, FRONT_WASHER | `starpilotCarState.wipersActive` / `washerActive` | "Wipers Mean Rain" toggle: while sweeping, the rain offsets (longer gap, gentler acceleration and cornering) and no automated lane change; none starts for 3 s after the washer |
+| TURN_SWITCH.HORN | `starpilotCarState.hornPressed` | "Horn Tap Bookmarks" toggle: one bookmark per press |
+| GEAR = 0 between positions, MSG_11.REVERSE_LAMP | `carState.gearShifter` | the last position is kept through the gap; the reverse lamp is trusted when it is lit |
+| MSG_11.LAMPS_ON | `starpilotCarState.lampsOn`, the export `lamp` column | tagged for later analysis; no behaviour yet |
