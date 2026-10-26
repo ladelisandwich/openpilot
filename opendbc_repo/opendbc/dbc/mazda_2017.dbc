@@ -432,7 +432,7 @@ BO_ 154 BLINK_INFO: 8 XXX
  SG_ FRONT_WASHER : 53|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 145 TURN_SWITCH: 8 XXX
- SG_ UNKNOWN_PULSE : 52|4@0+ (1,0) [0|15] "" XXX
+ SG_ HORN : 52|4@0+ (1,0) [0|15] "" XXX
  SG_ HAZARD : 10|1@0+ (1,0) [0|1] "" XXX
  SG_ TURN_RIGHT_SWITCH : 12|1@0+ (1,0) [0|3] "" XXX
  SG_ TURN_LEFT_SWITCH : 13|1@0+ (1,0) [0|255] "" XXX
@@ -928,7 +928,7 @@ CM_ SG_ 145 LEVER_PULLED "1 while the lever is pulled toward the driver: BLINK_I
 CM_ SG_ 145 LEVER_FORWARD "1 while the lever sits pushed forward with the switch in auto or parking lamps: no high beams by day; at night the camera's CAM_LANEINFO bit 2 followed it (auto high beam)";
 CM_ SG_ 145 REAR_WIPER_SWITCH "rear wiper knob: 0 off, 3 intermittent (BLINK_INFO.REAR_WIPER_ON pulses once), 1 on (REAR_WIPER_ON stays 1); 2 is passed between them";
 CM_ SG_ 145 REAR_WASHER "1 while the rear washer is held; the rear wiper runs for a few seconds after";
-CM_ SG_ 145 UNKNOWN_PULSE "15 for 0.7 s once in the 2026-10-25 afternoon recording, between the lever tests and the wipers; not yet identified";
+CM_ SG_ 145 HORN "15 while the horn is pressed (a 0.7 s tap in the 2026-10-25 afternoon recording, placed by the order of the actions); 0 otherwise";
 CM_ SG_ 159 LAMPS_ON "1 while any exterior lamps are on (parking lamps included); 0 with the switch off, or in auto by day";
 CM_ SG_ 159 LAMPS_ON_2 "follows LAMPS_ON";
 CM_ SG_ 159 ILLUMINATION "95 with the lamps off, 100 with them on; a dimmer level by the look of it";
