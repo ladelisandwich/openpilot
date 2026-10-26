@@ -60,6 +60,7 @@ class CarController(CarControllerBase):
     self.standstill_hold_frames = 0
     self.stop_intent_latched = False
     self.resume_release_frames = 0
+    self.hazard_release_latched = False
     self.resume_crz_latched_frames = 0
     self.resume_phase_frames = 0
     self.resume_ctrl_active_prev = False
@@ -92,6 +93,7 @@ class CarController(CarControllerBase):
     self.standstill_hold_frames = 0
     self.stop_intent_latched = False
     self.resume_release_frames = 0
+    self.hazard_release_latched = False
     self.resume_crz_latched_frames = 0
     self.resume_phase_frames = 0
     self.resume_ctrl_active_prev = False
@@ -229,6 +231,15 @@ class CarController(CarControllerBase):
     self.hybrid_master_write_frame = self.frame
 
   def update(self, CC, CS, now_nanos, starpilot_toggles):
+    # Hazards at a standstill say the driver does not want the car to move off on its own (a wait at the kerb,
+    # a stop on the shoulder): no RES press and no planner release until the driver's gas, an override or a
+    # wheel RES. CS.hazard_lights is the hazard switch itself, not the flashing lamps. A wheel RES at the
+    # standstill lifts the block for the rest of that stop, so the release is not taken back half a second later.
+    if CS.out.standstill and bool(getattr(CS, "accel_button", 0)):
+      self.hazard_release_latched = True
+    elif not CS.out.standstill:
+      self.hazard_release_latched = False
+    hazards = bool(getattr(CS, "hazard_lights", False)) and not self.hazard_release_latched
     can_sends = []
 
     apply_torque = 0
@@ -284,7 +295,7 @@ class CarController(CarControllerBase):
         # ACC-active state rather than spamming CRZ_BTNS. A RES press is still needed
         # to ask the chassis to release the HOLD latch after a full stop.
         self.brake_counter = 0
-        if CS.out.standstill and CC.cruiseControl.resume and self.frame % 5 == 0:
+        if CS.out.standstill and CC.cruiseControl.resume and not hazards and self.frame % 5 == 0:
           can_sends.append(mazdacan.create_button_cmd(self.packer, self.CP, CS.crz_btns_counter, Buttons.RESUME))
           virtual_resume_sent = True
         elif self.mrcc_switch.press_cancel and self.frame % 10 == 0:
@@ -342,6 +353,7 @@ class CarController(CarControllerBase):
           self.standstill_hold_frames = 0
           self.stop_intent_latched = False
           self.resume_release_frames = 0
+          self.hazard_release_latched = False
           self.resume_crz_latched_frames = 0
           self.resume_phase_frames = 0
           self.resume_ctrl_active_prev = False
@@ -357,7 +369,7 @@ class CarController(CarControllerBase):
           # where it is wanted. Virtual RES keeps the latch requirement so a transient
           # shouldStop flicker cannot release the hold early.
           physical_resume_unlatch_requested = CS.out.standstill and physical_resume_requested
-          virtual_resume_unlatch_requested = CS.out.standstill and virtual_resume_requested and hold_latched_ready
+          virtual_resume_unlatch_requested = CS.out.standstill and virtual_resume_requested and hold_latched_ready and not hazards
           resume_unlatch_requested = physical_resume_unlatch_requested or virtual_resume_unlatch_requested
           effective_resume_requested = resume_unlatch_requested
           resume_rising_edge = effective_resume_requested and not self.resume_button_prev
@@ -366,8 +378,8 @@ class CarController(CarControllerBase):
           # sufficient on its own. HOLD_REQUEST_FRAMES governs how long HOLD is applied,
           # not whether a release is permitted -- conflating the two is what left the car
           # latched until the driver touched the gas.
-          planner_release_requested = (CC.cruiseControl.override or CS.out.gasPressed or restart_requested or
-                                       (CC.cruiseControl.resume and not stopping))
+          planner_release_requested = (CC.cruiseControl.override or CS.out.gasPressed or
+                                       (not hazards and (restart_requested or (CC.cruiseControl.resume and not stopping))))
           base_release_hold_requested = planner_release_requested or release_brake
 
           if CS.out.standstill and self.stop_intent_latched and not base_release_hold_requested:
