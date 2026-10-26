@@ -21,6 +21,7 @@ the wheel buttons, windows and the like need a recording in which they are used 
 candidate addresses then shows which bytes moved at those times.
 """
 import argparse
+import gzip
 import os
 import re
 import sys
@@ -367,24 +368,39 @@ def write_report(census: Census, out, knowns_used: list[str]) -> None:
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-def watch(segs: list, addrs: list[int], out) -> None:
-  """Every change of the given addresses, with the driving context: what to read against an action recording."""
-  ctx = {"kph": 0, "gas": 0, "brake": 0, "L": 0, "R": 0, "gear": 0, "hb": 0, "acc": 0, "angle": 0}
-  last: dict[int, bytes] = {}
-  offset = 0.0
-  for _seg, path in segs:
+def route_base(segs: list) -> float:
+  """The route's time zero on the shared clock: logMonoTime of the first CAN frame of the earliest segment still on
+  disk, minus that segment's minute (segments rotate every 60 s, so the axis holds when the first ones are gone)."""
+  for seg, path in segs:
     fn = log_file(path)
     if fn is None:
       continue
-    t0, t_last = None, 0.0
+    for evt in _LogFileReader(fn):
+      if evt.which() == "can":
+        return evt.logMonoTime * 1e-9 - 60.0 * seg
+  return 0.0
+
+
+def segs_in_window(segs: list, t0: float, t1: float) -> list:
+  """The segments that can hold route seconds t0..t1 (a segment is a minute; 5 s of slack either side)."""
+  return [(s, p) for s, p in segs if 60 * s + 65 >= t0 and 60 * s - 5 <= t1]
+
+
+def watch(segs: list, addrs: list[int], out, t0: float = 0.0, t1: float = float("inf")) -> None:
+  """Every change of the given addresses, with the driving context: what to read against an action recording."""
+  ctx = {"kph": 0, "gas": 0, "brake": 0, "L": 0, "R": 0, "gear": 0, "hb": 0, "acc": 0, "angle": 0}
+  last: dict[int, bytes] = {}
+  base = route_base(segs)
+  for _seg, path in segs_in_window(segs, t0, t1):
+    fn = log_file(path)
+    if fn is None:
+      continue
     for evt in _LogFileReader(fn):
       if evt.which() != "can":
         continue
-      t_abs = evt.logMonoTime * 1e-9
-      if t0 is None:
-        t0 = t_abs
-      t = offset + t_abs - t0
-      t_last = t
+      t = evt.logMonoTime * 1e-9 - base
+      if t > t1:
+        break
       for c in evt.can:
         if c.src != 0 and c.address not in addrs:
           continue
@@ -402,7 +418,7 @@ def watch(segs: list, addrs: list[int], out) -> None:
             ctx["angle"] = round(sig(0x82, d, "STEER_ANGLE"))
         except Exception:
           pass
-        if c.address in addrs and c.src in BUSES:
+        if c.address in addrs and c.src in BUSES and t >= t0:
           prev = last.get((c.src, c.address))
           if prev is None:
             print(f"{t:8.2f} bus{c.src} 0x{c.address:03x} {d.hex(' ')}  first   {ctx}", file=out)
@@ -411,7 +427,32 @@ def watch(segs: list, addrs: list[int], out) -> None:
             print(f"{t:8.2f} bus{c.src} 0x{c.address:03x} {d.hex(' ')}  {ctx}", file=out)
             print(f"{'':21s}{marks}", file=out)
           last[(c.src, c.address)] = d
-    offset = t_last + 1.0
+
+
+def dump(segs: list, t0: float, t1: float, path: str) -> int:
+  """Every frame on buses 0-2 between route seconds t0 and t1, as gzipped CSV (t,bus,addr,data): the raw material
+  for an analysis off the device. Returns the frame count."""
+  base = route_base(segs)
+  n = 0
+  with gzip.open(path, "wt") as out:
+    out.write("t,bus,addr,data\n")
+    for _seg, p in segs_in_window(segs, t0, t1):
+      fn = log_file(p)
+      if fn is None:
+        continue
+      for evt in _LogFileReader(fn):
+        if evt.which() != "can":
+          continue
+        t = evt.logMonoTime * 1e-9 - base
+        if t < t0:
+          continue
+        if t > t1:
+          break
+        for c in evt.can:
+          if c.src in BUSES:
+            out.write(f"{t:.4f},{c.src},{c.address:x},{bytes(c.dat).hex()}\n")
+            n += 1
+  return n
 
 
 def main():
@@ -421,6 +462,8 @@ def main():
   ap.add_argument("--root", default=DEFAULT_ROOT)
   ap.add_argument("--out", default="/data/can_census.txt")
   ap.add_argument("--watch", default="", help="comma-separated addresses (hex) to print a change timeline for, to stdout")
+  ap.add_argument("--window", default="", help="T0-T1 in route seconds: limit --watch or --dump to that stretch")
+  ap.add_argument("--dump", action="store_true", help="write every frame of the --window to a gzipped CSV (--out, or /data/can_dump_<route>_<T0>-<T1>.csv.gz)")
   args = ap.parse_args()
 
   routes = routes_under(args.root)
@@ -433,11 +476,20 @@ def main():
   if not names:
     print("no routes", file=sys.stderr)
     return
+  t0, t1 = (float(x) for x in args.window.split("-")) if args.window else (0.0, float("inf"))
+  if args.dump:
+    if not args.window:
+      sys.exit("--dump needs --window T0-T1")
+    for n in names:
+      path = args.out if args.out != ap.get_default("out") else f"/data/can_dump_{n}_{t0:.0f}-{t1:.0f}.csv.gz"
+      cnt = dump(routes[n], t0, t1, path)
+      print(f"  -> {path} ({cnt} frames)")
+    return
   if args.watch:
     addrs = [int(a, 16) for a in args.watch.split(",")]
     for n in names:
       print(f"===== {n}")
-      watch(routes[n], addrs, sys.stdout)
+      watch(routes[n], addrs, sys.stdout, t0, t1)
     return
 
   census = Census()
