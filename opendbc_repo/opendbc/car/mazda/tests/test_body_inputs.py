@@ -17,10 +17,11 @@ class Toggles:
 
 
 class Car:
-  """A GEN1 TI car fed one bus-0 frame set per 10 ms step; messages not mentioned keep their last frame."""
-  def __init__(self):
+  """A GEN1 car (with the Torque Interceptor unless told otherwise) fed one frame set per 10 ms step, bus 0 by
+  default and bus 2 through cam=; messages not mentioned keep their last frame."""
+  def __init__(self, torque_interceptor=True):
     CP = CarInterface.get_non_essential_params(CAR.MAZDA_CX9_2021)
-    CP.flags = int(MazdaSafetyFlags.GEN1 | MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+    CP.flags = int(MazdaSafetyFlags.GEN1 | (MazdaSafetyFlags.TORQUE_INTERCEPTOR if torque_interceptor else 0))
     self.CS = CarInterface(CP, custom.StarPilotCarParams.new_message()).CS
     self.parsers = CarState.get_can_parsers(CP)
     self.packer = CANPacker("mazda_2017")
@@ -30,9 +31,10 @@ class Car:
     # the parser subscribes a message the first time the car state reads it; one empty update does that for all
     self.CS.update(self.parsers, Toggles())
 
-  def step(self, **msgs):
+  def step(self, cam=None, **msgs):
     self.t += 10_000_000
     frames = [self.packer.make_can_msg(name, 0, values) for name, values in msgs.items()]
+    frames += [self.packer.make_can_msg(name, 2, values) for name, values in (cam or {}).items()]
     for cp in self.parsers.values():
       cp.update([(self.t, frames)])
     return self.CS.update(self.parsers, Toggles())
@@ -112,3 +114,13 @@ def test_the_fields_handed_to_starpilot():
   assert fp.wipersActive and fp.washerActive and not fp.hornPressed and not fp.lampsOn
   _, fp = car.step(BLINK_INFO={"WIPER_HI": 0, "FRONT_WASHER": 0})
   assert not fp.wipersActive and not fp.washerActive
+
+
+def test_the_cameras_lane_keep_state_is_ignored_with_the_torque_interceptor():
+  # the dash lane-keep button flips the stock lane keep with every press; with the TI that must not raise the
+  # invalid-LKAS-setting alert, without it the stock state still matters
+  ti = Car()
+  assert not ti.step(cam={"CAM_LANEINFO": {"LANE_LINES": 0}})[0].invalidLkasSetting and not ti.CS.lkas_disabled
+  stock = Car(torque_interceptor=False)
+  assert stock.step(cam={"CAM_LANEINFO": {"LANE_LINES": 0}})[0].invalidLkasSetting and stock.CS.lkas_disabled
+  assert not stock.step(cam={"CAM_LANEINFO": {"LANE_LINES": 1}})[0].invalidLkasSetting

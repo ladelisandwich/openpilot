@@ -226,8 +226,11 @@ class CarState(CarStateBase):
 
     # camera signals
     if not self.CP.flags & MazdaSafetyFlags.NO_FSC:
-      ret.invalidLkasSetting = cp_cam.vl["CAM_LANEINFO"]["LANE_LINES"] == 0
-      self.lkas_disabled = cp_cam.vl["CAM_LANEINFO"]["LANE_LINES"] == 0 if not self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR else False
+      # The camera's lane-keep state. With the Torque Interceptor the stock lane keep plays no part in steering,
+      # and the dash lane-keep button (the LKAS button to openpilot) flips it with every press, so it is ignored there.
+      stock_lkas_off = cp_cam.vl["CAM_LANEINFO"]["LANE_LINES"] == 0 and not self.CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR
+      ret.invalidLkasSetting = stock_lkas_off
+      self.lkas_disabled = stock_lkas_off
       self.cam_lkas = cp_cam.vl["CAM_LKAS"]
       self.cam_laneinfo = cp_cam.vl["CAM_LANEINFO"]
 
