@@ -85,12 +85,22 @@ ROUND = {"t": 3, "v": 3, "a": 3, "steer": 2, "rate": 1, "drv": 1, "cc_tq": 4, "o
 DBC_2017 = DBC("mazda_2017")
 
 
+def has_sig(addr: int, name: str) -> bool:
+  """Whether the DBC on this device knows the signal: the newest decodes may be ahead of an older checkout."""
+  msg = DBC_2017.addr_to_msg.get(addr)
+  return msg is not None and name in msg.sigs
+
+
 def sig(addr: int, dat: bytes, name: str) -> float:
   s = DBC_2017.addr_to_msg[addr].sigs[name]
   raw = get_raw_value(dat, s)
   if s.is_signed:
     raw -= ((raw >> (s.size - 1)) & 1) * (1 << s.size)
   return raw * s.factor + s.offset
+
+
+# the body decodes that only the newest DBC has; an older checkout leaves those columns blank instead of crashing
+HAVE_BODY = {"hold": has_sig(0x079, "HOLD_STATE") and has_sig(0x079, "EPB_ACTIVE"), "lamp": has_sig(0x09F, "LAMPS_ON")}
 
 
 def accel_cmd(dat: bytes):
@@ -306,13 +316,13 @@ class Export:
           r["gas_pct"] = sig(a, d, "PEDAL_GAS")
         elif src == STOCK and a == BRAKE and len(d) >= 8:
           r["brk_p"], r["acc_x"] = int(sig(a, d, "BRAKE_PRESSURE")), sig(a, d, "VEHICLE_ACC_X")
-        elif src == STOCK and a == EPB and len(d) >= 8:
+        elif src == STOCK and a == EPB and len(d) >= 8 and HAVE_BODY["hold"]:
           r["hold"], r["epb"] = int(sig(a, d, "HOLD_STATE")), int(sig(a, d, "EPB_ACTIVE"))
         elif src == STOCK and a == TURN_SWITCH and len(d) >= 8:
           r["haz"] = int(sig(a, d, "HAZARD"))
         elif src == STOCK and a == BLINK_INFO and len(d) >= 8:
           r["wipe"] = int(bool(sig(a, d, "WIPER_LO")) or bool(sig(a, d, "WIPER_HI")))
-        elif src == STOCK and a == LAMPS and len(d) >= 8:
+        elif src == STOCK and a == LAMPS and len(d) >= 8 and HAVE_BODY["lamp"]:
           r["lamp"] = int(sig(a, d, "LAMPS_ON"))
         elif a == CRZ_BTNS and src in (STOCK, OP_ECHO) and len(d) >= 1:
           b = d[0] & 0xF5
