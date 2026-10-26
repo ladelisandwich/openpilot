@@ -1145,3 +1145,22 @@ def test_mazda_hybrid_mode_button_does_nothing_in_safe_mode_or_without_hybrid(mo
   toggles = make_distance_toggles(conditional_experimental_mode=True)
   press_distance(card, LONG, toggles, increase=True)
   assert card.params_memory.get_int("CEStatus") == spc.CEStatus["OFF"]
+
+
+def test_mazda_horn_tap_bookmarks_once_per_press(monkeypatch, tmp_path):
+  card = make_mazda_hybrid_card(monkeypatch, tmp_path)
+  toggles = make_distance_toggles(mazda_horn_bookmark=True)
+  press = SimpleNamespace(distancePressed=False, hornPressed=True)
+  release = SimpleNamespace(distancePressed=False, hornPressed=False)
+
+  card.update(make_car_state(), press, make_sm(), toggles)
+  card.update(make_car_state(), press, make_sm(), toggles)   # held: still one bookmark
+  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 1
+
+  card.update(make_car_state(), release, make_sm(), toggles)
+  card.update(make_car_state(), press, make_sm(), toggles)
+  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 2
+
+  card.update(make_car_state(), release, make_sm(), toggles)
+  card.update(make_car_state(), press, make_sm(), make_distance_toggles(mazda_horn_bookmark=False))
+  assert card.params_memory.get_int("WheelButtonBookmarkCounter") == 2

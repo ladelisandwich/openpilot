@@ -77,6 +77,7 @@ class StarPilotCard:
     self.mazda_hybrid = mazda_hybrid_buttons_active(CP)
     self.distance_increase_counter = 0
     self.distance_increase_previously = False
+    self.horn_pressed_previously = False
     self.cancel_counter = 0
     self._distance_poll_counter = 0
     self._onroad_distance_pressed = False
@@ -165,6 +166,11 @@ class StarPilotCard:
   def update(self, carState, starpilotCarState, sm, starpilot_toggles):
     self.switchback_mode_enabled = self.params_memory.get_bool("SwitchbackModeEnabled")
     self._handle_favorite_traffic_mode_action(sm)
+    # Mazda: a tap of the horn is the bookmark button (one bookmark per press, however long it is held)
+    horn_pressed = bool(getattr(starpilotCarState, "hornPressed", False))
+    if horn_pressed and not self.horn_pressed_previously and getattr(starpilot_toggles, "mazda_horn_bookmark", False):
+      self.handle_bookmark()
+    self.horn_pressed_previously = horn_pressed
 
     pulse_glide_cancel_override = bool(getattr(sm["carControl"], "longActive", False)) and any(
       getattr(starpilot_toggles, f"pulse_and_glide_via_cancel{suffix}", False)

@@ -249,6 +249,9 @@ class StarPilotPlanner:
       self.starpilot_weather.update_weather(now, starpilot_toggles)
     else:
       self.starpilot_weather.weather_id = 0
+    # Mazda: the wipers as a rain report when the forecast says clear, or there is none
+    self.starpilot_weather.apply_wipers(bool(getattr(starpilot_toggles, "mazda_wiper_weather_mode", False)) and
+                                        bool(getattr(sm["starpilotCarState"], "wipersActive", False)), starpilot_toggles)
 
   def update_lead_status(self, v_ego):
     following_lead = should_track_lead(

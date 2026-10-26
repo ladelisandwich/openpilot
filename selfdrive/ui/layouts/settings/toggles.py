@@ -47,6 +47,16 @@ DESCRIPTIONS = {
     "rate-limited step counts as a limit, and the integrator sits frozen on up to 30% of highway steering. " +
     "Ported from zoompilot; try it for a week."
   ),
+  "MazdaTcsOffAlert": tr_noop(
+    "Treat traction control switched off the way openpilot does on other cars: a warning, then a soft disengage. " +
+    "Off by default so the DSC OFF button stays usable for off-road driving."
+  ),
+  "MazdaWiperWeatherMode": tr_noop(
+    "Take the wipers as a rain report. While they sweep, follow further, accelerate and corner more gently, and " +
+    "skip automatic lane changes; a nudged lane change still goes. No lane change starts for three seconds after " +
+    "the washer. Uses your Weather Presets rain values when set, built-in ones otherwise."
+  ),
+  "MazdaHornBookmark": tr_noop("A tap of the horn bookmarks the moment in the drive, like the bookmark wheel button."),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
   "NoFSC": tr_noop("Enable if your car does not have stock FSC."),
   "ManualTransmission": tr_noop("Enable if your car has a manual transmission."),
@@ -142,6 +152,24 @@ class TogglesLayout(Widget):
       "MazdaSteerLimitClassifier": (
         lambda: tr("Smarter Steer Limit Flag"),
         DESCRIPTIONS["MazdaSteerLimitClassifier"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaTcsOffAlert": (
+        lambda: tr("Traction Control Off Alert"),
+        DESCRIPTIONS["MazdaTcsOffAlert"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaWiperWeatherMode": (
+        lambda: tr("Wipers Mean Rain"),
+        DESCRIPTIONS["MazdaWiperWeatherMode"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaHornBookmark": (
+        lambda: tr("Horn Tap Bookmarks"),
+        DESCRIPTIONS["MazdaHornBookmark"],
         "chffr_wheel.png",
         True,
       ),
