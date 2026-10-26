@@ -392,7 +392,7 @@ BO_ 158 MSG_05: 8 XXX
  SG_ IGNITION_ON : 7|1@0+ (1,0) [0|1] "" XXX
  SG_ DSC_OFF_BUTTON : 3|1@0+ (1,0) [0|1] "" XXX
  SG_ LAS_BUTTON : 8|1@0+ (1,0) [0|1] "" XXX
- SG_ BUTTON_UNKNOWN_1 : 60|1@0+ (1,0) [0|1] "" XXX
+ SG_ OFFROAD_TRACTION_BUTTON : 60|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 157 CRZ_BTNS: 8 XXX
  SG_ BIT1 : 16|1@0+ (1,0) [0|1] "" XXX
@@ -721,9 +721,9 @@ BO_ 1361 KEY_POSITION: 8 XXX
 BO_ 1283 KEY_POSITION2: 8 XXX
 
 BO_ 628 MSG_06: 8 XXX
- SG_ SWITCH_UNKNOWN_DIR : 45|2@0+ (1,0) [0|3] "" XXX
- SG_ SWITCH_UNKNOWN_ACTIVE : 47|1@0+ (1,0) [0|1] "" XXX
- SG_ BUTTON_UNKNOWN_2 : 61|2@0+ (1,0) [0|3] "" XXX
+ SG_ WINDOW_SWITCH : 45|2@0+ (1,0) [0|3] "" XXX
+ SG_ WINDOW_SWITCH_ACTIVE : 47|1@0+ (1,0) [0|1] "" XXX
+ SG_ STEERING_WHEEL_BUTTON : 61|2@0+ (1,0) [0|3] "" XXX
  SG_ IGNITION_ON : 34|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1154 MSG_08: 8 XXX
@@ -866,8 +866,8 @@ BO_ 1271 MSG_4F7: 8 XXX
  SG_ PARKING_BRAKE : 26|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1257 MSG_4E9: 8 XXX
- SG_ UNKNOWN_EVENT : 9|1@0+ (1,0) [0|1] "" XXX
- SG_ UNKNOWN_EVENT_INV : 23|1@0+ (1,0) [0|1] "" XXX
+ SG_ LOCK_SWITCH : 9|1@0+ (1,0) [0|1] "" XXX
+ SG_ LOCK_SWITCH_INV : 23|1@0+ (1,0) [0|1] "" XXX
 
 CM_ SG_ 357 GEAR "13P, 26R, 13N, 24D";
 CM_ SG_ 605 PED_BRAKE "3: no brake, 4: brake";
@@ -932,10 +932,10 @@ CM_ SG_ 145 HORN "15 while the horn is pressed (a 0.7 s tap in the 2026-10-25 af
 CM_ SG_ 159 LAMPS_ON "1 while any exterior lamps are on (parking lamps included); 0 with the switch off, or in auto by day";
 CM_ SG_ 159 LAMPS_ON_2 "follows LAMPS_ON";
 CM_ SG_ 159 ILLUMINATION "95 with the lamps off, 100 with them on; a dimmer level by the look of it";
-CM_ SG_ 158 BUTTON_UNKNOWN_1 "a 1 s press of a button not yet identified, pressed right after DSC OFF in both 2026-10-25 recordings";
-CM_ SG_ 628 BUTTON_UNKNOWN_2 "3 while a button not yet identified is pressed: once after the cruise buttons at night, five quick presses in the same place by day";
-CM_ SG_ 628 SWITCH_UNKNOWN_DIR "1 or 2 while a two-way control not yet identified is pushed one way or the other, with SWITCH_UNKNOWN_ACTIVE 1; four alternating 0.3 s pushes in the afternoon recording";
-CM_ SG_ 1257 UNKNOWN_EVENT "on for 2-3 s per event (three events in the afternoon recording, one at night), between the wipers and the next steps; UNKNOWN_EVENT_INV is its inverse; not yet identified";
 CM_ SG_ 1139 LIFTGATE_POSITION "0 closed to 76 open, over about 5 s each way; the message is all zero but bytes 5-6 except while the power liftgate moves, when LIFTGATE_STATE runs 0x90, 0x10, 0x14, 0x20..0x32";
-CM_ SG_ 1086 DOORS_LOCKED "1 while the doors are locked; DOORS_UNLOCKED is the opposite state, both are set for a moment during the auto-unlock after key off";
-CM_ BO_ 1078 "climate: byte 2 bits 0, 3, 4 toggled off and on at each of the climate steps; byte 0 bit 6 pulsed once for 0.3 s together with BLINK_INFO byte 1 bits 2-3 and 0x09b byte 0 bits 4-5; byte 5 is 100 while the ignition is on";
+CM_ SG_ 1257 LOCK_SWITCH "1 for 2-3 s after each press of the door lock switch (three presses in the afternoon recording, one at night); LOCK_SWITCH_INV is its inverse. DOORS_LOCKED did not move with it";
+CM_ SG_ 628 WINDOW_SWITCH "driver's window switch while pushed: 1 down, 2 up (by the order down, up, down, up of the recording), with WINDOW_SWITCH_ACTIVE 1; the switch, not the motor";
+CM_ SG_ 628 STEERING_WHEEL_BUTTON "3 while any button on the left spoke of the wheel is pressed: five different buttons gave the same value, so which one is not on this bus";
+CM_ SG_ 158 OFFROAD_TRACTION_BUTTON "1 while the off-road traction assist button beside DSC OFF is pressed (about 1 s); no state bit found for it yet";
+CM_ SG_ 1086 DOORS_LOCKED "tentative: 1 except between the auto-unlock after key off and 5 s after the driver door closed; it did not move when the lock switch was pressed with the ignition on";
+CM_ BO_ 1078 "climate, with fan, temperature and defrost pressed in that order: byte 2 bits 0, 3, 4 toggled with the first presses, byte 2 bit 7 and byte 0 bits 0-2 and 4 moved after, and byte 0 bit 6 pulsed once for 0.3 s together with BLINK_INFO byte 1 bits 2-3 and 0x09b byte 0 bits 4-5; not separated with confidence. Byte 5 is 100 while the ignition is on";
