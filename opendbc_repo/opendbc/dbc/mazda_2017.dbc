@@ -241,6 +241,7 @@ BO_ 1446 NEW_MSG_a600: 8 XXX
 BO_ 1416 MSG_18: 8 XXX
 
 BO_ 1086 DOORS: 8 XXX
+ SG_ DOORS_LOCKED : 29|1@0+ (1,0) [0|1] "" XXX
  SG_ LIFTGATE_OPEN : 32|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_3 : 53|1@0+ (1,0) [0|255] "" XXX
  SG_ KEYFOB_HORN : 2|1@0+ (1,0) [0|1] "" XXX
@@ -275,10 +276,12 @@ BO_ 1085 MSG_12: 8 XXX
  SG_ NEW_SIGNAL_6 : 40|3@1+ (1,0) [0|7] "" XXX
 
 BO_ 159 MSG_11: 8 XXX
+ SG_ LAMPS_ON_2 : 47|1@0+ (1,0) [0|1] "" XXX
+ SG_ ILLUMINATION : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_1 : 50|4@1+ (1,0) [0|15] "" XXX
  SG_ INCREASEING : 39|8@0+ (1,0) [0|255] "" XXX
  SG_ REVERSE_LAMP : 0|1@0+ (1,0) [0|1] "" XXX
- SG_ HEADLAMPS_ON : 3|1@0+ (1,0) [0|1] "" XXX
+ SG_ LAMPS_ON : 3|1@0+ (1,0) [0|1] "" XXX
  SG_ PARKING_BRAKE : 4|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1278 NEW_MSG_3: 8 XXX
@@ -429,6 +432,7 @@ BO_ 154 BLINK_INFO: 8 XXX
  SG_ FRONT_WASHER : 53|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 145 TURN_SWITCH: 8 XXX
+ SG_ UNKNOWN_PULSE : 52|4@0+ (1,0) [0|15] "" XXX
  SG_ HAZARD : 10|1@0+ (1,0) [0|1] "" XXX
  SG_ TURN_RIGHT_SWITCH : 12|1@0+ (1,0) [0|3] "" XXX
  SG_ TURN_LEFT_SWITCH : 13|1@0+ (1,0) [0|255] "" XXX
@@ -436,10 +440,9 @@ BO_ 145 TURN_SWITCH: 8 XXX
  SG_ CHKSUM : 39|8@0+ (1,0) [0|15] "" XXX
  SG_ HEADLAMPS_REQ : 4|1@0+ (1,0) [0|1] "" XXX
  SG_ PARKING_LAMPS_REQ : 5|1@0+ (1,0) [0|1] "" XXX
- SG_ HBC_REQ : 3|1@0+ (1,0) [0|1] "" XXX
- SG_ FLASH_TO_PASS_INV : 1|1@0+ (1,0) [0|1] "" XXX
+ SG_ LEVER_FORWARD : 3|1@0+ (1,0) [0|1] "" XXX
  SG_ LIGHT_SWITCH_OFF : 14|1@0+ (1,0) [0|1] "" XXX
- SG_ HIGH_BEAM_LEVER : 15|1@0+ (1,0) [0|1] "" XXX
+ SG_ LEVER_PULLED : 15|1@0+ (1,0) [0|1] "" XXX
  SG_ WIPER_SWITCH : 21|2@0+ (1,0) [0|3] "" XXX
  SG_ WIPER_MIST : 17|1@0+ (1,0) [0|1] "" XXX
  SG_ REAR_WIPER_SWITCH : 19|2@0+ (1,0) [0|3] "" XXX
@@ -718,6 +721,8 @@ BO_ 1361 KEY_POSITION: 8 XXX
 BO_ 1283 KEY_POSITION2: 8 XXX
 
 BO_ 628 MSG_06: 8 XXX
+ SG_ SWITCH_UNKNOWN_DIR : 45|2@0+ (1,0) [0|3] "" XXX
+ SG_ SWITCH_UNKNOWN_ACTIVE : 47|1@0+ (1,0) [0|1] "" XXX
  SG_ BUTTON_UNKNOWN_2 : 61|2@0+ (1,0) [0|3] "" XXX
  SG_ IGNITION_ON : 34|1@0+ (1,0) [0|1] "" XXX
 
@@ -898,23 +903,15 @@ VAL_ 1143 RIGHT_BS_STATUS 0 "No object detected" 1 "Object detected in right bli
 CM_ BO_ 977 "the nav unit's speed limit (zoompilot names it NAV_SPEED_LIMIT): SPEED_SIGN 0 = none, SPEED_SIGN_UNIT as CAM_TRAFFIC_SIGNS";
 CM_ SG_ 145 WIPER_SWITCH "front wiper stalk: 0 off, 1 low, 2 high, 3 auto";
 CM_ SG_ 145 WIPER_MIST "1 while the stalk is held at mist";
-CM_ SG_ 145 REAR_WIPER_SWITCH "raw rear wiper knob code: 0 off; turning the knob to its far position passed 3 and 2 and settled on 1 (positions not yet mapped)";
-CM_ SG_ 145 REAR_WASHER "tentative: 1 for 1.6 s with the rear knob at its far position";
 CM_ SG_ 145 HEADLAMPS_REQ "1 in the light switch's headlamp position, and while high beams are commanded";
 CM_ SG_ 145 PARKING_LAMPS_REQ "1 in the light switch's parking-lamp and headlamp positions";
 CM_ SG_ 145 LIGHT_SWITCH_OFF "1 in the light switch's off position (BLINK_INFO.LOW_BEAMS reads 0)";
-CM_ SG_ 145 HIGH_BEAM_LEVER "1 while the lever holds the high beams on (BLINK_INFO.HIGH_BEAMS 3)";
-CM_ SG_ 145 HBC_REQ "tentative: 1 for the 4.5 s the lever sat forward with the switch in auto; CAM_LANEINFO bit 2 followed it";
-CM_ SG_ 145 FLASH_TO_PASS_INV "tentative: 0 for the 1.2 s of a lever pull; BLINK_INFO byte 0 bit 3 dropped with it";
 CM_ SG_ 154 FRONT_WASHER "0.5 s pulse of the front washer pump; the wipers sweep after it";
 CM_ SG_ 159 REVERSE_LAMP "1 while the lever is in R";
-CM_ SG_ 159 HEADLAMPS_ON "0 only with the light switch off";
 CM_ SG_ 159 PARKING_BRAKE "follows EPB.EPB_ACTIVE";
 CM_ SG_ 158 LAS_BUTTON "lane keep (LAS) button: a 0.1 s pulse per press; the camera's CAM_LANEINFO.LANE_LINES toggles";
 CM_ SG_ 158 DSC_OFF_BUTTON "a 0.15 s pulse per press of the DSC OFF button";
-CM_ SG_ 158 BUTTON_UNKNOWN_1 "a 0.9 s press of a button not yet identified, pressed right after DSC OFF in the 2026-10-25 recording";
 CM_ SG_ 158 IGNITION_ON "0 after key off";
-CM_ SG_ 628 BUTTON_UNKNOWN_2 "3 for 0.26 s on a button not yet identified, the first one pressed after the cruise buttons in the 2026-10-25 recording";
 CM_ SG_ 1045 TCS_OFF "set with TCS_OFF_2 and NEW_MSG_36.TCS_OFF after one short press of DSC OFF; DSC_OFF (bit 3) did not move";
 CM_ SG_ 1045 BRAKE "1 while auto hold is holding (EPB.HOLD_STATE 3)";
 CM_ SG_ 121 HOLD_STATE "auto hold: 1 not available (driver unbelted), 2 standby, 3 holding, 6 releasing";
@@ -924,9 +921,21 @@ CM_ SG_ 552 SHIFT_IN_PROGRESS "about 1 s pulse at each lever move";
 CM_ SG_ 1143 BSM_MODE "1 normal, 2 in reverse (rear cross traffic alert)";
 CM_ SG_ 1086 LIFTGATE_OPEN "renamed from LEFTGATE: 1 while the liftgate is unlatched";
 CM_ SG_ 1086 NEW_SIGNAL_3 "tentative brake-pedal mirror: 1 while the pedal was held, with up to 4 s of lag";
-CM_ SG_ 1139 LIFTGATE_POSITION "0 closed to 76 open; the message is all zero but byte 5-6 except while the power liftgate moves (about 6 s), when LIFTGATE_STATE runs 0x90, 0x10, 0x14, 0x20..0x32";
 CM_ SG_ 1093 REVERSE "1 while the lever is in R";
 CM_ SG_ 1093 BUTTON_UNKNOWN_3_INV "0 for 1 s on a button not yet identified, pressed after DSC OFF in the 2026-10-25 recording";
 CM_ SG_ 1271 PARKING_BRAKE "follows EPB.EPB_ACTIVE";
-CM_ SG_ 1257 UNKNOWN_EVENT "1 for 3 s once in the 2026-10-25 recording, between the washer and the liftgate; UNKNOWN_EVENT_INV is its inverse";
-CM_ BO_ 1078 "climate: byte 0 bits 0-1 were set for 3.4 s and byte 2 bits 0, 3, 4 for 1.2 s during the fan/defrost steps (not yet separated); byte 5 is 100 while the ignition is on";
+CM_ SG_ 145 LEVER_PULLED "1 while the lever is pulled toward the driver: BLINK_INFO.HIGH_BEAMS reads 3 and HEADLAMPS_REQ 1 for as long as it is held (a flash is about 1 s)";
+CM_ SG_ 145 LEVER_FORWARD "1 while the lever sits pushed forward with the switch in auto or parking lamps: no high beams by day; at night the camera's CAM_LANEINFO bit 2 followed it (auto high beam)";
+CM_ SG_ 145 REAR_WIPER_SWITCH "rear wiper knob: 0 off, 3 intermittent (BLINK_INFO.REAR_WIPER_ON pulses once), 1 on (REAR_WIPER_ON stays 1); 2 is passed between them";
+CM_ SG_ 145 REAR_WASHER "1 while the rear washer is held; the rear wiper runs for a few seconds after";
+CM_ SG_ 145 UNKNOWN_PULSE "15 for 0.7 s once in the 2026-10-25 afternoon recording, between the lever tests and the wipers; not yet identified";
+CM_ SG_ 159 LAMPS_ON "1 while any exterior lamps are on (parking lamps included); 0 with the switch off, or in auto by day";
+CM_ SG_ 159 LAMPS_ON_2 "follows LAMPS_ON";
+CM_ SG_ 159 ILLUMINATION "95 with the lamps off, 100 with them on; a dimmer level by the look of it";
+CM_ SG_ 158 BUTTON_UNKNOWN_1 "a 1 s press of a button not yet identified, pressed right after DSC OFF in both 2026-10-25 recordings";
+CM_ SG_ 628 BUTTON_UNKNOWN_2 "3 while a button not yet identified is pressed: once after the cruise buttons at night, five quick presses in the same place by day";
+CM_ SG_ 628 SWITCH_UNKNOWN_DIR "1 or 2 while a two-way control not yet identified is pushed one way or the other, with SWITCH_UNKNOWN_ACTIVE 1; four alternating 0.3 s pushes in the afternoon recording";
+CM_ SG_ 1257 UNKNOWN_EVENT "on for 2-3 s per event (three events in the afternoon recording, one at night), between the wipers and the next steps; UNKNOWN_EVENT_INV is its inverse; not yet identified";
+CM_ SG_ 1139 LIFTGATE_POSITION "0 closed to 76 open, over about 5 s each way; the message is all zero but bytes 5-6 except while the power liftgate moves, when LIFTGATE_STATE runs 0x90, 0x10, 0x14, 0x20..0x32";
+CM_ SG_ 1086 DOORS_LOCKED "1 while the doors are locked; DOORS_UNLOCKED is the opposite state, both are set for a moment during the auto-unlock after key off";
+CM_ BO_ 1078 "climate: byte 2 bits 0, 3, 4 toggled off and on at each of the climate steps; byte 0 bit 6 pulsed once for 0.3 s together with BLINK_INFO byte 1 bits 2-3 and 0x09b byte 0 bits 4-5; byte 5 is 100 while the ignition is on";
