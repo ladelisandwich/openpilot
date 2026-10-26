@@ -37,6 +37,7 @@ Row columns (units: m/s, m/s^2, deg, TI/EPS counts; flags 0/1):
   st_ph op_ph                  CRZ_CTRL stop phase (RADAR_LEAD_RELATIVE_DISTANCE: 4 hold, 3 stop-go/resume), stock / ours
   hold epb haz wipe lamp       the car's auto hold (EPB.HOLD_STATE: 2 standby, 3 holding), parking brake applied, hazards on,
                                front wipers sweeping, exterior lamps on
+  laoff ltp_ok                 torqued's live lateral-accel offset (m/s2) and whether its live params are valid
 Each engaged stop is also an event ("stop") saying how it ended: openpilot RES, on its own, the driver's gas or RES,
 or never (disengaged at a standstill), when openpilot first asked to go, and whether the car's auto hold held or the
 hazards were on during the stop (either can explain a resume that did not happen).
@@ -76,11 +77,11 @@ PARAM_KEYS = re.compile("|".join(("Steer", "Lateral", "Torque", "Lat", "NNFF", "
 COLUMNS = ("t seg v a steer rate drv prs lat en long cc_tq out_tq sp got err p i d f out sat dcurv curv mcurv roll laf fric " +
            "ti_cmd stock_cmd ti_st ti_vi ti_drv eps_sen eps_mot blk eff blink flt cc_acc out_acc lstate atgt " +
            "gas brk gas_pct brk_p acc_x cruise vset st_cmd st_ok op_cmd st_alive op_alive rlead ld ld_d ld_v exp pers " +
-           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp").split()
+           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp laoff ltp_ok").split()
 ROUND = {"t": 3, "v": 3, "a": 3, "steer": 2, "rate": 1, "drv": 1, "cc_tq": 4, "out_tq": 4, "sp": 3, "got": 3, "err": 3,
          "p": 4, "i": 4, "d": 4, "f": 4, "out": 4, "dcurv": 6, "curv": 6, "mcurv": 6, "roll": 4, "laf": 3, "fric": 3,
          "eps_sen": 1, "eps_mot": 1, "cc_acc": 3, "out_acc": 3, "atgt": 3, "gas_pct": 1, "acc_x": 2, "vset": 2,
-         "ld_d": 1, "ld_v": 2}
+         "ld_d": 1, "ld_v": 2, "laoff": 3}
 
 DBC_2017 = DBC("mazda_2017")
 
@@ -170,6 +171,7 @@ class Export:
              "st_ok", "stand", "res", "sstop", "st_hold", "op_hold", "op_unl", "hold", "epb", "haz", "wipe", "lamp")
     self.r.update(dict.fromkeys(flags, 0))
     self.stop = None                # the engaged stop in progress (see track_stop)
+    self.ti_ran = False             # the TI has been in RUN this route (its power-up VIOL byte is not a fault)
     self.events_out = events_out
     self.t0 = None
     self.t = 0.0
@@ -254,6 +256,7 @@ class Export:
     elif w == "liveTorqueParameters":
       ltp = evt.liveTorqueParameters
       r["laf"], r["fric"] = ltp.latAccelFactorFiltered, ltp.frictionCoefficientFiltered
+      r["laoff"], r["ltp_ok"] = ltp.latAccelOffsetFiltered, int(ltp.liveValid)
     elif w == "longitudinalPlan":
       r["atgt"] = float(getattr(evt.longitudinalPlan, "aTarget", 0.0))
       r["sstop"] = bool(getattr(evt.longitudinalPlan, "shouldStop", False))
@@ -286,8 +289,12 @@ class Export:
       for c in evt.can:
         a, d, src = c.address, c.dat, c.src
         if src == 1 and a == TI_FEEDBACK and len(d) >= 7:
-          if d[4] and not r["ti_vi"]:
-            self.counts["ti_faults"] += 1   # a VIOL code raised (0x11: the ceiling held too long)
+          if d[3] == 3:
+            self.ti_ran = True
+          if d[4] and not r["ti_vi"] and self.ti_ran:
+            # a VIOL code raised after the TI has run (0x11: the ceiling held too long). Its power-up frame carries
+            # 0x12 for one frame before it clears, and that is not a fault
+            self.counts["ti_faults"] += 1
           r["ti_drv"], r["ti_st"], r["ti_vi"] = d[0] - 127, d[3], d[4]
           self.edge("ti", (d[3], d[4], d[5]), "ti", lambda v: f"TI state {v[0]} VIOL 0x{v[1]:02x} ERROR 0x{v[2]:02x}")
         elif src == STOCK and a == STEER_TORQUE:
