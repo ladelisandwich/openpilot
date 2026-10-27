@@ -401,6 +401,22 @@ def migrate_aol_lkas_to_button_control(params: Params | None = None) -> bool:
   return True
 
 
+def read_live_torque_cache(msg_bytes):
+  """torqued caches its whole liveTorqueParameters event (torqued.py: msg.to_bytes()), so the cache has to be read as
+  one. Read as the bare LiveTorqueParametersData struct instead, liveValid and useParams land on bits 0 and 1 of the
+  event's logMonoTime: a coin flip at every cache write, which made Force Auto Tune (gated on useParams being false)
+  come and go between drives and started torqued in its decimated mode at random. Returns the reader, or None."""
+  if not msg_bytes:
+    return None
+  try:
+    evt = messaging.log_from_bytes(msg_bytes, log.Event)
+    if evt.which() != "liveTorqueParameters":
+      return None
+    return evt.liveTorqueParameters
+  except Exception:
+    return None
+
+
 class StarPilotVariables:
   def __init__(self):
     self.params = Params(return_defaults=True)
@@ -670,9 +686,8 @@ class StarPilotVariables:
     self._sync_stock_param("VEgoStarting", "VEgoStartingStock", toggle.vEgoStarting)
     self._sync_stock_param("VEgoStopping", "VEgoStoppingStock", toggle.vEgoStopping)
 
-    msg_bytes = self.params.get("LiveTorqueParameters")
-    if msg_bytes:
-      LTP = messaging.log_from_bytes(msg_bytes, log.LiveTorqueParametersData)
+    LTP = read_live_torque_cache(self.params.get("LiveTorqueParameters"))
+    if LTP is not None:
       has_auto_tune = LTP.useParams
       toggle.liveValid = LTP.liveValid
     else:
