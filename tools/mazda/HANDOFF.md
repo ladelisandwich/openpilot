@@ -48,7 +48,7 @@ local or cloud, can continue without the old conversation.
    lane-keep button is the LKAS button (and the camera's lane-keep state is ignored on TI cars), gear is kept
    through the gap between positions. Toggles `MazdaWiperWeatherMode` and `MazdaHornBookmark`. The custom
    car state gained six fields, so a device rebuild happens on first boot after the update.
-5. The live-tune gate found and fixed (uncommitted on the PC as of this note; see the log): the StarPilot
+5. The live-tune gate found and fixed (190f74d0, on the device since the evening of 27 Oct): the StarPilot
    process read torqued's cached `LiveTorqueParameters` with the wrong capnp struct, so `has_auto_tune` and
    `liveValid` were bits of the cache's timestamp. `read_live_torque_cache()` in `starpilot_variables.py` reads
    it as the event torqued writes, with a regression test. The export gained the `fat fato cust_laf cust_fric
@@ -93,8 +93,9 @@ local or cloud, can continue without the old conversation.
 
 ## Next steps
 
-1. Commit and push the cache-reader fix (`starpilot_variables.py` + test) and the export/analysis changes
-   (owner's call: the push reboots the device). With the fix, Force Auto Tune ON makes the live tune apply on
+1. Done 27 Oct: the cache-reader fix and the export/analysis changes are pushed (190f74d0, d04f6aa4) and
+   installed; after the reboot the device's toggle broadcast reads Force Auto Tune on and liveValid from the
+   real cache. With the fix, Force Auto Tune ON makes the live tune apply on
    every drive as soon as torqued's message is valid, which is the "apply on every drive" option without
    touching `ALLOWED_CARS`. Adding `mazda` there would additionally show the torque-calibration progress in the
    UI and make the toggle moot; not required.
@@ -153,4 +154,8 @@ since 6 Oct, yet the logged toggle broadcast said off on the drives without the 
 of the live-tune cache (bits of the timestamp as `useParams`/`liveValid`), fixed it with `read_live_torque_cache()`
 and a regression test, verified on the device (19 fixture-free tests pass, lint unchanged). Export gained the
 toggle-broadcast and message-interval columns; `analysis/gate.py` added. Re-exported routes 50-63 on the device
-into `/data/tune_export_gate` with the new tool (`/data/tune_export.py`). Nothing pushed yet.
+into `/data/tune_export_gate` with the new tool (`/data/tune_export.py`). Owner said to push once the export
+finished: pushed 190f74d0 and d04f6aa4 over ssh (the https remote has no credential helper from a plain shell),
+signalled the updater (it checks only once per boot; SIGHUP is what the Download button sends), the device
+rebooted onto d04f6aa4 and its broadcast now reads Force Auto Tune on. This note's wording was corrected in a
+later docs-only commit.
