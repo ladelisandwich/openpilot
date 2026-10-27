@@ -74,3 +74,41 @@ cloud, can continue without the old conversation.
 5. Still unidentified: the three sensor-like bytes of 0x09e; the climate bits; `DOORS_LOCKED` is tentative.
 6. Earlier open items: the panda GEN1 TI torque-check gap in `opendbc/safety/modes/mazda.h`; the owner
    confirmed the long press on the mode switch works.
+
+## Compact log of the last days (what was asked, what was done)
+
+**Fri 24 Oct, steering.** Owner: still running out of torque on steering commands, low speed sluggish and slow.
+From the tune export: the interceptor faults (STATE OFF, VIOL 0x11) after about 1.9 s of an unbroken 800 command,
+and the EPS torque sensor stops answering above about 650 counts. Done: TI ceiling 700 with a dip guard,
+speed-shaped lateral gain and friction for the TI, the CX-9's real wheelbase and mass, zoompilot's steer-limit
+classifier behind a toggle (owner asked to look at zoompilot and at the other branches' torque controllers:
+nothing TI-specific anywhere). Also: resume from a stop was not happening on its own; fixed by keeping the brake
+released until the car moves. 185 lateral tests, 59 Mazda tests, panda harness runs.
+
+**Sat 25 Oct, the bus.** Owner asked what lives on the CAN bus and could be controlled (blinkers, high beams).
+Built `can_census.py`; three minutes of one drive identified RPM, speed, acceleration and steering-angle bytes,
+multiplexed frames, the VIN text broadcast, node beacons. Owner: "dig into the unknown third." Gave an action
+recording protocol; owner recorded at 8:05 pm (route 00000060) and later an all-parked afternoon session
+(route 0000005f). Added `--dump` and `can_dump_events.py`; matched every byte change to the switch operated;
+about forty signals added to the DBC (light switch and lever, wipers, washers, horn, lock switch, window
+switch, wheel buttons, lane-keep and DSC OFF buttons, off-road traction button, lamps, reverse, parking brake,
+auto-hold states, liftgate position, ignition bits), the last five named from the owner's answers. The device
+rebooted twice mid-run: its updater installs each push when the car is off.
+
+**Sun 26 Oct, using the inputs.** Owner asked what each signal could control: wrote `CONTROLLABILITY.md`
+(only the four existing outputs are commandable; everything decoded is an input). Owner asked for ideas,
+then to implement them all, and noted the mode-switch long press works. Done: parking brake blocks
+engagement, liftgate counts as a door, TCS off as espDisabled behind a toggle, blinkers from the stalk,
+hazards hold the hybrid resume, the lane-keep button as the LKAS button (camera lane-keep state ignored on
+TI cars at the owner's request), gear kept through the lever gap, auto hold and lamps logged, "Wipers Mean
+Rain" and "Horn Tap Bookmarks" toggles, export columns. Three-day export read: no interceptor faults (the
+counted one per route was its power-up frame, export fixed), highway unchanged, low speed too thin to judge,
+a steady +0.23 integrator bias at highway speed, driver-pressed at low speed is real hands.
+
+**Mon 27 Oct, the live tune.** Today's two drives exported with the new offset column: torqued's offset is
+-0.22 and steady; the integrator cancels it. Fitting the feedforward showed the live tune reaches the
+controller on only some drives (2 of 8). Mazda is not in torqued's allowed list, so it applies only through
+Force Auto Tune; which gate flips between drives is not yet known. Export instrumented to say; owner asked to
+re-export today's drives and whether Force Auto Tune was changed. Owner then asked to move the session off
+the cloud: analysis scripts and this note went into the repo; the PC's `~/openpilot` clone has no remote for
+the fork yet (add `mine` for ladelisandwich/openpilot, or use whichever clone already has it).
