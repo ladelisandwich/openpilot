@@ -41,6 +41,13 @@ Row columns (units: m/s, m/s^2, deg, TI/EPS counts; flags 0/1):
   ltp_valid ltp_use            the liveTorqueParameters message valid (all of torqued's inputs valid), torqued's useParams flag:
                                controlsd applies the live tune only with both (or Force Auto Tune for the second)
   pose_ok cal lag_ok           livePose valid, calibration status (1 calibrated), liveDelay valid: torqued's inputs
+  fat fato cust_laf cust_fric  the toggles controlsd runs on, from the StarPilot toggle broadcast (starpilotPlan): Force Auto
+                               Tune, Force Auto Tune Off, and whether the hand-set latAccelFactor / friction replace the live
+                               ones. The live tune reaches the controller only with ltp_valid and (ltp_use or fat), and the
+                               live factor / friction only without cust_laf / cust_fric. The route's params snapshot (json) is
+                               the logger's copy of the params and can miss keys; these columns are what ran.
+  ltp_dt                       seconds since the previous liveTorqueParameters message (torqued sends at 4 Hz; controlsd
+                               also drops the live tune while the message's rate or age is off)
 Each engaged stop is also an event ("stop") saying how it ended: openpilot RES, on its own, the driver's gas or RES,
 or never (disengaged at a standstill), when openpilot first asked to go, and whether the car's auto hold held or the
 hazards were on during the stop (either can explain a resume that did not happen).
@@ -80,11 +87,12 @@ PARAM_KEYS = re.compile("|".join(("Steer", "Lateral", "Torque", "Lat", "NNFF", "
 COLUMNS = ("t seg v a steer rate drv prs lat en long cc_tq out_tq sp got err p i d f out sat dcurv curv mcurv roll laf fric " +
            "ti_cmd stock_cmd ti_st ti_vi ti_drv eps_sen eps_mot blk eff blink flt cc_acc out_acc lstate atgt " +
            "gas brk gas_pct brk_p acc_x cruise vset st_cmd st_ok op_cmd st_alive op_alive rlead ld ld_d ld_v exp pers " +
-           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp laoff ltp_ok ltp_valid ltp_use pose_ok cal lag_ok").split()
+           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp laoff ltp_ok ltp_valid ltp_use pose_ok cal lag_ok " +
+           "fat fato cust_laf cust_fric ltp_dt").split()
 ROUND = {"t": 3, "v": 3, "a": 3, "steer": 2, "rate": 1, "drv": 1, "cc_tq": 4, "out_tq": 4, "sp": 3, "got": 3, "err": 3,
          "p": 4, "i": 4, "d": 4, "f": 4, "out": 4, "dcurv": 6, "curv": 6, "mcurv": 6, "roll": 4, "laf": 3, "fric": 3,
          "eps_sen": 1, "eps_mot": 1, "cc_acc": 3, "out_acc": 3, "atgt": 3, "gas_pct": 1, "acc_x": 2, "vset": 2,
-         "ld_d": 1, "ld_v": 2, "laoff": 3}
+         "ld_d": 1, "ld_v": 2, "laoff": 3, "ltp_dt": 3}
 
 DBC_2017 = DBC("mazda_2017")
 
@@ -180,12 +188,34 @@ class Export:
     self.t = 0.0
     self.tc = 0.0                   # CAN clock (see hybrid_report: liveness judged on the CAN stream's own clock)
     self.stock_last = self.op_last = -1e9
+    self.ltp_last = None
     self.next_row = 0.0
     self.prev = {}
     self.btn_prev = {STOCK: 0, OP_ECHO: 0}
-    self.meta = {"build": None, "branch": None, "carParams": None, "params": {}, "segments": []}
+    self.meta = {"build": None, "branch": None, "carParams": None, "params": {}, "toggles": None, "segments": []}
     self.counts = {"rows": 0, "lat_s": 0.0, "ceil_s": 0.0, "sat_s": 0.0, "lowspeed_lat_s": 0.0, "takeovers": 0, "handbacks": 0,
                    "ti_faults": 0, "stops": 0, "stops_openpilot_went": 0, "stops_driver_went": 0, "stops_never_went": 0}
+
+  def feed_toggles(self, text: str) -> None:
+    """The StarPilot process broadcasts its toggles as JSON on starpilotPlan every few seconds (and right after a
+    change); between broadcasts the field is empty and the last values stand. Keep the gate-related ones."""
+    if not text:
+      return
+    try:
+      tog = json.loads(text)
+    except ValueError:
+      return
+    r = self.r
+    r["fat"], r["fato"] = int(bool(tog.get("force_auto_tune"))), int(bool(tog.get("force_auto_tune_off")))
+    r["cust_laf"], r["cust_fric"] = int(bool(tog.get("use_custom_latAccelFactor"))), int(bool(tog.get("use_custom_friction")))
+    keep = ("force_auto_tune", "force_auto_tune_off", "use_custom_latAccelFactor", "use_custom_friction", "latAccelFactor",
+            "friction", "steerRatio", "use_custom_steerRatio", "steerActuatorDelay", "use_custom_steerActuatorDelay", "liveValid",
+            "nnff", "nnff_lite", "flm_trial_applied", "flm_active_profile_id", "mazda_steer_limit_classifier")
+    gate = {k: tog.get(k) for k in keep}
+    if self.meta["toggles"] is None:
+      self.meta["toggles"] = gate
+    self.edge("toggles", json.dumps(gate, sort_keys=True), "toggles",
+              lambda v: {k: tog.get(k) for k in keep if tog.get(k) != self.meta["toggles"].get(k)} or "(same as the route start)")
 
   def event(self, kind: str, detail) -> None:
     self.events_out.write(f"{self.t:.3f},{kind},{json.dumps(detail)}\n")
@@ -259,9 +289,13 @@ class Export:
     elif w == "liveTorqueParameters":
       ltp = evt.liveTorqueParameters
       r["laf"], r["fric"] = ltp.latAccelFactorFiltered, ltp.frictionCoefficientFiltered
+      r["ltp_dt"] = None if self.ltp_last is None else t_abs - self.ltp_last
+      self.ltp_last = t_abs
       r["laoff"], r["ltp_ok"] = ltp.latAccelOffsetFiltered, int(ltp.liveValid)
       # whether controlsd will take them: the message must be valid (every torqued input valid) and useParams set
       r["ltp_valid"], r["ltp_use"] = int(evt.valid), int(ltp.useParams)
+    elif w == "starpilotPlan":
+      self.feed_toggles(evt.starpilotPlan.starpilotToggles)
     elif w == "livePose":
       r["pose_ok"] = int(evt.valid)
     elif w == "liveCalibration":
