@@ -122,6 +122,7 @@ BO_ 577 STEER_RATE: 8 XXX
  SG_ LKAS_BLOCK : 50|1@1+ (1,0) [0|3] "" XXX
  SG_ LKAS_TRACK_STATE : 52|1@0+ (1,0) [0|3] "" XXX
  SG_ CHKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+ SG_ LKAS_FAULT : 53|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 582 CAM_LANEMAYBE: 8 XXX
  SG_ NEW_SIGNAL_4 : 40|8@1+ (1,0) [0|127] "" XXX
@@ -131,6 +132,7 @@ BO_ 582 CAM_LANEMAYBE: 8 XXX
  SG_ NEW_SIGNAL_3 : 15|16@0+ (1,0) [0|65535] "" XXX
 
 BO_ 541 CAM_EMPTY: 8 XXX
+ SG_ STATUS : 7|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 605 CAM_PEDESTRIAN: 8 XXX
  SG_ CTR : 17|4@0+ (1,0) [0|255] "" XXX
@@ -193,6 +195,7 @@ BO_ 863 CAM_TRAFFIC_SIGNS: 8 XXX
  SG_ SPEED_SIGN_ON : 12|1@0+ (1,0) [0|3] "" XXX
  SG_ STOP_SIGN : 31|4@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_4 : 33|1@0+ (1,0) [0|1] "" XXX
+ SG_ SPEED_SIGN_UNIT : 13|2@0+ (1,0) [0|3] "" XXX
 
 BO_ 1157 CAM_SETTINGS: 8 XXX
  SG_ SBS_WARNING_DISTANCE : 25|2@0+ (1,0) [0|127] "" XXX
@@ -238,7 +241,8 @@ BO_ 1446 NEW_MSG_a600: 8 XXX
 BO_ 1416 MSG_18: 8 XXX
 
 BO_ 1086 DOORS: 8 XXX
- SG_ LEFTGATE : 32|1@0+ (1,0) [0|1] "" XXX
+ SG_ DOORS_LOCKED : 29|1@0+ (1,0) [0|1] "" XXX
+ SG_ LIFTGATE_OPEN : 32|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_3 : 53|1@0+ (1,0) [0|255] "" XXX
  SG_ KEYFOB_HORN : 2|1@0+ (1,0) [0|1] "" XXX
  SG_ KEYFOB_LOCK : 3|1@0+ (1,0) [0|1] "" XXX
@@ -260,6 +264,8 @@ BO_ 977 TWO_STATES: 8 XXX
  SG_ NEW_SIGNAL_6 : 36|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_7 : 47|8@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_8 : 51|1@0+ (1,0) [0|1] "" XXX
+ SG_ SPEED_SIGN_UNIT : 37|2@0+ (1,0) [0|3] "" XXX
+ SG_ SPEED_SIGN : 28|7@0+ (1,0) [0|127] "" XXX
 
 BO_ 1085 MSG_12: 8 XXX
  SG_ NEW_SIGNAL_3 : 36|1@0+ (1,0) [0|255] "" XXX
@@ -270,8 +276,13 @@ BO_ 1085 MSG_12: 8 XXX
  SG_ NEW_SIGNAL_6 : 40|3@1+ (1,0) [0|7] "" XXX
 
 BO_ 159 MSG_11: 8 XXX
+ SG_ LAMPS_ON_2 : 47|1@0+ (1,0) [0|1] "" XXX
+ SG_ ILLUMINATION : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_1 : 50|4@1+ (1,0) [0|15] "" XXX
  SG_ INCREASEING : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ REVERSE_LAMP : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ LAMPS_ON : 3|1@0+ (1,0) [0|1] "" XXX
+ SG_ PARKING_BRAKE : 4|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1278 NEW_MSG_3: 8 XXX
  SG_ NEW_SIGNAL_2 : 23|8@0+ (1,0) [0|255] "" XXX
@@ -331,6 +342,8 @@ BO_ 1045 TRACTION: 8 XXX
  SG_ TCS_DCS_MALFUNCTION : 6|2@0+ (1,0) [0|3] "" XXX
  SG_ LOUD_BEEP : 28|1@0+ (1,0) [0|1] "" XXX
  SG_ TPMS_WARNING_DOUBLE_BLINK : 31|1@0+ (1,0) [0|1] "" XXX
+ SG_ TCS_OFF : 4|1@0+ (1,0) [0|1] "" XXX
+ SG_ TCS_OFF_2 : 40|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1034 MSG_07: 8 XXX
  SG_ NEW_SIGNAL_1 : 6|3@0+ (1,0) [0|3] "" XXX
@@ -376,6 +389,10 @@ BO_ 158 MSG_05: 8 XXX
  SG_ NEW_SIGNAL_1 : 23|8@0+ (1,0) [0|15] "" XXX
  SG_ NEW_SIGNAL_2 : 47|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_3 : 55|8@0+ (1,0) [0|255] "" XXX
+ SG_ IGNITION_ON : 7|1@0+ (1,0) [0|1] "" XXX
+ SG_ DSC_OFF_BUTTON : 3|1@0+ (1,0) [0|1] "" XXX
+ SG_ LAS_BUTTON : 8|1@0+ (1,0) [0|1] "" XXX
+ SG_ OFFROAD_TRACTION_BUTTON : 60|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 157 CRZ_BTNS: 8 XXX
  SG_ BIT1 : 16|1@0+ (1,0) [0|1] "" XXX
@@ -398,6 +415,8 @@ BO_ 157 CRZ_BTNS: 8 XXX
  SG_ MODE_Y_INV : 30|1@0+ (1,0) [0|1] "" XXX
  SG_ MODE_X_INV : 31|1@0+ (1,0) [0|1] "" XXX
  SG_ CTR : 29|4@0+ (1,0) [0|15] "" XXX
+ SG_ BIT1_INV : 15|1@0+ (1,0) [0|1] "" XXX
+ SG_ TJA_BUTTON : 11|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 154 BLINK_INFO: 8 XXX
  SG_ LEFT_BLINK : 18|1@1+ (1,0) [0|3] "" XXX
@@ -410,13 +429,24 @@ BO_ 154 BLINK_INFO: 8 XXX
  SG_ LBEAM1 : 17|1@0+ (1,0) [0|1] "" XXX
  SG_ LBEAM2 : 50|1@0+ (1,0) [0|1] "" XXX
  SG_ LBEAM3 : 60|1@0+ (1,0) [0|1] "" XXX
+ SG_ FRONT_WASHER : 53|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 145 TURN_SWITCH: 8 XXX
+ SG_ HORN : 52|4@0+ (1,0) [0|15] "" XXX
  SG_ HAZARD : 10|1@0+ (1,0) [0|1] "" XXX
  SG_ TURN_RIGHT_SWITCH : 12|1@0+ (1,0) [0|3] "" XXX
  SG_ TURN_LEFT_SWITCH : 13|1@0+ (1,0) [0|255] "" XXX
  SG_ CTR : 27|4@0+ (1,0) [0|255] "" XXX
  SG_ CHKSUM : 39|8@0+ (1,0) [0|15] "" XXX
+ SG_ HEADLAMPS_REQ : 4|1@0+ (1,0) [0|1] "" XXX
+ SG_ PARKING_LAMPS_REQ : 5|1@0+ (1,0) [0|1] "" XXX
+ SG_ LEVER_FORWARD : 3|1@0+ (1,0) [0|1] "" XXX
+ SG_ LIGHT_SWITCH_OFF : 14|1@0+ (1,0) [0|1] "" XXX
+ SG_ LEVER_PULLED : 15|1@0+ (1,0) [0|1] "" XXX
+ SG_ WIPER_SWITCH : 21|2@0+ (1,0) [0|3] "" XXX
+ SG_ WIPER_MIST : 17|1@0+ (1,0) [0|1] "" XXX
+ SG_ REAR_WIPER_SWITCH : 19|2@0+ (1,0) [0|3] "" XXX
+ SG_ REAR_WASHER : 16|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 80 MSG_04: 8 XXX
  SG_ NEW_SIGNAL_1 : 25|1@0+ (1,0) [0|1] "" XXX
@@ -471,6 +501,8 @@ BO_ 552 GEAR: 8 XXX
  SG_ MORE_GEAR : 7|4@0+ (1,0) [0|15] "" XXX
  SG_ GEAR : 2|3@0+ (1,0) [0|7] "" XXX
  SG_ GEAR_BOX : 36|4@0+ (1,0) [0|15] "" XXX
+ SG_ BRAKE_HOLD : 20|1@0+ (1,0) [0|1] "" XXX
+ SG_ SHIFT_IN_PROGRESS : 8|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 543 CRZ_EVENTS: 8 XXX
  SG_ CTR : 51|4@0+ (1,0) [0|15] "" XXX
@@ -522,6 +554,7 @@ BO_ 540 CRZ_CTRL: 8 XXX
  SG_ NEW_SIGNAL_7 : 22|2@0+ (1,0) [0|3] "" XXX
  SG_ RADAR_HAS_LEAD : 23|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_9 : 28|15@0+ (1,0) [0|16383] "" XXX
+ SG_ ACC_GAS_MAYBE2 : 29|1@0+ (1,0) [0|1] "" XXX
  SG_ RADAR_LEAD_RELATIVE_DISTANCE : 31|3@0+ (1,0) [0|5] "" XXX
  SG_ NEW_SIGNAL_5 : 42|6@0+ (1,0) [0|3] "" XXX
  SG_ DISABLE_TIMER_1 : 43|3@1+ (1,0) [0|7] "" XXX
@@ -529,6 +562,14 @@ BO_ 540 CRZ_CTRL: 8 XXX
  SG_ NEW_SIGNAL_6 : 49|3@1+ (1,0) [0|3] "" XXX
  SG_ ACC_ACTIVE_2 : 52|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_4 : 63|8@0+ (1,0) [0|3] "" XXX
+ SG_ HANDS_ON_STEER_WARN : 59|4@0+ (1,0) [0|255] "" XXX
+ SG_ 5_SEC_DISABLE_TIMER : 45|3@0+ (1,0) [0|7] "" XXX
+ SG_ NEW_SIGNAL_10 : 30|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_3 : 13|1@0+ (1,0) [0|3] "" XXX
+ SG_ MSG_1_COPY : 9|1@0+ (1,0) [0|1] "" XXX
+ SG_ MSG_1_INV_COPY : 8|1@0+ (1,0) [0|7] "" XXX
+ SG_ MSG_1_INV : 1|1@0+ (1,0) [0|1] "" XXX
+ SG_ MSG_1 : 0|1@0+ (1,0) [0|3] "" XXX
 
 BO_ 539 CRZ_INFO: 8 XXX
  SG_ STATUS : 7|8@0+ (1,0) [0|255] "" XXX
@@ -542,7 +583,9 @@ BO_ 539 CRZ_INFO: 8 XXX
  SG_ MYSTERY_BIT : 47|1@0+ (1,0) [0|255] "" XXX
  SG_ CTR1 : 51|4@0+ (1,0) [0|255] "" XXX
  SG_ STOPPING_MAYBE2 : 52|1@0+ (1,0) [0|1] "" XXX
+ SG_ RESUME_UNLATCHING_MAYBE : 54|1@0+ (1,0) [0|1] "" XXX
  SG_ CHECKSUM : 56|8@1+ (1,0) [0|255] "" XXX
+ SG_ CHKSUM : 63|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 121 EPB: 8 XXX
  SG_ NEW_SIGNAL_1 : 4|4@0+ (1,0) [0|255] "" XXX
@@ -557,6 +600,7 @@ BO_ 121 EPB: 8 XXX
  SG_ NEW_SIGNAL_10 : 46|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_11 : 45|1@0+ (1,0) [0|1] "" XXX
  SG_ EPB_ACTIVE : 29|1@0+ (1,0) [0|15] "" XXX
+ SG_ HOLD_STATE : 19|4@0+ (1,0) [0|15] "" XXX
 
 BO_ 1070 2017_1: 8 XXX
 
@@ -620,6 +664,7 @@ BO_ 529 NEW_MSG_36: 8 XXX
  SG_ CTR_2 : 47|4@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_4 : 40|4@1+ (1,0) [0|3] "" XXX
  SG_ NEW_SIGNAL_5 : 53|1@0+ (1,0) [0|255] "" XXX
+ SG_ TCS_OFF : 55|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1242 NEW_MSG_37: 8 XXX
 
@@ -663,6 +708,7 @@ BO_ 1143 BSM: 8 XXX
  SG_ RIGHT_BS_DISTANCE : 35|3@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_1 : 32|1@0+ (1,0) [0|1] "" XXX
  SG_ REAR_CT_ALERT : 23|5@0+ (1,0) [0|63] "" XXX
+ SG_ BSM_MODE : 17|2@0+ (1,0) [0|3] "" XXX
 
 BO_ 480 ACCEL_TEST: 8 XXX
  SG_ ACCEL_COMMAND : 7|32@0- (1,0) [-2147483647|2147483647] "" XXX
@@ -675,10 +721,16 @@ BO_ 1361 KEY_POSITION: 8 XXX
 BO_ 1283 KEY_POSITION2: 8 XXX
 
 BO_ 628 MSG_06: 8 XXX
+ SG_ WINDOW_SWITCH : 45|2@0+ (1,0) [0|3] "" XXX
+ SG_ WINDOW_SWITCH_ACTIVE : 47|1@0+ (1,0) [0|1] "" XXX
+ SG_ STEERING_WHEEL_BUTTON : 61|2@0+ (1,0) [0|3] "" XXX
+ SG_ IGNITION_ON : 34|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 1154 MSG_08: 8 XXX
 
 BO_ 1139 MSG_13: 8 XXX
+ SG_ LIFTGATE_STATE : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ LIFTGATE_POSITION : 31|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 1270 MSG_16: 8 XXX
 
@@ -716,37 +768,106 @@ BO_ 865 RADAR_361: 8 XXX
  SG_ INVERSE_SPEED : 43|12@0- (1,0) [0|4095] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
  SG_ BIT : 63|1@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC : 36|3@0+ (1,0) [0|31] "" XXX
+ SG_ DISTANCE_RELATED : 33|4@0+ (1,0) [0|3] "" XXX
+ SG_ RELATIVE_VEL_LEAD : 31|11@0- (1,0) [0|255] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ DISTANCE_LEAD : 7|24@0+ (1,0) [0|31] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 866 RADAR_362: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|12@0+ (1,0) [0|268435455] "" XXX
  SG_ CLIPPED_STEER_ANGLE : 43|12@0+ (1,0) [0|4095] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC_2 : 63|4@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_1 : 44|1@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_4 : 34|3@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 : 33|4@0+ (1,0) [0|3] "" XXX
+ SG_ CURVE_3 : 31|11@0- (1,0) [0|63] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ CURVE_2 : 11|12@0- (1,0) [0|127] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ CURVE_1 : 7|12@0+ (1,0) [0|131071] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 867 RADAR_363: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_2 : 47|1@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_3 : 46|1@0+ (1,0) [0|3] "" XXX
+ SG_ FLIPPY_4 : 44|1@0+ (1,0) [0|3] "" XXX
+ SG_ STATIC_4 : 43|16@0+ (1,0) [0|255] "" XXX
+ SG_ FLIPPY_1 : 31|3@0+ (1,0) [0|7] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ CURVE_3 : 28|13@0+ (1,0) [0|255] "" XXX
+ SG_ CURVE_2 : 11|12@0+ (1,0) [0|255] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ CURVE_1 : 7|12@0+ (1,0) [0|255] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 868 RADAR_364: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC_1 : 47|1@0+ (1,0) [0|15] "" XXX
+ SG_ FLIPPY_1 : 46|1@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 44|1@1+ (1,0) [0|3] "" XXX
+ SG_ STATIC_2 : 43|16@0+ (1,0) [0|7] "" XXX
+ SG_ FLIPPERS_1 : 31|4@0+ (1,0) [0|15] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ NEW_SIGNAL_3 : 27|12@0- (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 11|12@0- (1,0) [0|15] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ NEW_SIGNAL_1 : 7|12@0+ (1,0) [0|255] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 869 RADAR_365: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_2 : 63|2@0+ (1,0) [0|15] "" XXX
+ SG_ STATIC : 61|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 : 39|6@0+ (1,0) [0|63] "" XXX
+ SG_ RELATED_2 : 33|18@0+ (1,0) [0|15] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ RELATED_1 : 9|18@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 : 7|14@0+ (1,0) [0|65535] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 870 RADAR_366: 8 XXX
  SG_ MSGS_1 : 7|32@0+ (1,0) [0|4294967295] "" XXX
  SG_ MSGS_2 : 39|28@0+ (1,0) [0|268435455] "" XXX
  SG_ CTR : 59|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_7 : 55|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_6 : 47|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_5 : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_4 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ RELV_OBJ : 31|11@0- (0.0625,0) [-64|63.9375] "m/s" XXX
+ SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ ANG_OBJ : 11|12@0- (0.015625,0) [-32|31.984375] "deg" XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ DIST_OBJ : 7|12@0+ (0.0625,0) [0|255.9375] "m" XXX
 
 BO_ 1177 RADAR_499_STATIC: 8 XXX
 
 
 
+
+BO_ 1093 MSG_445: 8 XXX
+ SG_ BUTTON_UNKNOWN_3_INV : 7|1@0+ (1,0) [0|1] "" XXX
+ SG_ REVERSE : 16|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 1271 MSG_4F7: 8 XXX
+ SG_ PARKING_BRAKE : 26|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 1257 MSG_4E9: 8 XXX
+ SG_ LOCK_SWITCH : 9|1@0+ (1,0) [0|1] "" XXX
+ SG_ LOCK_SWITCH_INV : 23|1@0+ (1,0) [0|1] "" XXX
 
 CM_ SG_ 357 GEAR "13P, 26R, 13N, 24D";
 CM_ SG_ 605 PED_BRAKE "3: no brake, 4: brake";
@@ -779,3 +900,42 @@ VAL_ 540 RADAR_HAS_LEAD 0 "NO LEAD" 1 "HAS LEAD" ;
 VAL_ 540 RADAR_LEAD_RELATIVE_DISTANCE 0 "NO LEAD" 1 "FARTHEST" 2 "4" 3 "3" 4 "2" 5 "NEAREST" ;
 VAL_ 1143 LEFT_BS_STATUS 0 "No object detected" 1 "Object detected in left blindspot" 2 "Object detected in left blindspot with blinker - warning"
 VAL_ 1143 RIGHT_BS_STATUS 0 "No object detected" 1 "Object detected in right blindspot" 2 "Object detected in right blindspot with blinker - warning"
+CM_ BO_ 977 "the nav unit's speed limit (zoompilot names it NAV_SPEED_LIMIT): SPEED_SIGN 0 = none, SPEED_SIGN_UNIT as CAM_TRAFFIC_SIGNS";
+CM_ SG_ 145 WIPER_SWITCH "front wiper stalk: 0 off, 1 low, 2 high, 3 auto";
+CM_ SG_ 145 WIPER_MIST "1 while the stalk is held at mist";
+CM_ SG_ 145 HEADLAMPS_REQ "1 in the light switch's headlamp position, and while high beams are commanded";
+CM_ SG_ 145 PARKING_LAMPS_REQ "1 in the light switch's parking-lamp and headlamp positions";
+CM_ SG_ 145 LIGHT_SWITCH_OFF "1 in the light switch's off position (BLINK_INFO.LOW_BEAMS reads 0)";
+CM_ SG_ 154 FRONT_WASHER "0.5 s pulse of the front washer pump; the wipers sweep after it";
+CM_ SG_ 159 REVERSE_LAMP "1 while the lever is in R";
+CM_ SG_ 159 PARKING_BRAKE "follows EPB.EPB_ACTIVE";
+CM_ SG_ 158 LAS_BUTTON "lane keep (LAS) button: a 0.1 s pulse per press; the camera's CAM_LANEINFO.LANE_LINES toggles";
+CM_ SG_ 158 DSC_OFF_BUTTON "a 0.15 s pulse per press of the DSC OFF button";
+CM_ SG_ 158 IGNITION_ON "0 after key off";
+CM_ SG_ 1045 TCS_OFF "set with TCS_OFF_2 and NEW_MSG_36.TCS_OFF after one short press of DSC OFF; DSC_OFF (bit 3) did not move";
+CM_ SG_ 1045 BRAKE "1 while auto hold is holding (EPB.HOLD_STATE 3)";
+CM_ SG_ 121 HOLD_STATE "auto hold: 1 not available (driver unbelted), 2 standby, 3 holding, 6 releasing";
+CM_ SG_ 515 START1 "1 while the parking brake is applied";
+CM_ SG_ 515 START2 "28 while the parking brake is applied; a 0.2 s pulse of 1 at each auto-hold button press";
+CM_ SG_ 552 SHIFT_IN_PROGRESS "about 1 s pulse at each lever move";
+CM_ SG_ 1143 BSM_MODE "1 normal, 2 in reverse (rear cross traffic alert)";
+CM_ SG_ 1086 LIFTGATE_OPEN "renamed from LEFTGATE: 1 while the liftgate is unlatched";
+CM_ SG_ 1086 NEW_SIGNAL_3 "tentative brake-pedal mirror: 1 while the pedal was held, with up to 4 s of lag";
+CM_ SG_ 1093 REVERSE "1 while the lever is in R";
+CM_ SG_ 1093 BUTTON_UNKNOWN_3_INV "0 for 1 s on a button not yet identified, pressed after DSC OFF in the 2026-10-25 recording";
+CM_ SG_ 1271 PARKING_BRAKE "follows EPB.EPB_ACTIVE";
+CM_ SG_ 145 LEVER_PULLED "1 while the lever is pulled toward the driver: BLINK_INFO.HIGH_BEAMS reads 3 and HEADLAMPS_REQ 1 for as long as it is held (a flash is about 1 s)";
+CM_ SG_ 145 LEVER_FORWARD "1 while the lever sits pushed forward with the switch in auto or parking lamps: no high beams by day; at night the camera's CAM_LANEINFO bit 2 followed it (auto high beam)";
+CM_ SG_ 145 REAR_WIPER_SWITCH "rear wiper knob: 0 off, 3 intermittent (BLINK_INFO.REAR_WIPER_ON pulses once), 1 on (REAR_WIPER_ON stays 1); 2 is passed between them";
+CM_ SG_ 145 REAR_WASHER "1 while the rear washer is held; the rear wiper runs for a few seconds after";
+CM_ SG_ 145 HORN "15 while the horn is pressed (a 0.7 s tap in the 2026-10-25 afternoon recording, placed by the order of the actions); 0 otherwise";
+CM_ SG_ 159 LAMPS_ON "1 while any exterior lamps are on (parking lamps included); 0 with the switch off, or in auto by day";
+CM_ SG_ 159 LAMPS_ON_2 "follows LAMPS_ON";
+CM_ SG_ 159 ILLUMINATION "95 with the lamps off, 100 with them on; a dimmer level by the look of it";
+CM_ SG_ 1139 LIFTGATE_POSITION "0 closed to 76 open, over about 5 s each way; the message is all zero but bytes 5-6 except while the power liftgate moves, when LIFTGATE_STATE runs 0x90, 0x10, 0x14, 0x20..0x32";
+CM_ SG_ 1257 LOCK_SWITCH "1 for 2-3 s after each press of the door lock switch (three presses in the afternoon recording, one at night); LOCK_SWITCH_INV is its inverse. DOORS_LOCKED did not move with it";
+CM_ SG_ 628 WINDOW_SWITCH "driver's window switch while pushed: 1 down, 2 up (by the order down, up, down, up of the recording), with WINDOW_SWITCH_ACTIVE 1; the switch, not the motor";
+CM_ SG_ 628 STEERING_WHEEL_BUTTON "3 while any button on the left spoke of the wheel is pressed: five different buttons gave the same value, so which one is not on this bus";
+CM_ SG_ 158 OFFROAD_TRACTION_BUTTON "1 while the off-road traction assist button beside DSC OFF is pressed (about 1 s); no state bit found for it yet";
+CM_ SG_ 1086 DOORS_LOCKED "tentative: 1 except between the auto-unlock after key off and 5 s after the driver door closed; it did not move when the lock switch was pressed with the ignition on";
+CM_ BO_ 1078 "climate, with fan, temperature and defrost pressed in that order: byte 2 bits 0, 3, 4 toggled with the first presses, byte 2 bit 7 and byte 0 bits 0-2 and 4 moved after, and byte 0 bit 6 pulsed once for 0.3 s together with BLINK_INFO byte 1 bits 2-3 and 0x09b byte 0 bits 4-5; not separated with confidence. Byte 5 is 100 while the ignition is on";

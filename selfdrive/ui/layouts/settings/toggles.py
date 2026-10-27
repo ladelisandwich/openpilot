@@ -33,7 +33,30 @@ DESCRIPTIONS = {
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
   "TorqueInterceptorEnabled": tr_noop("Enable the torque interceptor to control the steering wheel."),
+  "LowerMinSetSpeed": tr_noop("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash keeps showing its minimum; the openpilot screen shows the real target."),
   "RadarInterceptorEnabled": tr_noop("Enable if you have installed the radar Iterceptor."),
+  "RadarEmulationEnabled": tr_noop("Silence the stock radar and let openpilot control gas and brake. No extra hardware required. Do not enable together with the Radar Interceptor."),
+  "MazdaHybridLong": tr_noop(
+    "Requires Radar Emulation. Stock MRCC drives until you hold distance increase (▲) for half a second: openpilot then " +
+    "takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot " +
+    "cancels the cruise and restarts the radar, which takes about 12 seconds before RES works (the radar icon " +
+    "pulses until then)."
+  ),
+  "MazdaSteerLimitClassifier": tr_noop(
+    "Only freeze the steering integrator when a torque mismatch would wind it further. Without this every " +
+    "rate-limited step counts as a limit, and the integrator sits frozen on up to 30% of highway steering. " +
+    "Ported from zoompilot; try it for a week."
+  ),
+  "MazdaTcsOffAlert": tr_noop(
+    "Treat traction control switched off the way openpilot does on other cars: a warning, then a soft disengage. " +
+    "Off by default so the DSC OFF button stays usable for off-road driving."
+  ),
+  "MazdaWiperWeatherMode": tr_noop(
+    "Take the wipers as a rain report. While they sweep, follow further, accelerate and corner more gently, and " +
+    "skip automatic lane changes; a nudged lane change still goes. No lane change starts for three seconds after " +
+    "the washer. Uses your Weather Presets rain values when set, built-in ones otherwise."
+  ),
+  "MazdaHornBookmark": tr_noop("A tap of the horn bookmarks the moment in the drive, like the bookmark wheel button."),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),
   "NoFSC": tr_noop("Enable if your car does not have stock FSC."),
   "ManualTransmission": tr_noop("Enable if your car has a manual transmission."),
@@ -111,6 +134,48 @@ class TogglesLayout(Widget):
       "TorqueInterceptorEnabled": (
         lambda: tr("Enable Torque Interceptor"),
         DESCRIPTIONS["TorqueInterceptorEnabled"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "RadarEmulationEnabled": (
+        lambda: tr("Enable Radar Emulation"),
+        DESCRIPTIONS["RadarEmulationEnabled"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaHybridLong": (
+        lambda: tr("Hybrid Longitudinal"),
+        DESCRIPTIONS["MazdaHybridLong"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaSteerLimitClassifier": (
+        lambda: tr("Smarter Steer Limit Flag"),
+        DESCRIPTIONS["MazdaSteerLimitClassifier"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaTcsOffAlert": (
+        lambda: tr("Traction Control Off Alert"),
+        DESCRIPTIONS["MazdaTcsOffAlert"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaWiperWeatherMode": (
+        lambda: tr("Wipers Mean Rain"),
+        DESCRIPTIONS["MazdaWiperWeatherMode"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "MazdaHornBookmark": (
+        lambda: tr("Horn Tap Bookmarks"),
+        DESCRIPTIONS["MazdaHornBookmark"],
+        "chffr_wheel.png",
+        True,
+      ),
+      "LowerMinSetSpeed": (
+        lambda: tr("Lower Minimum Set Speed"),
+        DESCRIPTIONS["LowerMinSetSpeed"],
         "chffr_wheel.png",
         True,
       ),

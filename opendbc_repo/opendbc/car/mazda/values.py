@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import IntFlag
 
-from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
+from opendbc.car import DT_CTRL, Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.structs import CarParams
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
@@ -10,6 +10,22 @@ from opendbc.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
 Ecu = CarParams.Ecu
 
 class CarControllerParams:
+  # --- radar session / FSC gate timing (ported from zoompilot's approach) ---
+  # The Forward Sensing Camera checks for the radar at cold boot. Silencing it during that
+  # window makes the FSC latch "Smart City Brake Support Malfunction", so defer the teardown
+  # until CAM_LANEINFO has been reporting clean for this long.
+  FSC_SETTLE_T = 10.0
+  CAM_LANEINFO_FRESH_T = 1.5      # longest observed CAM_LANEINFO period
+  STOCK_RADAR_ALIVE_T = 0.5       # CRZ_INFO counter idle time before the radar counts as silent
+  RADAR_SESSION_LIMIT_T = 10.0    # per-attempt UDS budget
+  RADAR_RESTORE_T = 0.5           # stock traffic needed before a handback counts as complete
+  RADAR_UDS_STEP = 50             # radar UDS traffic at 2 Hz
+  FSC_SETTLE_FRAMES = int(FSC_SETTLE_T / DT_CTRL)
+  CAM_LANEINFO_FRESH_FRAMES = int(CAM_LANEINFO_FRESH_T / DT_CTRL)
+  STOCK_RADAR_ALIVE_FRAMES = int(STOCK_RADAR_ALIVE_T / DT_CTRL)
+  RADAR_SESSION_LIMIT_FRAMES = int(RADAR_SESSION_LIMIT_T / DT_CTRL)
+  RADAR_RESTORE_FRAMES = int(RADAR_RESTORE_T / DT_CTRL)
+
   def __init__(self, CP):
     self.STEER_STEP = 1 # 100 Hz
     if CP.flags & MazdaSafetyFlags.GEN1:
@@ -28,6 +44,18 @@ class CarControllerParams:
       self.TI_STEER_DRIVER_MULTIPLIER = 40     # weight driver torque
       self.TI_STEER_DRIVER_FACTOR = 1         # from dbc
       self.TI_STEER_ERROR_MAX = 350           # max delta between torque cmd and torque motor
+
+      # The TI's input to the EPS stops growing at about 650 counts of command: the EPS torque sensor
+      # reads 32-34 from 600 up and no more at 800 (CX-9 routes 00000022-35, 11 h), and the TI faults
+      # for ~31 s after ~1.85 s at 800 (torque_interceptor.TiCeilingGuard). So both channels are
+      # clamped at TI_CEILING, and the torque controller's limit sits there as well (latcontrol_torque:
+      # steer_max = TI_CEILING / STEER_MAX), so a pinned TI is reported as saturation instead of hidden
+      # behind the command/output mismatch. As a backstop, a command held above TI_CEILING_DIP is
+      # dipped to it for TI_CEILING_DIP_FRAMES after TI_CEILING_HOLD_FRAMES.
+      self.TI_CEILING = 700
+      self.TI_CEILING_DIP = 680               # within one STEER_DELTA_DOWN step of the ceiling
+      self.TI_CEILING_HOLD_FRAMES = 120       # 1.2 s
+      self.TI_CEILING_DIP_FRAMES = 20         # 0.2 s
     if CP.flags & (MazdaSafetyFlags.GEN2 | MazdaSafetyFlags.GEN3):
       self.STEER_MAX = 8000
       self.STEER_DELTA_UP = 45              # torque increase per refresh
@@ -65,6 +93,13 @@ class MazdaSafetyFlags(IntFlag):
   NO_FSC = 32
   NO_MRCC = 64
   MANUAL_TRANSMISSION = 128
+  # Software radar emulation: no hardware interceptor, the stock radar is silenced
+  # over UDS and openpilot impersonates it. Mutually exclusive with RADAR_INTERCEPTOR.
+  RADAR_EMULATION = 256
+  # Software hybrid longitudinal: stock MRCC and radar emulation, switched at runtime by the
+  # driver's mode choice on the distance-increase button (see hybrid.py). CarParams flag only -- it is never ORed
+  # into safetyParam: the panda runs the RADAR_EMULATION safety mode in both sub-modes.
+  HYBRID_LONG = 512
 
 
 @dataclass
@@ -92,7 +127,8 @@ class CAR(Platforms):
   )
   MAZDA_CX9 = MazdaPlatformConfig(
     [MazdaCarDocs("Mazda CX-9 2016-20")],
-    MazdaCarSpecs(mass=4217 * CV.LB_TO_KG, wheelbase=3.1, steerRatio=17.6, centerToFrontRatio=0.41),
+    # 115.3 in (2.93 m) is the TC chassis' wheelbase; upstream's 3.1 was never the CX-9's
+    MazdaCarSpecs(mass=4217 * CV.LB_TO_KG, wheelbase=2.93, steerRatio=17.6, centerToFrontRatio=0.41),
     flags=MazdaSafetyFlags.GEN1,
   )
   MAZDA_3 = MazdaPlatformConfig(
@@ -107,7 +143,8 @@ class CAR(Platforms):
   )
   MAZDA_CX9_2021 = MazdaPlatformConfig(
     [MazdaCarDocs("Mazda CX-9 2021-23", video="https://youtu.be/dA3duO4a0O4")],
-    MAZDA_CX9.specs,
+    # the 2021-23 AWD's curb weight (4409 lb) on the same chassis
+    MazdaCarSpecs(mass=4409 * CV.LB_TO_KG, wheelbase=2.93, steerRatio=17.6, centerToFrontRatio=0.41),
     flags=MazdaSafetyFlags.GEN1,
   )
   MAZDA_CX5_2022 = MazdaPlatformConfig(

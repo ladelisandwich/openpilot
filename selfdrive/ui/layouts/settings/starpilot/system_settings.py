@@ -1135,9 +1135,20 @@ class StarPilotSystemLayout(_SettingsPage):
       if res == DialogResult.CONFIRM and dialog.selection:
         gui_app.push_widget(alert_dialog(tr("Restoring... device will reboot.")))
         def _task():
+          # The automatic backups leave out the git history: keep the device's own through the restore, so the
+          # restored install can still update (a backup that has one brings its own instead).
+          git_dir, kept_git = Path("/data/openpilot/.git"), Path("/data/.openpilot_git_before_restore")
+          shutil.rmtree(kept_git, ignore_errors=True)
+          if git_dir.is_dir():
+            shutil.move(str(git_dir), str(kept_git))
           shutil.rmtree("/data/openpilot", ignore_errors=True)
           os.makedirs("/data/openpilot", exist_ok=True)
           subprocess.run(["tar", "--use-compress-program=zstd", "-xf", f"/data/backups/{dialog.selection}", "-C", "/"])
+          if kept_git.is_dir():
+            if git_dir.exists():
+              shutil.rmtree(kept_git, ignore_errors=True)
+            else:
+              shutil.move(str(kept_git), str(git_dir))
           os.system("reboot")
         threading.Thread(target=_task, daemon=True).start()
 

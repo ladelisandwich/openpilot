@@ -99,6 +99,13 @@ struct StarPilotCarState @0xf35cc4560bbf6ec2 {
   accelHardCruise @28 :Bool;  # current/releasing accel cruise button came from GM hard-press signal
   decelHardCruise @29 :Bool;  # current/releasing decel cruise button came from GM hard-press signal
   pulseAndGlide @30 :Bool;  # developer-only wheel-button pulse-and-glide mode is enabled
+  distanceIncreasePressed @31 :Bool;  # a separate distance-increase button is held (Mazda GEN1: CRZ_BTNS.DISTANCE_MORE)
+  hazardLights @32 :Bool;     # the hazard switch is on (Mazda GEN1: TURN_SWITCH.HAZARD)
+  wipersActive @33 :Bool;     # the front wipers are sweeping (Mazda GEN1: BLINK_INFO.WIPER_LO or WIPER_HI)
+  washerActive @34 :Bool;     # the front washer pump is running (Mazda GEN1: BLINK_INFO.FRONT_WASHER)
+  hornPressed @35 :Bool;      # the horn is pressed (Mazda GEN1: TURN_SWITCH.HORN)
+  autoHoldActive @36 :Bool;   # the car's auto hold is holding the brakes (Mazda GEN1: EPB.HOLD_STATE 3)
+  lampsOn @37 :Bool;          # exterior lamps on (Mazda GEN1: MSG_11.LAMPS_ON)
 }
 
 struct StarPilotDeviceState @0xda96579883444c35 {

@@ -293,3 +293,31 @@ def test_speed_limit_controller_available_on_openpilot_longitudinal_or_redneck()
   assert spv.speed_limit_controller_available(openpilot_longitudinal=True, redneck_cruise=False) is True
   assert spv.speed_limit_controller_available(openpilot_longitudinal=False, redneck_cruise=True) is True
   assert spv.speed_limit_controller_available(openpilot_longitudinal=False, redneck_cruise=False) is False
+
+
+def test_live_torque_cache_is_read_as_the_event_torqued_writes():
+  from cereal import messaging
+
+  # torqued caches the whole event; with logMonoTime bits 0 and 1 set, reading the bytes as the bare
+  # LiveTorqueParametersData struct would report liveValid and useParams as True
+  msg = messaging.new_message("liveTorqueParameters")
+  msg.logMonoTime = 0b11
+  msg.liveTorqueParameters.useParams = False
+  msg.liveTorqueParameters.liveValid = False
+  msg.liveTorqueParameters.latAccelFactorFiltered = 2.1
+  cache = spv.read_live_torque_cache(msg.to_bytes())
+  assert cache is not None
+  assert cache.useParams is False
+  assert cache.liveValid is False
+  assert abs(cache.latAccelFactorFiltered - 2.1) < 1e-6
+
+  msg.liveTorqueParameters.useParams = True
+  msg.liveTorqueParameters.liveValid = True
+  msg.logMonoTime = 0
+  cache = spv.read_live_torque_cache(msg.to_bytes())
+  assert cache.useParams is True and cache.liveValid is True
+
+  assert spv.read_live_torque_cache(None) is None
+  assert spv.read_live_torque_cache(b"") is None
+  assert spv.read_live_torque_cache(b"not a capnp message") is None
+

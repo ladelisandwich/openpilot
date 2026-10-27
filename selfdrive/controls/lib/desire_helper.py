@@ -12,6 +12,7 @@ LaneChangeDirection = log.LaneChangeDirection
 
 LANE_CHANGE_SPEED_MIN = 20 * CV.MPH_TO_MS
 LANE_CHANGE_TIME_MAX = 10.
+WASHER_BLOCK_S = 3.0   # no lane change starts this long after the washer sprayed the windscreen
 NAV_TURN_DISTANCE_SPEED_BREAKPOINTS = [0.0, 5.0, 10.0]
 NAV_TURN_DISTANCE_BREAKPOINTS = [20.0, 25.0, 30.0]
 NAV_KEEP_DISTANCE_SPEED_BREAKPOINTS = [0.0, 15.0, 30.0]
@@ -58,6 +59,7 @@ class DesireHelper:
     self.lane_change_ll_prob = 1.0
     self.keep_pulse_timer = 0.0
     self.prev_one_blinker = False
+    self.washer_block_timer = 0.0
     self.desire = log.Desire.none
 
     self.turn_stop_hold = False
@@ -240,7 +242,8 @@ class DesireHelper:
   def get_lane_change_direction(CS):
     return LaneChangeDirection.left if CS.leftBlinker else LaneChangeDirection.right
 
-  def update(self, carstate, lateral_active, lane_change_prob, starpilotPlan, starpilot_toggles, controls_enabled=None):
+  def update(self, carstate, lateral_active, lane_change_prob, starpilotPlan, starpilot_toggles, controls_enabled=None,
+             starpilot_car_state=None):
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
     below_lane_change_speed = v_ego < starpilot_toggles.minimum_lane_change_speed
@@ -256,6 +259,14 @@ class DesireHelper:
     cruise_state = getattr(carstate, "cruiseState", None)
     controls_enabled = bool(getattr(cruise_state, "enabled", False)) if controls_enabled is None else bool(controls_enabled)
     nudgeless_enabled = self._nudgeless_enabled(starpilot_toggles, controls_enabled)
+    # Mazda "Wipers Mean Rain": no automated lane change while the wipers sweep (a nudge still goes), and none
+    # starts for a few seconds after the washer has blinded the camera
+    wet = bool(getattr(starpilot_toggles, "mazda_wiper_weather_mode", False)) and starpilot_car_state is not None
+    if wet and bool(getattr(starpilot_car_state, "washerActive", False)):
+      self.washer_block_timer = WASHER_BLOCK_S
+    else:
+      self.washer_block_timer = max(self.washer_block_timer - DT_MDL, 0.0)
+    nudgeless_enabled &= not (wet and bool(getattr(starpilot_car_state, "wipersActive", False)))
     lane_changes_allowed = starpilot_toggles.lane_changes
     lane_changes_allowed &= not getattr(starpilot_toggles, "lane_changes_require_cruise", False) or bool(getattr(cruise_state, "enabled", False))
 
@@ -265,7 +276,8 @@ class DesireHelper:
       self.lane_change_direction = LaneChangeDirection.none
     else:
       # LaneChangeState.off
-      if self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed:
+      if (self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed
+          and self.washer_block_timer <= 0.0):
         self.lane_change_state = LaneChangeState.preLaneChange
         self.lane_change_ll_prob = 1.0
         # Initialize lane change direction to prevent UI alert flicker
