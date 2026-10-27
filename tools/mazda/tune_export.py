@@ -38,6 +38,9 @@ Row columns (units: m/s, m/s^2, deg, TI/EPS counts; flags 0/1):
   hold epb haz wipe lamp       the car's auto hold (EPB.HOLD_STATE: 2 standby, 3 holding), parking brake applied, hazards on,
                                front wipers sweeping, exterior lamps on
   laoff ltp_ok                 torqued's live lateral-accel offset (m/s2) and whether its live params are valid
+  ltp_valid ltp_use            the liveTorqueParameters message valid (all of torqued's inputs valid), torqued's useParams flag:
+                               controlsd applies the live tune only with both (or Force Auto Tune for the second)
+  pose_ok cal lag_ok           livePose valid, calibration status (1 calibrated), liveDelay valid: torqued's inputs
 Each engaged stop is also an event ("stop") saying how it ended: openpilot RES, on its own, the driver's gas or RES,
 or never (disengaged at a standstill), when openpilot first asked to go, and whether the car's auto hold held or the
 hazards were on during the stop (either can explain a resume that did not happen).
@@ -72,12 +75,12 @@ BUTTONS = ((0x01, "CANCEL"), (0x04, "RES"), (0x10, "SET+"), (0x20, "SET-"), (0x8
 UDS_NAMES = {(0x10, 0x02): "programming session (silence)", (0x10, 0x01): "default session (restart)"}
 PARAM_KEYS = re.compile("|".join(("Steer", "Lateral", "Torque", "Lat", "NNFF", "Longitudinal", "Personality", "Experimental",
                                    "Conditional", "Accel", "Decel", "Mazda", "Radar", "Hybrid", "Interceptor", "FLM", "MinSet",
-                                   "Follow", "Stop", "Speed")), re.I)
+                                   "Follow", "Stop", "Speed", "AutoTune", "Tune")), re.I)
 
 COLUMNS = ("t seg v a steer rate drv prs lat en long cc_tq out_tq sp got err p i d f out sat dcurv curv mcurv roll laf fric " +
            "ti_cmd stock_cmd ti_st ti_vi ti_drv eps_sen eps_mot blk eff blink flt cc_acc out_acc lstate atgt " +
            "gas brk gas_pct brk_p acc_x cruise vset st_cmd st_ok op_cmd st_alive op_alive rlead ld ld_d ld_v exp pers " +
-           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp laoff ltp_ok").split()
+           "stand res sstop st_hold op_hold op_unl st_ph op_ph hold epb haz wipe lamp laoff ltp_ok ltp_valid ltp_use pose_ok cal lag_ok").split()
 ROUND = {"t": 3, "v": 3, "a": 3, "steer": 2, "rate": 1, "drv": 1, "cc_tq": 4, "out_tq": 4, "sp": 3, "got": 3, "err": 3,
          "p": 4, "i": 4, "d": 4, "f": 4, "out": 4, "dcurv": 6, "curv": 6, "mcurv": 6, "roll": 4, "laf": 3, "fric": 3,
          "eps_sen": 1, "eps_mot": 1, "cc_acc": 3, "out_acc": 3, "atgt": 3, "gas_pct": 1, "acc_x": 2, "vset": 2,
@@ -257,6 +260,14 @@ class Export:
       ltp = evt.liveTorqueParameters
       r["laf"], r["fric"] = ltp.latAccelFactorFiltered, ltp.frictionCoefficientFiltered
       r["laoff"], r["ltp_ok"] = ltp.latAccelOffsetFiltered, int(ltp.liveValid)
+      # whether controlsd will take them: the message must be valid (every torqued input valid) and useParams set
+      r["ltp_valid"], r["ltp_use"] = int(evt.valid), int(ltp.useParams)
+    elif w == "livePose":
+      r["pose_ok"] = int(evt.valid)
+    elif w == "liveCalibration":
+      r["cal"] = int(evt.liveCalibration.calStatus.raw)
+    elif w == "liveDelay":
+      r["lag_ok"] = int(evt.valid)
     elif w == "longitudinalPlan":
       r["atgt"] = float(getattr(evt.longitudinalPlan, "aTarget", 0.0))
       r["sstop"] = bool(getattr(evt.longitudinalPlan, "shouldStop", False))
