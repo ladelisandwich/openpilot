@@ -109,6 +109,46 @@ local or cloud, can continue without the old conversation.
 6. Earlier open items: the panda GEN1 TI torque-check gap in `opendbc/safety/modes/mazda.h`; the owner
    confirmed the long press on the mode switch works.
 
+## Upstream survey: StarPilotHQ/StarPilot branch `Dom` (looked at 2026-10-30)
+
+- `Dom` is the devs' live branch for "StarPilot 7.0 — Domathon": a rebase of StarPilot onto current openpilot
+  (commaai 2ab952d5 of 2026-10-19, i.e. 0.11.2 plus the 0.11.3 Autospeed work; big 880M model, external-GPU
+  model runtime `tinygrad_model_runtime/`, comma four). Its README and RELEASES.md say it is not a finished
+  release: "feature migration, vehicle qualification, and Auto Learn validation are still in progress".
+  `Codename-Domi` stopped 2026-09-18 and `Dom-3.24.26` 2026-03-21; neither is the one meant.
+- History is rewritten: no common ancestor with our branch (GitHub compare 404), so a merge or rebase is a
+  re-port, not a `git merge`. The tree is restructured too: openpilot code under `openpilot/`, StarPilot
+  split into `openpilot/starpilot/{aol, flm, galaxy, lateral, longitudinal, controllers, companion, ...}`,
+  vendored `mapd_repo`, `jetlink_repo`, `sentry_sdk_repo`. 1709 commits since our upstream snapshot
+  (last firestar5683 commit in our history: 2026-08-25), 1488 of them in October.
+- Against our tree (measured on the default branch `StarPilot`, which Dom extends): 1325 files differ,
+  +143k/-40k lines; 399 files new upstream (147 in the Galaxy web app alone), 98 params keys added
+  (Bluetooth audio, wheel-control slots, standby wake, model lab, custom accel profile breakpoints, screen
+  brightness, Subaru/Tesla/Toyota options), 25 of ours absent there.
+- Features new since our snapshot (commit subjects): Galaxy web app rewrite (localization, language
+  selection, calibration reset, battery voltage, toggle-defaults reset, iOS/Android companion apps), Blendful
+  lateral policy (alpha, from sunnypilot), both torque controllers offered on every torque car, torque
+  tuning for every controller, lane centering on by default, Experimental Speed Nudge and group driving
+  personalities, stopped-lead CEM on by default, Turn Signal Guidance on by default, Bluetooth audio and
+  wheel controls daemons, Android Auto, fast updater with scheduled install, SpacePilot parked mode, many
+  Toyota/GM/Ford/HKG/Subaru/Tesla vehicle additions, StarPort head-unit layouts.
+- Live torque tune on Dom: rewritten (`openpilot/starpilot/lateral/torque_runtime.py` TorqueHost,
+  `controller_selection.learning_allowed`, service renamed `lateralTorqueParameters`). The Force Auto Tune
+  files are read directly, so our cache-reader coin flip does not exist there in that form. But torqued's
+  `ALLOWED_CARS` is still toyota/hyundai/rivian/honda/volkswagen and `force_auto` comes only from the GM
+  geometry runtime, so a Mazda on Dom gets no learned tune at all unless ported.
+- Mazda on Dom: 13 commits in October, all stock Always-On-Lateral (`opendbc/car/mazda/stock_aol.py`,
+  `safety/modes/mazda_stock_aol.h`, `starpilot/car/mazda/{aol,stock_intent,dashboard}.py`): MAIN-on lateral
+  start, lateral kept through Cancel/Reverse/standstill, camera stop-sign observations. `qualified()` admits
+  only CX-5 2022 / CX-9 2021 with flags exactly GEN1, pcmCruise and no openpilot longitudinal, safetyParam 0:
+  it excludes our Torque Interceptor flag and our hybrid longitudinal. Nothing upstream about the TI, radar
+  emulation, the hybrid handover, or the body-switch inputs.
+- Our fork-only work vs upstream: 105 files / about 20k lines (opendbc mazda TI + radar session + tests,
+  `safety/modes/mazda.h` TI section, steer-limit classifier, `tools/mazda*`, the Mazda toggles). Moving to
+  Dom means re-porting all of it onto the restructured tree, plus the Mazda-specific live-tune admission.
+- The StarPilot repo is a read-only remote `starpilot` in the PC clone (default branch fetched; a full
+  fetch of `Dom` was still running when this was written). Survey facts came from the GitHub API.
+
 ## Compact log of the last days (what was asked, what was done)
 
 **Fri 24 Oct, steering.** Owner: still running out of torque on steering commands, low speed sluggish and slow.
