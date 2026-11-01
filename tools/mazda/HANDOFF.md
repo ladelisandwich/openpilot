@@ -53,6 +53,10 @@ local or cloud, can continue without the old conversation.
    `liveValid` were bits of the cache's timestamp. `read_live_torque_cache()` in `starpilot_variables.py` reads
    it as the event torqued writes, with a regression test. The export gained the `fat fato cust_laf cust_fric
    ltp_dt` columns and a `toggles` event; `analysis/gate.py` reads them.
+6. Hotspot shares the LTE connection (1 Nov): the network screens enabled IPv4 forwarding only for prime
+   type NONE or LITE, so an unpaired or not-yet-fetched device (this one, on the Konik backend) had forwarding
+   switched off 5 s after tethering came up and tethered devices got no internet. Now forwarding is off only
+   on a comma prime data SIM (`PrimeState.uses_comma_sim()`, both UIs, test in `selfdrive/ui/tests`).
 
 ## Findings from the exports (3 days + today, 15 routes)
 
