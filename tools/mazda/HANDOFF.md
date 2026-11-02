@@ -53,10 +53,17 @@ local or cloud, can continue without the old conversation.
    `liveValid` were bits of the cache's timestamp. `read_live_torque_cache()` in `starpilot_variables.py` reads
    it as the event torqued writes, with a regression test. The export gained the `fat fato cust_laf cust_fric
    ltp_dt` columns and a `toggles` event; `analysis/gate.py` reads them.
-6. Hotspot shares the LTE connection (1 Nov): the network screens enabled IPv4 forwarding only for prime
-   type NONE or LITE, so an unpaired or not-yet-fetched device (this one, on the Konik backend) had forwarding
-   switched off 5 s after tethering came up and tethered devices got no internet. Now forwarding is off only
-   on a comma prime data SIM (`PrimeState.uses_comma_sim()`, both UIs, test in `selfdrive/ui/tests`).
+6. Hotspot shares the LTE connection (1 Nov). Two commits. The first widened the forwarding rule (off only on a
+   comma prime data SIM, `PrimeState.uses_comma_sim()`); harmless but not the cause here, since this device
+   reports prime type 2 (lite) and forwarding was already on. The cause, from NetworkManager's journal: its
+   shared mode runs dnsmasq fine (phones get 192.168.43.x) but every `/usr/sbin/iptables` call it makes fails
+   with exit code 4, because that binary is the nf_tables build and the comma three's 4.9 kernel has no
+   nf_tables, so the MASQUERADE rule never lands and nothing is routed out. `system/ui/lib/tethering_nat.py`
+   installs NetworkManager's three rules through `iptables-legacy` (which works on this kernel) 5 s after
+   tethering comes up and removes them when it goes down; the Wi-Fi manager logs a "tethering nat" event with
+   the per-rule result. Unit tests in `system/ui/lib/tests/test_tethering_nat.py`. To confirm on the car:
+   turn tethering on, join a phone; afterwards `grep "tethering nat" /data/log/swaglog.*` should show "added"
+   for all three rules and `sudo iptables-legacy -t nat -S POSTROUTING` the MASQUERADE line while it is on.
 
 ## Findings from the exports (3 days + today, 15 routes)
 

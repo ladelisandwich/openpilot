@@ -33,6 +33,7 @@ except ImportError:
     raise RuntimeError("jeepney unavailable")
 
 from openpilot.common.swaglog import cloudlog
+from openpilot.system.ui.lib.tethering_nat import ensure_tethering_nat
 from openpilot.system.hardware import PC
 from openpilot.system.ui.lib.networkmanager import (NM, NM_WIRELESS_IFACE, NM_802_11_AP_SEC_PAIR_WEP40,
                                                     NM_802_11_AP_SEC_PAIR_WEP104, NM_802_11_AP_SEC_GROUP_WEP40,
@@ -1087,8 +1088,13 @@ class WifiManager:
           time.sleep(5)
           cloudlog.warning("net.ipv4.ip_forward = 0")
           subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
+        else:
+          # NetworkManager's own masquerade fails on this kernel (tethering_nat.py); put the rules in ourselves
+          time.sleep(5)
+          cloudlog.warning({"event": "tethering nat", "rules": ensure_tethering_nat(True)})
       else:
         self._deactivate_connection(self._tethering_ssid)
+        cloudlog.warning({"event": "tethering nat", "rules": ensure_tethering_nat(False)})
 
     threading.Thread(target=worker, daemon=True).start()
 
