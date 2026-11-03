@@ -430,6 +430,48 @@ class VehicleSettingsManagerView(PanelManagerView):
         "set_state": lambda s: self._controller._on_toggle("TorqueInterceptorEnabled"),
       })
       toggles.append({
+        "title": tr("Enable Radar Emulation"),
+        "subtitle": tr("Silence the stock radar and let openpilot control gas and brake. No extra hardware. Do not use with a Radar Interceptor."),
+        "get_state": lambda: self._controller._params.get_bool("RadarEmulationEnabled"),
+        "set_state": lambda s: self._controller._on_toggle("RadarEmulationEnabled"),
+      })
+      toggles.append({
+        "title": tr("Hybrid Longitudinal"),
+        "subtitle": tr("Requires Radar Emulation. Stock MRCC drives until you hold distance increase (▲) for half a second: openpilot then takes gas and brake in experimental mode. Tap it, or hold it again, to go back to MRCC: above 19 mph openpilot cancels the cruise and restarts the radar, which takes about 12 seconds before RES works (the radar icon pulses until then)."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaHybridLong"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaHybridLong"),
+      })
+      toggles.append({
+        "title": tr("Smarter Steer Limit Flag"),
+        "subtitle": tr("Freeze the steering integrator only when a mismatch would wind it further, not on every rate-limited step. From zoompilot."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaSteerLimitClassifier"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaSteerLimitClassifier"),
+      })
+      toggles.append({
+        "title": tr("Traction Control Off Alert"),
+        "subtitle": tr("Warn, then softly disengage, when DSC OFF has been pressed. Off by default: the button stays usable off-road."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaTcsOffAlert"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaTcsOffAlert"),
+      })
+      toggles.append({
+        "title": tr("Wipers Mean Rain"),
+        "subtitle": tr("While the wipers sweep: longer gap, gentler acceleration and cornering, no automatic lane change. None for 3 s after the washer."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaWiperWeatherMode"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaWiperWeatherMode"),
+      })
+      toggles.append({
+        "title": tr("Horn Tap Bookmarks"),
+        "subtitle": tr("A tap of the horn bookmarks the moment in the drive, like the bookmark wheel button."),
+        "get_state": lambda: self._controller._params.get_bool("MazdaHornBookmark"),
+        "set_state": lambda s: self._controller._on_toggle("MazdaHornBookmark"),
+      })
+      toggles.append({
+        "title": tr("Lower Minimum Set Speed"),
+        "subtitle": tr("Let openpilot hold set speeds below the car's 19 mph floor, down to about 5 mph. Requires Radar Emulation. The dash will keep showing 19 mph; the openpilot screen shows the real target."),
+        "get_state": lambda: self._controller._params.get_bool("LowerMinSetSpeed"),
+        "set_state": lambda s: self._controller._on_toggle("LowerMinSetSpeed"),
+      })
+      toggles.append({
         "title": tr("Enable Radar Interceptor"),
         "subtitle": tr("Enable if you have installed a radar interceptor."),
         "get_state": lambda: self._controller._params.get_bool("RadarInterceptorEnabled"),

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Radar emulation: openpilot drives on comma's vision, an eye with a "c" for a pupil.
+       mazda_comma_vision_frames.png: 25 frames (5x5, 208 px) of the iris shifted by dx = -72 .. +72 in steps
+       of 6, clipped by the eyelids; frame 12 is this one. -->
+  <defs>
+    <clipPath id="lids"><path d="M30 256 Q256 52 482 256 Q256 460 30 256 Z"/></clipPath>
+    <mask id="c"><rect width="512" height="512" fill="#fff"/>
+      <path d="M299 218 A58 58 0 1 0 299 294" fill="none" stroke="#000" stroke-width="30" stroke-linecap="round"/></mask>
+  </defs>
+  <g clip-path="url(#lids)"><circle cx="256" cy="256" r="104" fill="#fff" mask="url(#c)"/></g>
+  <path d="M30 256 Q256 52 482 256 Q256 460 30 256 Z" fill="none" stroke="#fff" stroke-width="28" stroke-linejoin="round"/>
+</svg>

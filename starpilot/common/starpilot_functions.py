@@ -71,6 +71,22 @@ def seed_desktop_theme_assets():
   theme_manager.update_wheel_image(starpilot_toggles.wheel_image, boot_run=True)
 
 
+BACKUP_OFFROAD_HOLD_S = 60
+
+
+def wait_offroad(params, hold_s, poll_s=5.0, sleep=time.sleep, clock=time.monotonic):
+  """Return once the device has been offroad for hold_s without a break."""
+  offroad_since = None
+  while True:
+    if params.get_bool("IsOnroad"):
+      offroad_since = None
+    elif offroad_since is None:
+      offroad_since = clock()
+    elif clock() - offroad_since >= hold_s:
+      return
+    sleep(poll_s)
+
+
 def starpilot_boot_functions(build_metadata, params):
   params_memory = Params(memory=True)
 
@@ -93,7 +109,13 @@ def starpilot_boot_functions(build_metadata, params):
       print("Waiting for system time to become valid...")
       time.sleep(1)
 
-    backup_starpilot(build_metadata, params)
+    # The install backup reads and compresses the whole install for a minute or more: only while the car is off
+    # (offroad for BACKUP_OFFROAD_HOLD_S, so not in the seconds between boot and the car coming up), and it
+    # stops, to start over next time, if a drive begins part-way.
+    while True:
+      wait_offroad(params, BACKUP_OFFROAD_HOLD_S)
+      if backup_starpilot(build_metadata, params, abort=lambda: params.get_bool("IsOnroad")):
+        break
 
   threading.Thread(target=boot_thread, daemon=True).start()
 

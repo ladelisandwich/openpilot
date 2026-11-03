@@ -1,0 +1,7 @@
+# The simulator is imported two ways: as openpilot.tools.mazda_sim from this checkout, and as plain
+# `mazda_sim` inside the comma container, against whatever build is under test (which may not contain it).
+# Its modules therefore import each other relatively, which the repo-wide TID251 rule would forbid.
+extend = "../../pyproject.toml"
+
+[lint]
+extend-ignore = ["TID251"]

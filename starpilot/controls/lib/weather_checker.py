@@ -107,6 +107,13 @@ def _normalize_response(data):
   return normalized
 
 
+# The wipers as a rain report (Mazda "Wipers Mean Rain"): an OWM light-rain id, and the offsets used when the
+# driver has set no Weather Presets rain values of their own
+WIPER_RAIN_ID = 500
+WIPER_RAIN_DEFAULTS = {"increase_following_distance": 0.3, "increase_stopped_distance": 0.0,
+                       "reduce_acceleration": 0.15, "reduce_lateral_acceleration": 0.1}
+
+
 class WeatherChecker:
   def __init__(self, StarPilotPlanner):
     self.starpilot_planner = StarPilotPlanner
@@ -120,6 +127,7 @@ class WeatherChecker:
     self.sunrise = 0
     self.sunset = 0
     self.weather_id = 0
+    self.wiper_rain = False
 
     self.hourly_forecast = None
     self.last_gps_position = None
@@ -147,6 +155,22 @@ class WeatherChecker:
       self.increase_stopped_distance = 0
       self.reduce_acceleration = 0
       self.reduce_lateral_acceleration = 0
+
+  def apply_wipers(self, wipers_active: bool, starpilot_toggles) -> None:
+    """Sweeping wipers with the forecast clear, or no forecast at all, apply the rain offsets: the preset rain
+    values when the driver set any, the built-in ones otherwise. Lifted the moment the wipers stop."""
+    if wipers_active and self.weather_id == 0:
+      self.weather_id = WIPER_RAIN_ID
+      self.wiper_rain = True
+      self.update_offsets(starpilot_toggles)
+      if not any((self.increase_following_distance, self.increase_stopped_distance,
+                  self.reduce_acceleration, self.reduce_lateral_acceleration)):
+        for name, value in WIPER_RAIN_DEFAULTS.items():
+          setattr(self, name, value)
+    elif self.wiper_rain and not wipers_active:
+      self.wiper_rain = False
+      self.weather_id = 0
+      self.update_offsets(starpilot_toggles)
 
   def update_weather(self, now, starpilot_toggles):
     if self.last_gps_position and self.last_updated:
