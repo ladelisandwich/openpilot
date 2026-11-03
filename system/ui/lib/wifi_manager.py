@@ -983,6 +983,11 @@ class WifiManager:
           self._router_main.send_and_get_reply(new_method_call(self._nm, 'DeactivateConnection', 'o', (active_conn,)))
           return
 
+  def tethering_available(self) -> bool:
+    """The backend is up and the hotspot connection exists, so set_tethering_active() can act."""
+    return not self._backend_unavailable and not self._nmcli_networking and (
+      self._fake_networking or self._tethering_ssid in self._connections)
+
   def is_tethering_active(self) -> bool:
     # Check ssid, not connected_ssid, to also catch connecting state
     return self._wifi_state.ssid == self._tethering_ssid

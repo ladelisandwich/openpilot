@@ -6,6 +6,8 @@ import pyray as rl
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
+from openpilot.common.swaglog import cloudlog
+from openpilot.system.ui.lib.tethering_auto import ALWAYS, MODE_PARAM, OFF, ONROAD, TetheringAutoSwitch
 from openpilot.system.ui.lib.wifi_manager import WifiManager, SecurityType, Network, MeteredType, normalize_ssid
 from openpilot.system.ui.widgets import DialogResult, Widget
 from openpilot.system.ui.widgets.button import ButtonStyle, Button
@@ -110,9 +112,24 @@ class AdvancedNetworkSettings(Widget):
 
     self._keyboard = Keyboard(max_text_size=MAX_PASSWORD_LENGTH, min_text_size=MIN_PASSWORD_LENGTH, show_password_toggle=True)
 
-    # Tethering
-    self._tethering_action = ToggleAction(initial_state=False)
-    tethering_btn = ListItem(lambda: tr("Enable Tethering"), action_item=self._tethering_action, callback=self._toggle_tethering)
+    # Tethering: Off, Always, or Only Onroad (TetheringEnabled; tethering_auto.py switches the hotspot to match)
+    mode = self._params.get_int(MODE_PARAM, default=OFF)
+    self._tethering_action = MultipleButtonAction([lambda: tr("Off"), lambda: tr("Always"), lambda: tr("Onroad")], 230,
+                                                  mode if mode in (OFF, ALWAYS, ONROAD) else OFF, callback=self._set_tethering_mode)
+    tethering_btn = ListItem(lambda: tr("Enable Tethering"),
+                             description=lambda: tr("Share the device's cellular connection over its Wi-Fi. Onroad turns the hotspot on "
+                                                    "while driving and off when parked, so the device rejoins your saved Wi-Fi."),
+                             action_item=self._tethering_action)
+    self._tethering_auto = None
+    if ui_state is not None:
+      auto_params = Params()   # its own instance: the switch reads from its thread
+      self._tethering_auto = TetheringAutoSwitch(
+        wifi_manager,
+        read_mode=lambda: auto_params.get_int(MODE_PARAM, default=OFF),
+        read_onroad=lambda: ui_state.started,
+        share_allowed=lambda: not ui_state.prime_state.uses_comma_sim(),
+        log=cloudlog.info)
+      self._tethering_auto.start()
 
     # Edit tethering password
     self._tethering_password_action = ButtonAction(lambda: tr("EDIT"))
@@ -157,8 +174,6 @@ class AdvancedNetworkSettings(Widget):
     self._wifi_manager.update_gsm_settings(roaming_enabled, self._params.get("GsmApn") or "", metered)
 
   def _on_network_updated(self, networks: list[Network]):
-    self._tethering_action.set_enabled(True)
-    self._tethering_action.set_state(self._wifi_manager.is_tethering_active())
     self._tethering_password_action.set_enabled(True)
 
     if self._wifi_manager.is_tethering_active() or self._wifi_manager.ipv4_address == "":
@@ -169,12 +184,10 @@ class AdvancedNetworkSettings(Widget):
       self._wifi_metered_action.set_enabled(True)
       self._wifi_metered_action.selected_button = int(metered) if metered in (MeteredType.UNKNOWN, MeteredType.YES, MeteredType.NO) else 0
 
-  def _toggle_tethering(self):
-    checked = self._tethering_action.get_state()
-    self._tethering_action.set_enabled(False)
-    if checked:
+  def _set_tethering_mode(self, mode: int):
+    self._params.put_int(MODE_PARAM, mode)
+    if mode != OFF:
       self._wifi_metered_action.set_enabled(False)
-    self._wifi_manager.set_tethering_active(checked)
 
   def _toggle_roaming(self):
     roaming_state = self._roaming_action.get_state()

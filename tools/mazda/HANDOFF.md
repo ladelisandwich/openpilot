@@ -64,6 +64,14 @@ local or cloud, can continue without the old conversation.
    the per-rule result. Unit tests in `system/ui/lib/tests/test_tethering_nat.py`. To confirm on the car:
    turn tethering on, join a phone; afterwards `grep "tethering nat" /data/log/swaglog.*` should show "added"
    for all three rules and `sudo iptables-legacy -t nat -S POSTROUTING` the MASQUERADE line while it is on.
+7. Tethering by driving state (3 Nov, owner's request: hotspot on while driving, off when parked). The network
+   panel's on/off toggle is now an Off / Always / Onroad selector on the existing `TetheringEnabled` param (0/1/2;
+   the old Qt UI had the same values, the new UI had dropped it). `system/ui/lib/tethering_auto.py` runs on its
+   own thread from the panel (built at UI start), every 2 s compares the wanted state (mode + `ui_state.started`)
+   with the hotspot and switches on a mismatch, setting forwarding first; retries a non-taking attempt after
+   20 s, waits for the Wi-Fi backend (`WifiManager.tethering_available()`), logs "tethering auto". Offroad the
+   device leaves the hotspot and rejoins its saved Wi-Fi. Tests in `system/ui/lib/tests/test_tethering_auto.py`.
+   The compact (comma four) UI is unchanged.
 
 ## Findings from the exports (3 days + today, 15 routes)
 
