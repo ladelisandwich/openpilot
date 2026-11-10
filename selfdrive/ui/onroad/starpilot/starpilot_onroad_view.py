@@ -10,7 +10,7 @@ from openpilot.selfdrive.ui.onroad.starpilot.widget_layout_manager import Widget
 from openpilot.selfdrive.ui.onroad.starpilot.widgets import (
   SetSpeedWidget, SpeedLimitWidget, PedalIconsWidget,
   AetherGaugeWidget, PersonalityButtonWidget, DriverMonitorWidget,
-  SteeringWheelWidget, StoppedTimerWidget
+  SteeringWheelWidget, StoppedTimerWidget, HybridMasterIcon
 )
 from openpilot.selfdrive.ui.onroad.starpilot.stopping_point import render_stopping_point
 from openpilot.selfdrive.ui.onroad.starpilot.pause_indicators import render_lateral_paused, render_longitudinal_paused
@@ -71,6 +71,8 @@ class StarPilotOnroadView(AugmentedRoadView):
     self._personality_button_widget = PersonalityButtonWidget()
     self._driver_monitor_widget = DriverMonitorWidget(self.driver_state_renderer)
     self._stopped_timer_widget = StoppedTimerWidget(self.is_in_reverse)
+    # Mazda hybrid longitudinal: MRCC or emulated radar, drawn just left of the steering wheel
+    self._hybrid_master_icon = HybridMasterIcon()
 
     # Register to layout zones
     self.layout_manager.register_widget("left", self._set_speed_widget)
@@ -90,6 +92,7 @@ class StarPilotOnroadView(AugmentedRoadView):
     self._child(self._personality_button_widget)
     self._child(self._driver_monitor_widget)
     self._child(self._stopped_timer_widget)
+    self._child(self._hybrid_master_icon)
 
   def _update_state(self) -> None:
     rivian_lateral_mode.update()
@@ -181,9 +184,23 @@ class StarPilotOnroadView(AugmentedRoadView):
     self._render_developer_metrics()
 
     self.layout_manager.render_widgets(exclude={"speed_limit", "set_speed"})
+    self._render_hybrid_master_icon()
 
     self._render_torque_bar()
     self._render_bottom_row_widgets()
+
+  def _render_hybrid_master_icon(self) -> None:
+    if not self._hybrid_master_icon.is_visible:
+      return
+    wheel = self._steering_wheel_widget
+    if wheel.is_visible:
+      self._hybrid_master_icon.place_left_of(wheel.rect, self.layout_manager.spacing)
+    else:
+      # Steering wheel hidden: take its place in the top-right corner.
+      size = self._hybrid_master_icon.SIZE
+      center_x = self._content_rect.x + self._content_rect.width - 146
+      self._hybrid_master_icon.set_rect(rl.Rectangle(center_x - size / 2, self._content_rect.y + 45, size, size))
+    self._hybrid_master_icon.render()
 
   def _render_torque_bar(self) -> None:
     """Draw the curved torque-utilization indicator at the bottom of the screen."""

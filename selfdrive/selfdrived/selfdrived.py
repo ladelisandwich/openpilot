@@ -466,6 +466,9 @@ class SelfdriveD:
 
       # Fully own the event — strip brand emissions, inject our own while active.
       car_events = [e for e in car_events if e.name.raw != EventName.belowSteerSpeed]
+      # Mazda reports TCS off as espDisabled, which soft-disables; off-road use is legitimate, so it is opt-in
+      if self.CP.brand == "mazda" and not getattr(self.starpilot_toggles, "mazda_tcs_off_alert", False):
+        car_events = [e for e in car_events if e.name.raw != EventName.espDisabled]
       show_alert = self.below_steer_showing and under_min
 
       # Switchback cooldown: rate-limits the alert when car sits below min.

@@ -33,6 +33,7 @@ except ImportError:
     raise RuntimeError("jeepney unavailable")
 
 from openpilot.common.swaglog import cloudlog
+from openpilot.system.ui.lib.tethering_nat import ensure_tethering_nat
 from openpilot.system.hardware import PC
 from openpilot.system.ui.lib.networkmanager import (NM, NM_WIRELESS_IFACE, NM_802_11_AP_SEC_PAIR_WEP40,
                                                     NM_802_11_AP_SEC_PAIR_WEP104, NM_802_11_AP_SEC_GROUP_WEP40,
@@ -982,6 +983,11 @@ class WifiManager:
           self._router_main.send_and_get_reply(new_method_call(self._nm, 'DeactivateConnection', 'o', (active_conn,)))
           return
 
+  def tethering_available(self) -> bool:
+    """The backend is up and the hotspot connection exists, so set_tethering_active() can act."""
+    return not self._backend_unavailable and not self._nmcli_networking and (
+      self._fake_networking or self._tethering_ssid in self._connections)
+
   def is_tethering_active(self) -> bool:
     # Check ssid, not connected_ssid, to also catch connecting state
     return self._wifi_state.ssid == self._tethering_ssid
@@ -1087,8 +1093,13 @@ class WifiManager:
           time.sleep(5)
           cloudlog.warning("net.ipv4.ip_forward = 0")
           subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
+        else:
+          # NetworkManager's own masquerade fails on this kernel (tethering_nat.py); put the rules in ourselves
+          time.sleep(5)
+          cloudlog.warning({"event": "tethering nat", "rules": ensure_tethering_nat(True)})
       else:
         self._deactivate_connection(self._tethering_ssid)
+        cloudlog.warning({"event": "tethering nat", "rules": ensure_tethering_nat(False)})
 
     threading.Thread(target=worker, daemon=True).start()
 

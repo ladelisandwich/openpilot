@@ -103,5 +103,11 @@ class PrimeState:
     with self._lock:
       return self.prime_type > PrimeType.UNPAIRED
 
+  def uses_comma_sim(self) -> bool:
+    """A comma prime plan with a data SIM (magenta, blue, purple). Those plans may not be shared over the
+    hotspot. An unpaired or not-yet-known device, prime lite and no prime all run on the owner's own SIM."""
+    with self._lock:
+      return self.prime_type in (PrimeType.MAGENTA, PrimeType.BLUE, PrimeType.MAGENTA_NEW, PrimeType.PURPLE)
+
   def __del__(self):
     self.stop()

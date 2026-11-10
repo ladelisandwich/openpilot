@@ -28,6 +28,7 @@ from openpilot.selfdrive.controls.lib.latcontrol_torque import (
   get_honda_accord_steer_ratio_scale,
 )
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
+from openpilot.selfdrive.controls.lib.steer_limit import SteerLimitReclassifier, mazda_steer_limit_schedule
 from openpilot.selfdrive.car.cruise_state import should_cancel_stock_cruise
 from openpilot.selfdrive.modeld.modeld import LAT_SMOOTH_SECONDS, get_car_lateral_smooth_seconds
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
@@ -364,6 +365,13 @@ class Controls:
 
     if self.CP.lateralTuning.which() == "torque" and (self.starpilot_toggles.nnff or self.starpilot_toggles.nnff_lite):
       self.LaC = LatControlNNFF(self.CP, self.CI, DT_CTRL)
+
+    # Mazda torque cars, behind the MazdaSteerLimitClassifier toggle: controlsd's flag below fires on every
+    # rate-limited step (10 of 800 counts clears the 0.01 threshold), so the integrator sits frozen through
+    # ordinary motion on 8-30% of hands-off steering frames. The classifier keeps the freeze for a mismatch
+    # that would wind the integrator further, releases it otherwise, and never counts the TI ceiling, where
+    # the PID limits already sit (lib/steer_limit.py).
+    self.steer_limit = SteerLimitReclassifier(mazda_steer_limit_schedule(self.CP))
 
   def update(self):
     self.sm.update(15)
@@ -774,6 +782,13 @@ class Controls:
                                               STEER_ANGLE_SATURATION_THRESHOLD
       else:
         self.steer_limited_by_safety = abs(CC.actuators.torque - CO.actuatorsOutput.torque) > 1e-2
+        if hasattr(self.LaC, "pid"):
+          self.steer_limited_by_safety = self.steer_limit.update(
+            getattr(self.starpilot_toggles, "mazda_steer_limit_classifier", False), CC.latActive,
+            float(CC.actuators.torque), float(CO.actuatorsOutput.torque), self.steer_limited_by_safety,
+            float(getattr(lac_log, "error", 0.0)), float(self.LaC.pid.i))
+    else:
+      self.steer_limit.reset()
 
     # TODO: both controlsState and carControl valids should be set by
     #       sm.all_checks(), but this creates a circular dependency
