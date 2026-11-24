@@ -94,8 +94,13 @@ the two repositories share GitHub's object store), never as a `git merge`.
 **Dom's prebuilt rules.** `prebuilt` is present, so the device never builds. Every commit that changes a
 "protected" file (anything but .py under the UI/software/galaxy roots) must refresh the receipt, or Dom's fast
 updater refuses the update: run `python3 openpilot/common/prebuilt_manifest.py .` after staging, then commit the
-new `prebuilt.json`. The committed `libparams_c.so` and `_raw_value.so` are aarch64; never commit a locally built
-one. Dom's own channel-migration hook (Dom -> testing) was removed from the launcher on this branch.
+new `prebuilt.json`. Every committed shared library is aarch64; never commit a locally built one. After any x86
+test build, check before committing that `git ls-files -z | xargs -0 file | grep ELF | grep -v aarch64` prints
+nothing. The first push of this branch shipped the x86 `libqpOASES_e.so.3.1` from the test build: the device's
+loader skips a library of the wrong architecture and reports it as missing, so every process that imports the
+longitudinal MPC (the UI included) died on import and the boot logo stayed on screen until the file was restored
+from Dom's snapshot. Dom's own channel-migration hook (Dom -> testing) was removed from the launcher on this
+branch.
 
 **Needs the car.** Steering feel at low speed on the new controller (above); the hybrid switch on the distance
 button and the onroad icon; the horn bookmark; the hotspot modes; that the learned tune now shows `useParams`
