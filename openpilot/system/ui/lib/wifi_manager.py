@@ -746,8 +746,7 @@ class WifiManager:
 
   def tethering_available(self) -> bool:
     """The backend is up and the hotspot connection exists, so set_tethering_active() can act."""
-    return not self._backend_unavailable and not self._nmcli_networking and (
-      self._fake_networking or self._tethering_ssid in self._connections)
+    return not self._exit and self._router_main is not None and self._tethering_ssid in self._connections
 
   def is_tethering_active(self) -> bool:
     # Check ssid, not connected_ssid, to also catch connecting state
