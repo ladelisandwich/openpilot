@@ -1,0 +1,42 @@
+"""EPS73 actual factory/Card/SelfdriveD/Controls/C++/native cold callers."""
+import struct
+import pytest
+from opendbc.car.toyota import prius_retrofit_advert as owner, prius_advert_filter
+from openpilot.starpilot.car.toyota.tests import test_rav4h_caller_native as helpers
+from openpilot.starpilot.car.toyota.tests.test_prius_retrofit_advert_factory import firmware
+from openpilot.starpilot.car.toyota.tests.test_toyota_cpp_transport import host_heartbeat_bridge as host_heartbeat_bridge
+from opendbc.car import Bus
+
+source_matched_native=helpers.source_matched_native
+daemon_gc_scope=helpers.daemon_gc_scope
+
+
+@pytest.mark.parametrize('candidate',owner.CARS)
+@pytest.mark.parametrize('stock',(False,True))
+def test_eps73_advert_actual_cold_callers(candidate,stock,host_heartbeat_bridge):
+  def physical(packer,**fields):
+    fields['sdsu']=None
+    frames=helpers.physical(packer,**fields)
+    assert len(next(data for address,data,bus in frames if address==0x262 and bus==0))==8
+    frames.extend(((0x2FF,bytes.fromhex('80007409'),0),(0x2FF,bytes.fromhex('80007409'),2)))
+    # Route 16c1c1b1b2152da0/00000001--a0679e3a1b: after the
+    # safety handoff, forwarded four-byte advertisements return on bus 130.
+    frames.extend((address,data,bus+128) for address,data,bus in list(frames) if bus == 2 or address == 0x2FF)
+    return frames
+
+  def observe(tick,host,cs,cc,safety,native):
+    parser=host.CI.can_parsers[Bus.pt]
+    assert isinstance(parser,prius_advert_filter.PriusAdvertCANParser)
+    assert 0x2FF not in parser.message_states and 'SDSU' not in parser.vl
+    assert host.CI.CS.eps_torque_scale==.73
+    assert host.CP.steerActuatorDelay==struct.unpack('<f',struct.pack('<f',.14))[0]
+    assert host.CP.lateralTuning.torque.steeringAngleDeadzoneDeg==struct.unpack('<f',struct.pack('<f',.3))[0]
+    assert owner.configured(host.CP)
+    if tick>=220:
+      assert not cs.stockAeb and cc.latActive and cc.longActive==(not stock)
+      assert safety.aol_get_permission_mask()==(1 if stock else 3)
+
+  helpers.run_case(stock,candidate=candidate,bridge=host_heartbeat_bridge,input_clock=True,
+                   sdsu_words=(owner.LONG_WORD,owner.STOCK_WORD),firmware_override=firmware(),
+                   fingerprint_frames=[(0x2FF,bytes(4),0)],manual_selection=True,manual_filter_length=4,
+                   filter_advert=True,physical_frames=physical,on_sample=observe)

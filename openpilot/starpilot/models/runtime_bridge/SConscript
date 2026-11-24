@@ -1,0 +1,61 @@
+from SCons.Errors import UserError
+
+Import('env', 'arch')
+
+if arch == 'comma_arm64':
+  # Keep the caller's compiler, subprocess environment and selected sysroot.
+  # Root application warning/architecture/include/library flags do not define
+  # the guard ABI or its qualified artifact identity.
+  roots = []
+  for variable in ('CCFLAGS', 'CFLAGS', 'CPPFLAGS', 'LINKFLAGS', 'SHLINKFLAGS'):
+    tokens = [str(token) for line in env.subst_list('$' + variable) for token in line]
+    i = 0
+    while i < len(tokens):
+      token = tokens[i]
+      if token == '--sysroot':
+        i += 1
+        if i == len(tokens) or not tokens[i] or tokens[i].startswith('-'):
+          raise UserError('guard build: --sysroot requires a path')
+        roots.append(tokens[i])
+      elif token.startswith('--sysroot='):
+        if not token[len('--sysroot='):]:
+          raise UserError('guard build: --sysroot requires a path')
+        roots.append(token[len('--sysroot='):])
+      i += 1
+  roots = list(dict.fromkeys(roots))
+  if len(roots) > 1:
+    raise UserError('guard build: conflicting compiler/linker sysroots')
+  sysroot_flags = ['--sysroot=' + roots[0]] if roots else []
+  guard_env = env.Clone()
+  guard_env.Replace(
+    CCFLAGS=sysroot_flags,
+    CFLAGS=['-std=c11', '-O2', '-Wall', '-Wextra', '-Werror'],
+    CPPFLAGS=[], CPPPATH=[], CPPDEFINES=[], LIBPATH=[], LIBS=[], RPATH=[],
+    LINKFLAGS=sysroot_flags,
+    # Restore the ordinary C shared-library/PIC flags even if the root extends
+    # these separately. The compiler and ENV remain those of the caller.
+    SHCCFLAGS=['$CCFLAGS', '-fPIC'], SHCFLAGS=['$CFLAGS'],
+    SHLINKFLAGS=['$LINKFLAGS', '-shared'],
+  )
+  # guard-policy.json pins both libraries by SHA-256 and the tree ships them built. A device build that recompiles
+  # them writes different bytes over the tracked files, and the guard then stops modeld, dmonitoringmodeld and
+  # controlsd at import ("Model submission guard source/artifact changed"). Keep the shipped libraries while they
+  # match the policy; rebuild only when they do not, which the guard then refuses at runtime.
+  import hashlib
+  import json
+  import os
+  here = Dir('.').srcnode().abspath
+  with open(os.path.join(here, 'guard-policy.json'), 'rb') as policy_file:
+    pinned = json.load(policy_file)['files']
+
+  def shipped(name):
+    path = os.path.join(here, name)
+    if os.path.islink(path) or not os.path.isfile(path):
+      return False
+    with open(path, 'rb') as library:
+      return hashlib.sha256(library.read()).hexdigest() == pinned.get(name)
+
+  if not (shipped('libbounded_wait.so') and shipped('libusb_guards.so')):
+    guard_env.SharedLibrary('bounded_wait', ['bounded_wait.c'])
+    guard_env.SharedLibrary('usb_guards', ['usb_guards.c'])
+  Return('guard_env')

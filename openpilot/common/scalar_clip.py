@@ -1,0 +1,25 @@
+"""Scalar float clipping with NumPy fallback for all other cases."""
+
+import math
+
+import numpy as np
+
+
+def clip_scalar(value, lower, upper):
+  if ((type(value) is float or type(value) is np.float64) and
+      (type(lower) is float or type(lower) is np.float64) and
+      (type(upper) is float or type(upper) is np.float64)):
+    scalar, lo, hi = float(value), float(lower), float(upper)
+    if (math.isfinite(scalar) and math.isfinite(lo) and math.isfinite(hi) and
+        lo < hi and scalar != lo and scalar != hi):
+      return lo if scalar < lo else hi if scalar > hi else scalar
+  return float(np.clip(value, lower, upper))
+
+
+def clip_float64(value, lower, upper):
+  """Preserve NumPy's scalar result type while avoiding its scalar dispatch."""
+  if ((type(value) is float or type(value) is np.float64) and
+      (type(lower) is float or type(lower) is np.float64) and
+      (type(upper) is float or type(upper) is np.float64)):
+    return np.float64(clip_scalar(value, lower, upper))
+  return np.clip(value, lower, upper)

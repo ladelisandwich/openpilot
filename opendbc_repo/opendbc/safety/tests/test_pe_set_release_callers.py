@@ -1,0 +1,305 @@
+"""Same real pending owner, actual callers, C++ requests and native emitted frames."""
+import os
+from threading import Event
+from time import perf_counter
+from unittest.mock import patch
+
+from opendbc.can import CANPacker
+from opendbc.car import structs
+from opendbc.car.hyundai.radar_interface import RadarInterface
+from opendbc.safety.tests.libsafety import libsafety_py
+from opendbc.safety.tests.test_pe_combined_callers import PEJoinedCase
+from opendbc.car.hyundai.pe_long_aol import qualified as pe_qualified
+from openpilot.cereal import messaging
+from openpilot.cereal.services import SERVICE_LIST
+from openpilot.common.params import Params
+from openpilot.common.prefix import OpenpilotPrefix
+from openpilot.selfdrive.car import card as card_module
+from openpilot.starpilot.aol.intent import AOL_TOGGLE, read_settings
+from openpilot.starpilot.aol.tests import test_ioniq_availability as caller_fixture
+from openpilot.starpilot.aol.tests.test_canfd_location_native_recovery import physical_frames
+from openpilot.starpilot.aol.tests.test_classic_location_stock_intent import host_heartbeat_bridge as host_heartbeat_bridge
+from openpilot.starpilot.aol.wire import PandaSlot, SafetyState, encode_safety
+
+
+def test_pe_normal_set_release_after_expired_main_keeps_lateral_after_cancel(monkeypatch, host_heartbeat_bridge):
+  case = PEJoinedCase(methodName='runTest')
+  callers = caller_fixture.IoniqAvailabilityTests(methodName='runTest')
+  owner = card = None
+  with OpenpilotPrefix(), patch.dict(os.environ, {'SIMULATION': '0', 'AOL_REPLAY_RUNTIME': '1'}):
+    saved = Params()
+    for key, value in (('OpenpilotEnabledToggle', True), ('AlwaysOnLateral', True),
+                       ('AlphaLongitudinalEnabled', True), ('IsReleaseBranch', False), ('IsOffroad', False)):
+      saved.put_bool(key, value, block=True)
+    for key, value in (('LKASButtonControl', AOL_TOGGLE), ('MainCruiseButtonControl', 0),
+                       ('CancelButtonControl', 0), ('LongCancelButtonControl', 0), ('VeryLongCancelButtonControl', 0),
+                       ('PauseAOLOnBrake', 0.)):
+      saved.put(key, value, block=True)
+    keys = ('AlwaysOnLateral', 'AlphaLongitudinalEnabled', 'LKASButtonControl', 'MainCruiseButtonControl', 'PauseAOLOnBrake')
+    original_settings = {key: saved.get(key) for key in keys}
+    case.setUp()
+    case.boot, case.seconds, case.now = 9_000_000_000, 9., 9_000_000
+    native = case.safety
+    native.set_aol_test_heartbeat(False)
+    received, queued = {}, []
+    local = monkeypatch.context()
+    patcher = local.__enter__()
+    try:
+      patcher.setattr(card_module.time, 'monotonic_ns', lambda: case.boot)
+      patcher.setattr(card_module.time, 'clock_gettime_ns', lambda clock: case.boot)
+      patcher.setattr(card_module.time, 'monotonic', lambda: case.boot / 1e9)
+      owner, ci, packer = case.instance(seal=False)
+      card = card_module.Car(CI=ci, RI=RadarInterface(ci.CP), startup_owner=owner)
+      assert card.CP.alternativeExperience == 32 and owner.prepared_for(card.CP)
+      assert pe_qualified(card.CP, marked_only=True)
+      assert card.CP.safetyConfigs[0].safetyParam == 0x5495 and card.CP.steerControlType == structs.CarParams.SteerControlType.angle
+      assert owner.owner.published and not owner.takeover_attempted
+      assert case.queries == []
+      patcher.setattr(card.sm, 'update', lambda *args: None)
+      patcher.setattr(card_module, 'REPLAY', False)
+      patcher.setattr(card_module.messaging, 'drain_sock_raw', lambda *args, **kwargs: list(queued))
+      original_send = card.pm.send
+
+      def capture(service, event):
+        raw = event if isinstance(event, bytes) else event.to_bytes()
+        received[service] = messaging.log_from_bytes(raw).as_builder()
+        return original_send(service, raw)
+
+      patcher.setattr(card.pm, 'send', capture)
+
+      def pandas_message(diagnostic=False):
+        message = messaging.new_message('pandaStates', 1, valid=True, logMonoTime=case.boot)
+        panda = message.pandaStates[0]
+        panda.safetyModel = 'elm327' if diagnostic else card.CP.safetyConfigs[0].safetyModel
+        panda.safetyParam = 1 if diagnostic else 0x5495
+        panda.alternativeExperience = 0 if diagnostic else 32
+        panda.controlsAllowed = native.get_controls_allowed()
+        panda.safetyRxChecksInvalid = False if diagnostic else bool(native.safety_test_toyota_rx_summary_invalid())
+        panda.ignitionLine = True
+        return message
+
+      def inactive_control():
+        control = messaging.new_message('carControl', valid=True, logMonoTime=case.boot)
+        return control
+
+      for _ in range(12):
+        case.physical_tick(ci, packer, native_hyundai=False)
+      initialized = messaging.new_message('onroadEvents', 0, valid=True, logMonoTime=case.boot)
+      card.sm.update_msgs(case.boot / 1e9, [pandas_message(True).as_reader(), inactive_control().as_reader(), initialized.as_reader()])
+      owner.diagnostic_admission = card.startup_diagnostic_admission
+      card.step()
+      assert card.ci_initialized and not owner.pending_target and owner.takeover_attempted
+      deadline = perf_counter() + 1.
+      while not saved.get_bool('ControlsReady') and perf_counter() < deadline:
+        Event().wait(.001)
+      assert saved.get_bool('ControlsReady') and not owner.handed_off
+      native.set_alternative_experience(32)
+      assert native.set_safety_hooks(structs.CarParams.SafetyModel.hyundaiCanfd, 0x5495) == 0
+      for _ in range(12):
+        case.physical_tick(ci, packer)
+      panda = pandas_message()
+      card.sm.update_msgs(case.boot / 1e9, [panda.as_reader(), inactive_control().as_reader()])
+      card.step()
+      assert owner.handed_off, 'Only the actual serialized send acknowledgment may transfer this owner'
+      first = received['sendcan']
+      assert first.valid
+      first_cb = next(frame.dat for frame in first.sendcan if frame.address == 0xcb)
+      first_scc = next(frame.dat for frame in first.sendcan if frame.address == 0x1a0)
+      assert (first_cb[3] >> 4) & 15 == 1 and (first_scc[8] >> 4) & 7 == 0
+      for frame in first.sendcan:
+        assert native.safety_tx_hook(libsafety_py.make_CANPacket(frame.address, frame.src, frame.dat))
+
+      card.slc_producer_session = 'authority-card'
+      sd, controls, drive = callers._authority_callers(False, cp=card.CP.as_reader().as_builder(), genuine_events=True)
+      sd.aol_settings = read_settings(saved)
+      # The common caller fixture controls its own clock; restore this test's shared time source afterward.
+      patcher.setattr(card_module.time, 'monotonic_ns', lambda: case.boot)
+      patcher.setattr(card_module.time, 'clock_gettime_ns', lambda clock: case.boot)
+      patcher.setattr(card_module.time, 'monotonic', lambda: case.boot / 1e9)
+      original_update = card.sm.update_msgs
+      panda_due = [0.]
+
+      def panda_cadence(timestamp, messages):
+        delivered = []
+        for message in messages:
+          if message.which() == 'pandaStates':
+            if timestamp + 1e-9 < panda_due[0]:
+              continue
+            panda_due[0] = timestamp + .1
+          delivered.append(message)
+        return original_update(timestamp, delivered)
+
+      patcher.setattr(card.sm, 'update_msgs', panda_cadence)
+      previous = {}
+      auxiliary_due = {}
+      host_heartbeat_bridge.reset_host()
+      tick = case.tick
+      emitted_active = 0
+      emitted_longitudinal = 0
+      native_rejections = 0
+      last = None
+      probe = False
+      trace = []
+
+      def step(*, main=0, lkas=0, button=0, gas=False, brake=False):
+        nonlocal tick, emitted_active, emitted_longitudinal, native_rejections, last
+        tick += 1
+        source_ns = 10_000_000_000 + tick * 10_000_000
+        case.boot, case.seconds = source_ns, source_ns / 1e9
+        native.set_timer(source_ns // 1000)
+        if tick % 10 == 0:
+          axis = previous.get('aolAxisState')
+          intent = received.get('aolIntentWire')
+          axis_bytes = axis.as_builder().to_bytes() if axis is not None else b''
+          intent_bytes = intent.to_bytes() if intent is not None else b''
+          state = previous.get('selfdriveState')
+          plan = host_heartbeat_bridge.plan_host(28, 0x5495, native.aol_get_request_mask(), native.aol_get_permission_mask(),
+            source_ns, axis_bytes, len(axis_bytes), intent_bytes, len(intent_bytes),
+            state is not None and state.selfdriveState.enabled)
+          native.aol_set_host_request(plan & 0xff)
+          native.set_aol_test_heartbeat(bool(plan & 0x100))
+          host_heartbeat_bridge.complete_host(native.aol_get_request_mask(), native.aol_get_permission_mask())
+        frames = physical_frames(ci, tick, lkas=lkas)
+        pack = CANPacker('hyundai_canfd_generated')
+        replacement: dict[int, tuple[str, dict[str, float]]] = {
+          0x35: ('ACCELERATOR', {'GEAR': 5, 'ACCELERATOR_PEDAL': 4 if gas else 0, 'COUNTER': tick % 256}),
+          0x175: ('TCS', {'ACCEnable': 0, 'ACC_REQ': 1, 'DriverBraking': int(brake), 'COUNTER': tick // 2 % 256}),
+          0x1cf: ('CRUISE_BUTTONS', {'LDA_BTN': lkas, 'ADAPTIVE_CRUISE_MAIN_BTN': main,
+                                   'CRUISE_BUTTONS': button, 'COUNTER': tick // 2 % 16}),
+        }
+        frames = [pack.make_can_msg(replacement[address][0], bus, replacement[address][1])
+                  if address in replacement and bus == 1 else (address, data, bus) for address, data, bus in frames]
+        assert not any(address == 0x1a0 and bus == 1 for address, _, bus in frames)
+        for address, data, bus in frames:
+          assert native.safety_rx_hook(libsafety_py.make_CANPacket(address, bus, data)), (hex(address), bus)
+        if tick % 100 == 0:
+          native.safety_tick()
+        mask, requested = native.aol_get_permission_mask(), native.aol_get_request_mask()
+        rx_invalid = bool(native.safety_test_toyota_rx_summary_invalid())
+        assert not native.get_relay_malfunction()
+        batch = messaging.log_from_bytes(card_module.can_list_to_can_capnp(frames)).as_builder()
+        batch.logMonoTime = source_ns
+        queued[:] = [batch.to_bytes()]
+        device = messaging.new_message('deviceState', valid=True, logMonoTime=source_ns)
+        device.deviceState.started, device.deviceState.startedMonoTime = True, 9_000_000_000
+        pandas = pandas_message()
+        slot = PandaSlot(0, 'authority-panda', 28, 0x5495, 32, native.get_controls_allowed(), rx_invalid)
+        wire = messaging.new_message('aolSafetyWire', 0, valid=True, logMonoTime=source_ns)
+        wire.aolSafetyWire = encode_safety(SafetyState(1, True, source_ns, source_ns + 30_000_000,
+          28, 0x5495, bool(mask & 1), bool(mask & 2), bool(requested & 1), bool(requested & 2),
+          'authority-panda', card.aol_axis_session(), source_ns, (slot,)))
+        messages = [device.as_reader(), pandas.as_reader(), wire.as_reader()]
+        messages += [previous[name] for name in ('selfdriveState', 'aolAxisState', 'onroadEvents') if name in previous]
+        if 'onroadEvents' not in previous:
+          messages.append(messaging.new_message('onroadEvents', 0, valid=True, logMonoTime=source_ns).as_reader())
+        card.sm.update_msgs(source_ns / 1e9, messages)
+        state, _ = card.state_update()
+        card.state_publish(state, None)
+        auxiliary = []
+        for name in ('alertDebug', 'lateralManeuverPlan', 'laneChangeAssistWire', 'starpilotLongitudinalPlan', 'slcState', 'gpsLocation'):
+          if source_ns >= auxiliary_due.get(name, 0):
+            frequency = SERVICE_LIST[name].frequency
+            auxiliary_due[name] = source_ns + (round(1e9 / min(frequency, 100)) if frequency > 0 else 0)
+            auxiliary.append(messaging.new_message(name, 0 if name == 'laneChangeAssistWire' else None, valid=True, logMonoTime=source_ns).as_reader())
+        sd.sm.update_msgs(source_ns / 1e9, auxiliary)
+        axis, host, command = drive(tick, intent_message=received['aolIntentWire'],
+          car_state_message=received['carState'], car_output_message=received['carOutput'], companion=False,
+          authority_message=received.get('starpilotCarState'), allowed=bool(mask & 1), long_allowed=bool(mask & 2),
+          native_request_lat=bool(requested & 1), native_request_long=bool(requested & 2),
+          panda_controls_allowed=native.get_controls_allowed(), panda_fault=rx_invalid,
+          panda_state_message=pandas, safety_message=wire)
+        previous.update(sd.pm.messages)
+        case.boot += 1
+        card.sm.update_msgs(case.boot / 1e9, [controls.pm.messages['carControl']])
+        received.pop('sendcan', None)
+        card.controls_update(state, card.sm['carControl'])
+        if 'sendcan' in received:
+          outgoing = received['sendcan']
+          for frame in outgoing.sendcan:
+            accepted = bool(native.safety_tx_hook(libsafety_py.make_CANPacket(frame.address, frame.src, frame.dat)))
+            native_rejections += not accepted
+            if not accepted:
+              print('PE_NATIVE_REJECT', tick, hex(frame.address), bytes(frame.dat).hex(),
+                    native.get_controls_allowed(), native.aol_get_request_mask(), native.aol_get_permission_mask(),
+                    'axis', str(axis.mode), axis.desiredLateral, axis.lateralActive,
+                    axis.desiredLongitudinal, axis.longitudinalActive,
+                    'cc', command.latActive, command.longActive, 'latch', card.aol_card_intent.allowed_latch,
+                    'rx', rx_invalid, 'host', host.enabled, flush=True)
+            assert accepted, (tick, hex(frame.address), frame.src, 'activeMode', (frame.dat[3] >> 4) & 15 if frame.address == 0xcb else 0, 'native',
+              native.get_controls_allowed(), native.aol_get_request_mask(), native.aol_get_permission_mask(), 'latch',
+              card.aol_card_intent.allowed_latch, 'axis', str(axis.mode), str(axis.faultReason), axis.desiredLateral, axis.lateralActive,
+              axis.desiredLongitudinal, axis.longitudinalActive, 'CC', command.latActive, command.longActive)
+            if frame.address == 0x1a0:
+              active_long = ((frame.dat[8] >> 4) & 7) in (1, 2)
+              raw_accel = (((frame.dat[17] & 7) << 8) | frame.dat[16]) - 1023
+              value_accel = ((frame.dat[18] << 4) | (frame.dat[17] >> 4)) - 1023
+              assert command.longActive or (raw_accel == 0 and value_accel == 0)
+              emitted_longitudinal += active_long
+            if frame.address == 0xcb:
+              active = ((frame.dat[3] >> 4) & 15) == 2
+              assert not active or command.latActive
+              emitted_active += active
+        if probe:
+          row = (native.aol_get_request_mask(), native.aol_get_permission_mask(), native.get_controls_allowed(),
+            card.aol_card_intent.allowed_latch, axis.lateralActive, axis.longitudinalActive, str(axis.mode),
+            str(axis.faultReason), host.enabled, str(host.state), command.latActive, command.longActive,
+            tuple(str(event) for event in sd.events.names), bool(state.cruiseState.enabled),
+            bool(state.cruiseState.available), card.aol_card_intent.latch_clear_reason,
+            card.aol_transport_feedback.longitudinal_cancel_ns)
+          if not trace or trace[-1][1] != row:
+            trace.append((tick, row))
+            print('PE_FULL_TRANSITION', tick, row, flush=True)
+        last = (state, axis, host, command)
+        return last
+
+      # Toggle MAIN with a physical momentary press, then release it and
+      # wait past its unclaimed native gesture deadline. No LKAS press occurs.
+      for _ in range(120):
+        step()
+      for _ in range(2):
+        step(main=1)
+      for _ in range(240):
+        step()
+      assert last is not None
+      probe = True
+      before_long = emitted_longitudinal
+      for _ in range(2):
+        step(button=2)
+      for _ in range(40):
+        state, axis, host, command = step()
+      assert native.get_controls_allowed() and native.aol_get_permission_mask() == 3
+      assert host.enabled and axis.longitudinalActive and command.longActive
+      assert emitted_longitudinal > before_long
+      for _ in range(2):
+        step(button=4)
+      before_lat = emitted_active
+      for _ in range(40):
+        state, axis, host, command = step()
+      assert not native.get_controls_allowed()
+      assert native.aol_get_permission_mask() == 1, 'Physical SET/release followed by Cancel must retain the lateral grant'
+      assert not host.enabled and not axis.longitudinalActive and not command.longActive
+      assert card.aol_card_intent.allowed_latch and axis.lateralActive and command.latActive
+      assert emitted_active > before_lat and native_rejections == 0
+      for _ in range(2):
+        step(lkas=1)
+      for _ in range(40):
+        state, axis, host, command = step()
+      assert not card.aol_card_intent.allowed_latch
+      assert not axis.lateralActive and not command.latActive and not command.longActive
+      assert native.aol_get_permission_mask() == 0
+      assert {key: saved.get(key) for key in keys} == original_settings
+    finally:
+      try:
+        if owner is not None and card is not None:
+          native.set_alternative_experience(0)
+          native.set_safety_hooks(structs.CarParams.SafetyModel.elm327, 1)
+          # Restoration is a new native telemetry sample, independent of the operating 10Hz decimator.
+          type(card.sm).update_msgs(card.sm, case.boot / 1e9, [pandas_message(True).as_reader()])
+          # The production restoration timeout must advance even if the diagnostic setup fails.
+          patcher.setattr(card_module.time, 'monotonic', perf_counter)
+          assert card.prepare_pe_restoration()
+          owner.close()
+      finally:
+        callers.doCleanups()
+        case.doCleanups()
+        local.__exit__(None, None, None)

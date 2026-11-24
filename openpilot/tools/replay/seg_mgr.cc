@@ -1,0 +1,199 @@
+#include "tools/replay/seg_mgr.h"
+
+#include <algorithm>
+#include "tools/replay/replay.h"
+
+SegmentManager::~SegmentManager() {
+  stop();
+}
+
+void SegmentManager::stop() {
+  {
+    std::unique_lock lock(mutex_);
+    exit_ = true;
+  }
+  cv_.notify_one();
+  if (thread_.joinable()) thread_.join();
+  for (auto &[_, segment] : segments_) if (segment) segment->cancel();
+}
+
+bool SegmentManager::load() {
+  if (!route_.load()) {
+    rError("failed to load route: %s", route_.name().c_str());
+    return false;
+  }
+
+  for (const auto &[n, file] : route_.segments()) {
+    if (!file.rlog.empty() || !file.qlog.empty()) {
+      segments_.insert({n, nullptr});
+    }
+  }
+
+  if (segments_.empty()) {
+    rInfo("no valid segments in route: %s", route_.name().c_str());
+    return false;
+  }
+
+  rInfo("loaded route %s with %zu valid segments", route_.name().c_str(), segments_.size());
+  thread_ = std::thread(&SegmentManager::manageSegmentCache, this);
+  return true;
+}
+
+void SegmentManager::setCurrentSegment(int seg_num, bool seeking) {
+  {
+    std::unique_lock lock(mutex_);
+    if (cur_seg_num_ == seg_num && prefer_previous_ == seeking) return;
+
+    cur_seg_num_ = seg_num;
+    prefer_previous_ = seeking;
+    needs_update_ = true;
+  }
+  cv_.notify_one();
+}
+
+void SegmentManager::manageSegmentCache() {
+  while (true) {
+    std::unique_lock lock(mutex_);
+    cv_.wait_until(lock, next_retry_, [this]() { return exit_ || needs_update_; });
+    if (exit_) break;
+
+    needs_update_ = false;
+    next_retry_ = std::chrono::steady_clock::time_point::max();
+    auto cur = segments_.lower_bound(cur_seg_num_);
+    if (cur == segments_.end()) continue;
+
+    // Calculate the range of segments to load
+    const bool local = flags_ & REPLAY_FLAG_LOCAL_MACHINE;
+    const int previous = local
+        ? std::max(int(prefer_previous_), (segment_cache_limit_ - 1) / 2) : segment_cache_limit_ / 2;
+    auto begin = std::prev(cur, std::min<int>(previous, std::distance(segments_.begin(), cur)));
+    auto end = std::next(begin, std::min<int>(segment_cache_limit_, std::distance(begin, segments_.end())));
+    if (local && segment_cache_limit_ > 2) {
+      // Extra local slots must not load unrelated segments at route edges.
+      end = std::next(cur, std::min<int>(segment_cache_limit_ - previous, std::distance(cur, segments_.end())));
+    } else {
+      begin = std::prev(end, std::min<int>(segment_cache_limit_, std::distance(segments_.begin(), end)));
+    }
+
+    // Load required history before starting unrelated future work.
+    const bool seeking = local && prefer_previous_;
+    auto load_begin = seeking ? std::prev(cur, std::min<int>(1, std::distance(segments_.begin(), cur))) : begin;
+    auto load_end = seeking ? std::next(cur) : end;
+    lock.unlock();
+
+    loadSegmentsInRange(load_begin, cur, load_end);
+    if (seeking && (flags_ & REPLAY_FLAG_PRELOAD_SEEK) && segment_cache_limit_ >= 3 &&
+        cur->second && cur->second->getState() == Segment::LoadState::Loaded &&
+        load_begin->second && load_begin->second->getState() == Segment::LoadState::Loaded) {
+      loadSegmentsInRange(begin, cur, end);
+    }
+    for (auto it = begin; it != end; ++it) {
+      if ((flags_ & REPLAY_FLAG_LOCAL_MACHINE) && it->second && it->second->getState() == Segment::LoadState::Failed && onFailure_) {
+        onFailure_(it->first);
+      }
+    }
+    bool merged = mergeSegments(begin, end);
+
+    // Free segments outside the current range
+    auto evict = [this](auto &segment) {
+      segment.second.reset();
+      load_attempts_.erase(segment.first);
+    };
+    std::for_each(segments_.begin(), begin, evict);
+    std::for_each(end, segments_.end(), evict);
+
+    if (merged && onSegmentMergedCallback_) {
+      onSegmentMergedCallback_();  // Notify listener that segments have been merged
+    }
+  }
+}
+
+bool SegmentManager::mergeSegments(const SegmentMap::iterator &begin, const SegmentMap::iterator &end) {
+  std::set<int> segments_to_merge;
+  size_t total_event_count = 0;
+  for (auto it = begin; it != end; ++it) {
+    const auto &segment = it->second;
+    if (segment && segment->getState() == Segment::LoadState::Loaded) {
+      segments_to_merge.insert(segment->seg_num);
+      total_event_count += segment->log->events.size();
+    }
+  }
+
+  if (segments_to_merge == merged_segments_) return false;
+
+  auto merged_event_data = std::make_shared<EventData>();
+  auto &merged_events = merged_event_data->events;
+  merged_events.reserve(total_event_count);
+
+  std::string segments_str = join(segments_to_merge, ", ");
+  rDebug("merging segments: %s", segments_str.c_str());
+  for (int n : segments_to_merge) {
+    const auto &events = segments_.at(n)->log->events;
+    if (events.empty()) continue;
+
+    // Skip INIT_DATA if present
+    auto events_begin = (events.front().which == cereal::Event::Which::INIT_DATA) ? std::next(events.begin()) : events.begin();
+
+    size_t previous_size = merged_events.size();
+    merged_events.insert(merged_events.end(), events_begin, events.end());
+    std::inplace_merge(merged_events.begin(), merged_events.begin() + previous_size, merged_events.end());
+
+    merged_event_data->segments[n] = segments_.at(n);
+  }
+
+  std::atomic_store(&event_data_, std::move(merged_event_data));
+  merged_segments_ = segments_to_merge;
+
+  return true;
+}
+
+void SegmentManager::loadSegmentsInRange(SegmentMap::iterator begin, SegmentMap::iterator cur, SegmentMap::iterator end) {
+  auto tryLoadSegment = [this](auto first, auto last) {
+    for (auto it = first; it != last; ++it) {
+      auto &segment_ptr = it->second;
+      auto &attempt = load_attempts_[it->first];
+      if (segment_ptr && segment_ptr->getState() == Segment::LoadState::Failed) {
+        // A failed object must not permanently occupy its cache slot. Back off
+        // between retries while allowing other segments to load meanwhile.
+        if (attempt.count >= MAX_SEGMENT_LOAD_ATTEMPTS) continue;
+        const auto now = std::chrono::steady_clock::now();
+        if (attempt.retry_at == std::chrono::steady_clock::time_point::max()) {
+          attempt.retry_at = now + std::chrono::seconds(attempt.count);
+        }
+        if (now < attempt.retry_at) {
+          next_retry_ = std::min(next_retry_, attempt.retry_at);
+          continue;
+        }
+        segment_ptr.reset();
+        rWarning("retrying segment %d (attempt %d/%d)", it->first, attempt.count + 1, MAX_SEGMENT_LOAD_ATTEMPTS);
+      }
+      if (!segment_ptr) {
+        ++attempt.count;
+        attempt.retry_at = std::chrono::steady_clock::time_point::max();
+        if (onBenchmarkEvent_) {
+          onBenchmarkEvent_(it->first, "loading");
+        }
+        segment_ptr = std::make_shared<Segment>(
+            it->first, route_.at(it->first), flags_, filters_,
+            [this](int seg_num, bool success) {
+              if (onBenchmarkEvent_) {
+                onBenchmarkEvent_(seg_num, success ? "loaded" : "load failed");
+              }
+              std::unique_lock lock(mutex_);
+              needs_update_ = true;
+              cv_.notify_one();
+            }, boot_offset_);
+      }
+
+      if (segment_ptr->getState() == Segment::LoadState::Loading) {
+        return true;  // Segment is still loading
+      }
+    }
+    return false;  // No segments need loading
+  };
+
+  // Try forward loading, then reverse if necessary
+  if (!tryLoadSegment(cur, end)) {
+    tryLoadSegment(std::make_reverse_iterator(cur), std::make_reverse_iterator(begin));
+  }
+}

@@ -1,0 +1,28 @@
+Import('env', 'arch', 'common', 'messaging', 'visionipc', 'cereal', 'ffmpeg_libs')
+
+replay_env = env.Clone()
+replay_env['CCFLAGS'] += ['-Wno-deprecated-declarations']
+
+base_frameworks = ['VideoToolbox', 'CoreMedia', 'CoreFoundation', 'CoreVideo'] if arch == "Darwin" else []
+base_libs = [common, messaging, cereal, visionipc, 'm', 'pthread', 'zstd']
+
+replay_lib_src = ["replay.cc", "consoleui.cc", "camera.cc", "filereader.cc", "logreader.cc", "framereader.cc",
+                  "route.cc", "util.cc", "seg_mgr.cc", "timeline.cc", "local_timeline.cc", "py_process.cc", "py_tools.cc"]
+if arch != "Darwin":
+  replay_lib_src += env.Object("#openpilot/system/loggerd/encoder/v4l_decoder.cc")
+replay_lib = replay_env.Library("replay", replay_lib_src, LIBS=base_libs, FRAMEWORKS=base_frameworks)
+Export('replay_lib')
+replay_libs = [replay_lib] + ffmpeg_libs + ['ncurses'] + base_libs
+replay_env.Program("replay", ["main.cc"], LIBS=replay_libs, FRAMEWORKS=base_frameworks)
+replay_env.SharedLibrary("media_mux", ["media_mux.cc"], LIBS=ffmpeg_libs)
+if GetOption('extras') or 'openpilot/tools/replay/tests/test_route' in COMMAND_LINE_TARGETS:
+  replay_env.Program("tests/test_route", ["tests/test_route.cc"], LIBS=replay_libs, FRAMEWORKS=base_frameworks)
+if arch != "Darwin" and (GetOption('extras') or 'openpilot/tools/replay/tests/test_v4l_decoder_lifecycle' in COMMAND_LINE_TARGETS):
+  lifecycle_env = replay_env.Clone()
+  lifecycle_env.Append(LINKFLAGS=[
+    '-Wl,--wrap=' + symbol for symbol in (
+      'open', 'close', 'ioctl', 'av_packet_unref', '_ZN9VisionBuf8allocateEm', '_ZN9VisionBuf4freeEv'
+    )
+  ])
+  lifecycle_env.Program("tests/test_v4l_decoder_lifecycle", ["tests/test_v4l_decoder_lifecycle.cc"],
+                        LIBS=replay_libs, FRAMEWORKS=base_frameworks)

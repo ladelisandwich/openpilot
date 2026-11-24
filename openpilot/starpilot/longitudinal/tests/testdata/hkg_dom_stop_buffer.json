@@ -1,0 +1,2966 @@
+{
+  "domCommit": "823a5d5674ec6635b51dd989884dfbd661f90dc4",
+  "sourceFunction": "def get_vision_low_speed_stop_buffer_cap(self, lead, v_ego, accel_min):\n    if lead is None or not lead.status or bool(getattr(lead, \"radar\", False)):\n      return None, False\n\n    lead_prob = float(getattr(lead, \"modelProb\", 0.0))\n    if lead_prob < VISION_LOW_SPEED_STOP_BUFFER_MIN_MODEL_PROB:\n      return None, False\n\n    lead_speed = max(float(lead.vLead), 0.0)\n    relative_speed = float(v_ego) - lead_speed\n    max_lead_speed, hold_max_lead_speed = get_vision_low_speed_stop_buffer_lead_speed_limits(\n      self.CP,\n      VISION_LOW_SPEED_STOP_BUFFER_MAX_LEAD_SPEED,\n      VISION_LOW_SPEED_STOP_BUFFER_HOLD_MAX_LEAD_SPEED,\n    )\n    closing_speed = max(0.0, v_ego - lead_speed)\n    entry_context = (\n      v_ego <= VISION_LOW_SPEED_STOP_BUFFER_MAX_EGO_SPEED and\n      lead_speed <= max_lead_speed and\n      closing_speed >= VISION_LOW_SPEED_STOP_BUFFER_MIN_CLOSING_SPEED\n    )\n    hold_context = (\n      v_ego <= VISION_LOW_SPEED_STOP_BUFFER_MAX_EGO_SPEED and\n      lead_speed <= hold_max_lead_speed and\n      relative_speed >= VISION_LOW_SPEED_STOP_BUFFER_MIN_HOLD_REL_SPEED\n    )\n\n    now_t = time.monotonic()\n    entry_buffer = max(3.2, VISION_LOW_SPEED_STOP_BUFFER_BASE +\n                       VISION_LOW_SPEED_STOP_BUFFER_EGO_GAIN * float(v_ego) +\n                       VISION_LOW_SPEED_STOP_BUFFER_LEAD_GAIN * lead_speed)\n    release_buffer = entry_buffer + VISION_LOW_SPEED_STOP_BUFFER_RELEASE_MARGIN\n    if entry_context and float(lead.dRel) <= entry_buffer:\n      self.vision_low_speed_stop_hold_until = now_t + VISION_LOW_SPEED_STOP_BUFFER_HOLD_TIME\n\n    latched = now_t < self.vision_low_speed_stop_hold_until\n    active = bool(\n      (entry_context and float(lead.dRel) <= entry_buffer) or\n      (latched and hold_context and float(lead.dRel) <= release_buffer)\n    )\n    if not active:\n      return None, False\n\n    min_stop_brake = VISION_LOW_SPEED_STOP_BUFFER_MIN_BRAKE + VISION_LOW_SPEED_STOP_BUFFER_BRAKE_GAIN * float(v_ego)\n    return max(accel_min, -min_stop_brake), True",
+  "sourceSha256": "625b3a77ef9066d5138f9a5964d5d970283f5f40aa0ad6217f2a05a2a9474a80",
+  "constants": {
+    "VISION_LOW_SPEED_STOP_BUFFER_MAX_EGO_SPEED": 6.5,
+    "VISION_LOW_SPEED_STOP_BUFFER_MAX_LEAD_SPEED": 3.25,
+    "VISION_LOW_SPEED_STOP_BUFFER_HOLD_MAX_LEAD_SPEED": 4.0,
+    "VISION_LOW_SPEED_STOP_BUFFER_MIN_MODEL_PROB": 0.9,
+    "VISION_LOW_SPEED_STOP_BUFFER_MIN_CLOSING_SPEED": 0.35,
+    "VISION_LOW_SPEED_STOP_BUFFER_MIN_HOLD_REL_SPEED": -0.2,
+    "VISION_LOW_SPEED_STOP_BUFFER_BASE": 3.8,
+    "VISION_LOW_SPEED_STOP_BUFFER_EGO_GAIN": 0.8,
+    "VISION_LOW_SPEED_STOP_BUFFER_LEAD_GAIN": 0.25,
+    "VISION_LOW_SPEED_STOP_BUFFER_RELEASE_MARGIN": 0.9,
+    "VISION_LOW_SPEED_STOP_BUFFER_HOLD_TIME": 0.8,
+    "VISION_LOW_SPEED_STOP_BUFFER_MIN_BRAKE": 1.25,
+    "VISION_LOW_SPEED_STOP_BUFFER_BRAKE_GAIN": 0.25
+  },
+  "recordedRoute": "ce9f52a429a125e5/0000000e--d988670199",
+  "frames": [
+    {
+      "ns": 1356165222918,
+      "segment": 22,
+      "speed": 20.908796310424805,
+      "recordedTarget": -0.3296908438205719,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 44.1026496887207,
+          "speed": 17.721229553222656,
+          "prob": 0.9904011487960815,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": null,
+          "approachCap": -0.333663814000318
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 44.20684051513672,
+          "speed": 17.758554458618164,
+          "prob": 0.993914783000946,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": null,
+          "approachCap": -0.3214427880717846
+        }
+      ]
+    },
+    {
+      "ns": 1356223256824,
+      "segment": 22,
+      "speed": 20.900360107421875,
+      "recordedTarget": -0.4005029499530792,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 44.882232666015625,
+          "speed": 16.857559204101562,
+          "prob": 0.9874979257583618,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": null,
+          "approachCap": -0.4461277783231423
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 45.01325607299805,
+          "speed": 16.880693435668945,
+          "prob": 0.9915904998779297,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": null,
+          "approachCap": -0.43770100659141137
+        }
+      ]
+    },
+    {
+      "ns": 1364513782915,
+      "segment": 22,
+      "speed": 1.9956129789352417,
+      "recordedTarget": -1.356945276260376,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 5.307994365692139,
+          "speed": -0.17478184401988983,
+          "prob": 0.99945467710495,
+          "lowSpeedBufferCap": -1.7489032447338104,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6353761184215546
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 5.393916130065918,
+          "speed": -0.1756531000137329,
+          "prob": 0.9995676875114441,
+          "lowSpeedBufferCap": -1.7489032447338104,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6354536816146639
+        }
+      ]
+    },
+    {
+      "ns": 1364576161405,
+      "segment": 22,
+      "speed": 1.90276038646698,
+      "recordedTarget": -1.3381303548812866,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 5.1049275398254395,
+          "speed": -0.20211970806121826,
+          "prob": 0.999481737613678,
+          "lowSpeedBufferCap": -1.725690096616745,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6306800275378758
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 5.175923824310303,
+          "speed": -0.20279482007026672,
+          "prob": 0.9996004700660706,
+          "lowSpeedBufferCap": -1.725690096616745,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6307373850875431
+        }
+      ]
+    },
+    {
+      "ns": 1364617331873,
+      "segment": 22,
+      "speed": 1.8675423860549927,
+      "recordedTarget": -1.325697898864746,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 5.011373043060303,
+          "speed": -0.21983477473258972,
+          "prob": 0.9995408058166504,
+          "lowSpeedBufferCap": -1.7168855965137482,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6295353986819585
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 5.1011152267456055,
+          "speed": -0.22160577774047852,
+          "prob": 0.9995992183685303,
+          "lowSpeedBufferCap": -1.7168855965137482,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6296693923075994
+        }
+      ]
+    },
+    {
+      "ns": 1364666055363,
+      "segment": 22,
+      "speed": 1.79497230052948,
+      "recordedTarget": -1.3043748140335083,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.953827857971191,
+          "speed": -0.23671646416187286,
+          "prob": 0.9995301961898804,
+          "lowSpeedBufferCap": -1.69874307513237,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.6255951738357544
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 5.0198187828063965,
+          "speed": -0.2375507652759552,
+          "prob": 0.999592661857605,
+          "lowSpeedBufferCap": -1.69874307513237,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.625657487180498
+        }
+      ]
+    },
+    {
+      "ns": 1364716827342,
+      "segment": 22,
+      "speed": 1.7481791973114014,
+      "recordedTarget": -1.283118724822998,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.806698322296143,
+          "speed": -0.13344751298427582,
+          "prob": 0.999605119228363,
+          "lowSpeedBufferCap": -1.6870447993278503,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.8401689529418945,
+          "speed": -0.1344524621963501,
+          "prob": 0.9997449517250061,
+          "lowSpeedBufferCap": -1.6870447993278503,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1364766746925,
+      "segment": 22,
+      "speed": 1.6832644939422607,
+      "recordedTarget": -1.2631170749664307,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.683119773864746,
+          "speed": -0.08909279853105545,
+          "prob": 0.9996028542518616,
+          "lowSpeedBufferCap": -1.6708161234855652,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.715020656585693,
+          "speed": -0.09011705964803696,
+          "prob": 0.9997432231903076,
+          "lowSpeedBufferCap": -1.6708161234855652,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1364823738384,
+      "segment": 22,
+      "speed": 1.6336694955825806,
+      "recordedTarget": -1.241919755935669,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.375095844268799,
+          "speed": -0.1270887553691864,
+          "prob": 0.9995828866958618,
+          "lowSpeedBufferCap": -1.6584173738956451,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.467395305633545,
+          "speed": -0.13031801581382751,
+          "prob": 0.9996821880340576,
+          "lowSpeedBufferCap": -1.6584173738956451,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1364866619998,
+      "segment": 22,
+      "speed": 1.594731092453003,
+      "recordedTarget": -1.2336345911026,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.3764262199401855,
+          "speed": -0.14953827857971191,
+          "prob": 0.9995637536048889,
+          "lowSpeedBufferCap": -1.6486827731132507,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.452813625335693,
+          "speed": -0.15208634734153748,
+          "prob": 0.9996377229690552,
+          "lowSpeedBufferCap": -1.6486827731132507,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1364918976040,
+      "segment": 22,
+      "speed": 1.5491671562194824,
+      "recordedTarget": -1.2068859338760376,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.46207332611084,
+          "speed": -0.11629100143909454,
+          "prob": 0.9995982050895691,
+          "lowSpeedBufferCap": -1.6372917890548706,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.493031978607178,
+          "speed": -0.11732914298772812,
+          "prob": 0.9997151494026184,
+          "lowSpeedBufferCap": -1.6372917890548706,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1364972402081,
+      "segment": 22,
+      "speed": 1.494480013847351,
+      "recordedTarget": -1.1800174713134766,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.4786248207092285,
+          "speed": -0.10419026762247086,
+          "prob": 0.9996750354766846,
+          "lowSpeedBufferCap": -1.6236200034618378,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.499967098236084,
+          "speed": -0.10452046245336533,
+          "prob": 0.9997963309288025,
+          "lowSpeedBufferCap": -1.6236200034618378,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365014671040,
+      "segment": 22,
+      "speed": 1.4590424299240112,
+      "recordedTarget": -1.147031545639038,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.409933567047119,
+          "speed": -0.1263001561164856,
+          "prob": 0.9997091889381409,
+          "lowSpeedBufferCap": -1.6147606074810028,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.425234317779541,
+          "speed": -0.12712208926677704,
+          "prob": 0.9998266100883484,
+          "lowSpeedBufferCap": -1.6147606074810028,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365065288123,
+      "segment": 22,
+      "speed": 1.4186995029449463,
+      "recordedTarget": -1.1190840005874634,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.306154251098633,
+          "speed": -0.0755176842212677,
+          "prob": 0.9997049570083618,
+          "lowSpeedBufferCap": -1.6046748757362366,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.319023132324219,
+          "speed": -0.07648588716983795,
+          "prob": 0.9998174905776978,
+          "lowSpeedBufferCap": -1.6046748757362366,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365123067706,
+      "segment": 22,
+      "speed": 1.3695546388626099,
+      "recordedTarget": -1.0903750658035278,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.166141510009766,
+          "speed": -0.07557841390371323,
+          "prob": 0.9997343420982361,
+          "lowSpeedBufferCap": -1.5923886597156525,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.173917293548584,
+          "speed": -0.07646438479423523,
+          "prob": 0.9998170137405396,
+          "lowSpeedBufferCap": -1.5923886597156525,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365164327915,
+      "segment": 22,
+      "speed": 1.3382748365402222,
+      "recordedTarget": -1.057337999343872,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.177637577056885,
+          "speed": -0.05744505673646927,
+          "prob": 0.9997642636299133,
+          "lowSpeedBufferCap": -1.5845687091350555,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.179128170013428,
+          "speed": -0.05785214155912399,
+          "prob": 0.9998486042022705,
+          "lowSpeedBufferCap": -1.5845687091350555,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365216169269,
+      "segment": 22,
+      "speed": 1.3009250164031982,
+      "recordedTarget": -1.022459626197815,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 4.092207431793213,
+          "speed": -0.05236295610666275,
+          "prob": 0.9997712969779968,
+          "lowSpeedBufferCap": -1.5752312541007996,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 4.093090534210205,
+          "speed": -0.052706167101860046,
+          "prob": 0.9998635053634644,
+          "lowSpeedBufferCap": -1.5752312541007996,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365264710050,
+      "segment": 22,
+      "speed": 1.2593919038772583,
+      "recordedTarget": -0.9893836975097656,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.9502463340759277,
+          "speed": -0.06143685430288315,
+          "prob": 0.9997996687889099,
+          "lowSpeedBufferCap": -1.5648479759693146,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.958456039428711,
+          "speed": -0.06167154759168625,
+          "prob": 0.9998824596405029,
+          "lowSpeedBufferCap": -1.5648479759693146,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365316429894,
+      "segment": 22,
+      "speed": 1.226841688156128,
+      "recordedTarget": -0.9578510522842407,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.888413906097412,
+          "speed": -0.017313115298748016,
+          "prob": 0.9997958540916443,
+          "lowSpeedBufferCap": -1.556710422039032,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.8865413665771484,
+          "speed": -0.017552129924297333,
+          "prob": 0.999879777431488,
+          "lowSpeedBufferCap": -1.556710422039032,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365368228488,
+      "segment": 22,
+      "speed": 1.1886037588119507,
+      "recordedTarget": -0.9256346821784973,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.8077950477600098,
+          "speed": -0.01578225940465927,
+          "prob": 0.9998117089271545,
+          "lowSpeedBufferCap": -1.5471509397029877,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.804534435272217,
+          "speed": -0.01593012362718582,
+          "prob": 0.9998867511749268,
+          "lowSpeedBufferCap": -1.5471509397029877,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365420098696,
+      "segment": 22,
+      "speed": 1.1538586616516113,
+      "recordedTarget": -0.895764172077179,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.689316749572754,
+          "speed": -0.027135491371154785,
+          "prob": 0.99983811378479,
+          "lowSpeedBufferCap": -1.5384646654129028,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.683018207550049,
+          "speed": -0.02717772126197815,
+          "prob": 0.9998975992202759,
+          "lowSpeedBufferCap": -1.5384646654129028,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365466495415,
+      "segment": 22,
+      "speed": 1.1261180639266968,
+      "recordedTarget": -0.8669993877410889,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.621039867401123,
+          "speed": -0.02232850342988968,
+          "prob": 0.9998413324356079,
+          "lowSpeedBufferCap": -1.5315295159816742,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.6163220405578613,
+          "speed": -0.022344395518302917,
+          "prob": 0.9998995065689087,
+          "lowSpeedBufferCap": -1.5315295159816742,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365519946925,
+      "segment": 22,
+      "speed": 1.0903563499450684,
+      "recordedTarget": -0.838663637638092,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.592933177947998,
+          "speed": -0.017567679286003113,
+          "prob": 0.9998352527618408,
+          "lowSpeedBufferCap": -1.522589087486267,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.5916500091552734,
+          "speed": -0.017921924591064453,
+          "prob": 0.9998972415924072,
+          "lowSpeedBufferCap": -1.522589087486267,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365559825102,
+      "segment": 22,
+      "speed": 1.0750794410705566,
+      "recordedTarget": -0.8102399110794067,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.4571218490600586,
+          "speed": 0.005289457738399506,
+          "prob": 0.9998290538787842,
+          "lowSpeedBufferCap": -1.5187698602676392,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.454707145690918,
+          "speed": 0.005152493715286255,
+          "prob": 0.9998955130577087,
+          "lowSpeedBufferCap": -1.5187698602676392,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365616793435,
+      "segment": 22,
+      "speed": 1.0460565090179443,
+      "recordedTarget": -0.7859264612197876,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.425713539123535,
+          "speed": -0.0090060755610466,
+          "prob": 0.9998272657394409,
+          "lowSpeedBufferCap": -1.511514127254486,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.4249119758605957,
+          "speed": -0.009208224713802338,
+          "prob": 0.9998961687088013,
+          "lowSpeedBufferCap": -1.511514127254486,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365666965623,
+      "segment": 22,
+      "speed": 1.02531099319458,
+      "recordedTarget": -0.7592535018920898,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.329709529876709,
+          "speed": 0.015315167605876923,
+          "prob": 0.999824583530426,
+          "lowSpeedBufferCap": -1.506327748298645,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.3287506103515625,
+          "speed": 0.015163011848926544,
+          "prob": 0.9998952746391296,
+          "lowSpeedBufferCap": -1.506327748298645,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365714636977,
+      "segment": 22,
+      "speed": 1.0099294185638428,
+      "recordedTarget": -0.7350585460662842,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.3268113136291504,
+          "speed": 0.011341981589794159,
+          "prob": 0.9998272061347961,
+          "lowSpeedBufferCap": -1.5024823546409607,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.329195022583008,
+          "speed": 0.011367008090019226,
+          "prob": 0.999895453453064,
+          "lowSpeedBufferCap": -1.5024823546409607,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365764509008,
+      "segment": 22,
+      "speed": 0.9850715398788452,
+      "recordedTarget": -0.7092629671096802,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.239990234375,
+          "speed": 0.01972157508134842,
+          "prob": 0.9998269081115723,
+          "lowSpeedBufferCap": -1.4962678849697113,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.2448015213012695,
+          "speed": 0.020058058202266693,
+          "prob": 0.9998944997787476,
+          "lowSpeedBufferCap": -1.4962678849697113,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365815696612,
+      "segment": 22,
+      "speed": 0.9601920247077942,
+      "recordedTarget": -0.6872068643569946,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.160144329071045,
+          "speed": 0.025476999580860138,
+          "prob": 0.9998327493667603,
+          "lowSpeedBufferCap": -1.4900480061769485,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.156552791595459,
+          "speed": 0.025476716458797455,
+          "prob": 0.9998950958251953,
+          "lowSpeedBufferCap": -1.4900480061769485,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365862946717,
+      "segment": 22,
+      "speed": 0.9436253905296326,
+      "recordedTarget": -0.6664077043533325,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.0912680625915527,
+          "speed": 0.016986183822155,
+          "prob": 0.9998801946640015,
+          "lowSpeedBufferCap": -1.4859063476324081,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.0890684127807617,
+          "speed": 0.016986873000860214,
+          "prob": 0.9999215602874756,
+          "lowSpeedBufferCap": -1.4859063476324081,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365915656717,
+      "segment": 22,
+      "speed": 0.9315131902694702,
+      "recordedTarget": -0.6457284688949585,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 3.0455784797668457,
+          "speed": 0.034343745559453964,
+          "prob": 0.9998831748962402,
+          "lowSpeedBufferCap": -1.4828782975673676,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 3.0461902618408203,
+          "speed": 0.034414634108543396,
+          "prob": 0.9999252557754517,
+          "lowSpeedBufferCap": -1.4828782975673676,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1365965814216,
+      "segment": 22,
+      "speed": 0.9173930883407593,
+      "recordedTarget": -0.627221941947937,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.9742631912231445,
+          "speed": 0.0446566566824913,
+          "prob": 0.9998971223831177,
+          "lowSpeedBufferCap": -1.4793482720851898,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.9787850379943848,
+          "speed": 0.04447910189628601,
+          "prob": 0.9999339580535889,
+          "lowSpeedBufferCap": -1.4793482720851898,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366014173904,
+      "segment": 22,
+      "speed": 0.9068253636360168,
+      "recordedTarget": -0.6086126565933228,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.9347476959228516,
+          "speed": 0.04658423364162445,
+          "prob": 0.9998953938484192,
+          "lowSpeedBufferCap": -1.4767063409090042,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.9464597702026367,
+          "speed": 0.046371594071388245,
+          "prob": 0.9999322891235352,
+          "lowSpeedBufferCap": -1.4767063409090042,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366065264841,
+      "segment": 22,
+      "speed": 0.8989614844322205,
+      "recordedTarget": -0.5912854671478271,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.8423290252685547,
+          "speed": 0.05150219798088074,
+          "prob": 0.9998899102210999,
+          "lowSpeedBufferCap": -1.4747403711080551,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.8490681648254395,
+          "speed": 0.05131063237786293,
+          "prob": 0.9999276399612427,
+          "lowSpeedBufferCap": -1.4747403711080551,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366114246352,
+      "segment": 22,
+      "speed": 0.8908151984214783,
+      "recordedTarget": -0.5766964554786682,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.8615779876708984,
+          "speed": 0.047787416726350784,
+          "prob": 0.9998872876167297,
+          "lowSpeedBufferCap": -1.4727037996053696,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.8630943298339844,
+          "speed": 0.04751807451248169,
+          "prob": 0.9999256134033203,
+          "lowSpeedBufferCap": -1.4727037996053696,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366166446248,
+      "segment": 22,
+      "speed": 0.8826347589492798,
+      "recordedTarget": -0.5598226189613342,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.836942672729492,
+          "speed": 0.06694028526544571,
+          "prob": 0.9998865127563477,
+          "lowSpeedBufferCap": -1.47065868973732,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.8452253341674805,
+          "speed": 0.06660997122526169,
+          "prob": 0.999924898147583,
+          "lowSpeedBufferCap": -1.47065868973732,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366215098227,
+      "segment": 22,
+      "speed": 0.8785713315010071,
+      "recordedTarget": -0.5449976921081543,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.8599720001220703,
+          "speed": 0.039687540382146835,
+          "prob": 0.9998874664306641,
+          "lowSpeedBufferCap": -1.4696428328752518,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.8620314598083496,
+          "speed": 0.0397883839905262,
+          "prob": 0.9999279975891113,
+          "lowSpeedBufferCap": -1.4696428328752518,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366265208071,
+      "segment": 22,
+      "speed": 0.8718394041061401,
+      "recordedTarget": -0.5303365588188171,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.645585060119629,
+          "speed": 0.056684717535972595,
+          "prob": 0.9999022483825684,
+          "lowSpeedBufferCap": -1.467959851026535,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.6527838706970215,
+          "speed": 0.05618763715028763,
+          "prob": 0.999934196472168,
+          "lowSpeedBufferCap": -1.467959851026535,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366312337341,
+      "segment": 22,
+      "speed": 0.8655627965927124,
+      "recordedTarget": -0.520579993724823,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.656926155090332,
+          "speed": 0.07811840623617172,
+          "prob": 0.9998993873596191,
+          "lowSpeedBufferCap": -1.466390699148178,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.667208671569824,
+          "speed": 0.07761746644973755,
+          "prob": 0.9999315738677979,
+          "lowSpeedBufferCap": -1.466390699148178,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366367497237,
+      "segment": 22,
+      "speed": 0.8569828867912292,
+      "recordedTarget": -0.5072699785232544,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.5995583534240723,
+          "speed": 0.08536277711391449,
+          "prob": 0.9998990893363953,
+          "lowSpeedBufferCap": -1.4642457216978073,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.6098995208740234,
+          "speed": 0.08441564440727234,
+          "prob": 0.999930739402771,
+          "lowSpeedBufferCap": -1.4642457216978073,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366417485779,
+      "segment": 22,
+      "speed": 0.8501114845275879,
+      "recordedTarget": -0.4965001940727234,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.511094093322754,
+          "speed": 0.0955599695444107,
+          "prob": 0.9999090433120728,
+          "lowSpeedBufferCap": -1.462527871131897,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.5208945274353027,
+          "speed": 0.09411299973726273,
+          "prob": 0.9999356269836426,
+          "lowSpeedBufferCap": -1.462527871131897,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366467638175,
+      "segment": 22,
+      "speed": 0.8463367223739624,
+      "recordedTarget": -0.48624634742736816,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.5075435638427734,
+          "speed": 0.11180662363767624,
+          "prob": 0.9998993277549744,
+          "lowSpeedBufferCap": -1.4615841805934906,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.5382132530212402,
+          "speed": 0.10922570526599884,
+          "prob": 0.9999224543571472,
+          "lowSpeedBufferCap": -1.4615841805934906,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366518950727,
+      "segment": 22,
+      "speed": 0.8397819995880127,
+      "recordedTarget": -0.47243455052375793,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.3595266342163086,
+          "speed": 0.09922339022159576,
+          "prob": 0.9998932480812073,
+          "lowSpeedBufferCap": -1.4599454998970032,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.397392511367798,
+          "speed": 0.09655864536762238,
+          "prob": 0.9999136328697205,
+          "lowSpeedBufferCap": -1.4599454998970032,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366564055310,
+      "segment": 22,
+      "speed": 0.8362274169921875,
+      "recordedTarget": -0.4634077548980713,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.3622138500213623,
+          "speed": 0.10785817354917526,
+          "prob": 0.9998878240585327,
+          "lowSpeedBufferCap": -1.4590568542480469,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.4032912254333496,
+          "speed": 0.10507149249315262,
+          "prob": 0.9999048709869385,
+          "lowSpeedBufferCap": -1.4590568542480469,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366615267654,
+      "segment": 22,
+      "speed": 0.8302484154701233,
+      "recordedTarget": -0.44959738850593567,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.3373565673828125,
+          "speed": 0.10780953615903854,
+          "prob": 0.9998959302902222,
+          "lowSpeedBufferCap": -1.4575621038675308,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.374462604522705,
+          "speed": 0.10514962673187256,
+          "prob": 0.9999071359634399,
+          "lowSpeedBufferCap": -1.4575621038675308,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366665159164,
+      "segment": 22,
+      "speed": 0.8219962120056152,
+      "recordedTarget": -0.4426407516002655,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.2427659034729004,
+          "speed": 0.13000869750976562,
+          "prob": 0.9998912811279297,
+          "lowSpeedBufferCap": -1.4554990530014038,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.2872567176818848,
+          "speed": 0.12735362350940704,
+          "prob": 0.9999001026153564,
+          "lowSpeedBufferCap": -1.4554990530014038,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366713098643,
+      "segment": 22,
+      "speed": 0.814737856388092,
+      "recordedTarget": -0.42922213673591614,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.0987062454223633,
+          "speed": 0.11729791760444641,
+          "prob": 0.99988853931427,
+          "lowSpeedBufferCap": -1.453684464097023,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.136286497116089,
+          "speed": 0.11613336205482483,
+          "prob": 0.9998928308486938,
+          "lowSpeedBufferCap": -1.453684464097023,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366765947237,
+      "segment": 22,
+      "speed": 0.8042797446250916,
+      "recordedTarget": -0.41901206970214844,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.1495795249938965,
+          "speed": 0.13196948170661926,
+          "prob": 0.9998850226402283,
+          "lowSpeedBufferCap": -1.4510699361562729,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.1900362968444824,
+          "speed": 0.12941454350948334,
+          "prob": 0.9998887181282043,
+          "lowSpeedBufferCap": -1.4510699361562729,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366815776091,
+      "segment": 22,
+      "speed": 0.7966330051422119,
+      "recordedTarget": -0.4101582467556,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.186487913131714,
+          "speed": 0.12523671984672546,
+          "prob": 0.9998762607574463,
+          "lowSpeedBufferCap": -1.449158251285553,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.224581718444824,
+          "speed": 0.12277105450630188,
+          "prob": 0.9998776316642761,
+          "lowSpeedBufferCap": -1.449158251285553,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366865390049,
+      "segment": 22,
+      "speed": 0.787710428237915,
+      "recordedTarget": -0.3986312747001648,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.320194959640503,
+          "speed": 0.12998217344284058,
+          "prob": 0.9998717904090881,
+          "lowSpeedBufferCap": -1.4469276070594788,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.355509042739868,
+          "speed": 0.12766142189502716,
+          "prob": 0.9998737573623657,
+          "lowSpeedBufferCap": -1.4469276070594788,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366915029112,
+      "segment": 22,
+      "speed": 0.7788676619529724,
+      "recordedTarget": -0.3898043930530548,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.2638466358184814,
+          "speed": 0.13078264892101288,
+          "prob": 0.9998912811279297,
+          "lowSpeedBufferCap": -1.444716915488243,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.295598030090332,
+          "speed": 0.1290552169084549,
+          "prob": 0.9998987913131714,
+          "lowSpeedBufferCap": -1.444716915488243,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1366965990154,
+      "segment": 22,
+      "speed": 0.7705062031745911,
+      "recordedTarget": -0.3808285892009735,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.167039632797241,
+          "speed": 0.09418685734272003,
+          "prob": 0.9999310970306396,
+          "lowSpeedBufferCap": -1.4426265507936478,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.1880197525024414,
+          "speed": 0.09234651178121567,
+          "prob": 0.99994957447052,
+          "lowSpeedBufferCap": -1.4426265507936478,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367012315154,
+      "segment": 22,
+      "speed": 0.7631273865699768,
+      "recordedTarget": -0.3733510673046112,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.249735116958618,
+          "speed": 0.11323417723178864,
+          "prob": 0.9999292492866516,
+          "lowSpeedBufferCap": -1.4407818466424942,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.2742531299591064,
+          "speed": 0.11070214211940765,
+          "prob": 0.9999473094940186,
+          "lowSpeedBufferCap": -1.4407818466424942,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367063407601,
+      "segment": 22,
+      "speed": 0.7557414770126343,
+      "recordedTarget": -0.3640143573284149,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.1766088008880615,
+          "speed": 0.08685490489006042,
+          "prob": 0.999931812286377,
+          "lowSpeedBufferCap": -1.4389353692531586,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.1937997341156006,
+          "speed": 0.08568021655082703,
+          "prob": 0.9999527931213379,
+          "lowSpeedBufferCap": -1.4389353692531586,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367115172289,
+      "segment": 22,
+      "speed": 0.748245358467102,
+      "recordedTarget": -0.35774073004722595,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.1559839248657227,
+          "speed": 0.10847604274749756,
+          "prob": 0.9999334812164307,
+          "lowSpeedBufferCap": -1.4370613396167755,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.1771178245544434,
+          "speed": 0.10682527720928192,
+          "prob": 0.9999525547027588,
+          "lowSpeedBufferCap": -1.4370613396167755,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367164637029,
+      "segment": 22,
+      "speed": 0.7391448020935059,
+      "recordedTarget": -0.34923577308654785,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.032956838607788,
+          "speed": 0.1266811490058899,
+          "prob": 0.999941349029541,
+          "lowSpeedBufferCap": -1.4347862005233765,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.0583670139312744,
+          "speed": 0.12477470934391022,
+          "prob": 0.9999570846557617,
+          "lowSpeedBufferCap": -1.4347862005233765,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367209551924,
+      "segment": 22,
+      "speed": 0.7346710562705994,
+      "recordedTarget": -0.34382468461990356,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.0464730262756348,
+          "speed": 0.15470853447914124,
+          "prob": 0.999941349029541,
+          "lowSpeedBufferCap": -1.4336677640676498,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.0751662254333496,
+          "speed": 0.15217739343643188,
+          "prob": 0.9999561905860901,
+          "lowSpeedBufferCap": -1.4336677640676498,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367270451560,
+      "segment": 22,
+      "speed": 0.7286102175712585,
+      "recordedTarget": -0.33611464500427246,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 1.9809019565582275,
+          "speed": 0.11313366889953613,
+          "prob": 0.9999476671218872,
+          "lowSpeedBufferCap": -1.4321525543928146,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.0049045085906982,
+          "speed": 0.11126384139060974,
+          "prob": 0.9999620914459229,
+          "lowSpeedBufferCap": -1.4321525543928146,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367318574789,
+      "segment": 22,
+      "speed": 0.7220380306243896,
+      "recordedTarget": -0.3313630223274231,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 1.9915556907653809,
+          "speed": 0.15627416968345642,
+          "prob": 0.9999446868896484,
+          "lowSpeedBufferCap": -1.4305095076560974,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.0237581729888916,
+          "speed": 0.15402758121490479,
+          "prob": 0.9999580383300781,
+          "lowSpeedBufferCap": -1.4305095076560974,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367361541716,
+      "segment": 22,
+      "speed": 0.7176870107650757,
+      "recordedTarget": -0.3242696523666382,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.0051121711730957,
+          "speed": 0.16664183139801025,
+          "prob": 0.9999439716339111,
+          "lowSpeedBufferCap": -1.429421752691269,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.034359931945801,
+          "speed": 0.16419535875320435,
+          "prob": 0.9999570846557617,
+          "lowSpeedBufferCap": -1.429421752691269,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367416696143,
+      "segment": 22,
+      "speed": 0.7136497497558594,
+      "recordedTarget": -0.3196018636226654,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.0800724029541016,
+          "speed": 0.15200036764144897,
+          "prob": 0.9999417066574097,
+          "lowSpeedBufferCap": -1.4284124374389648,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.1149659156799316,
+          "speed": 0.1497749239206314,
+          "prob": 0.9999544024467468,
+          "lowSpeedBufferCap": -1.4284124374389648,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367467396612,
+      "segment": 22,
+      "speed": 0.7087883949279785,
+      "recordedTarget": -0.3130757212638855,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 2.075974941253662,
+          "speed": 0.16116151213645935,
+          "prob": 0.9999405741691589,
+          "lowSpeedBufferCap": -1.4271970987319946,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.1167423725128174,
+          "speed": 0.15930511057376862,
+          "prob": 0.999952495098114,
+          "lowSpeedBufferCap": -1.4271970987319946,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367517604685,
+      "segment": 22,
+      "speed": 0.7018561363220215,
+      "recordedTarget": -0.3085983693599701,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 1.9377095699310303,
+          "speed": 0.17879515886306763,
+          "prob": 0.9999354481697083,
+          "lowSpeedBufferCap": -1.4254640340805054,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 1.9862704277038574,
+          "speed": 0.17704756557941437,
+          "prob": 0.9999449253082275,
+          "lowSpeedBufferCap": -1.4254640340805054,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367566494372,
+      "segment": 22,
+      "speed": 0.6990187764167786,
+      "recordedTarget": -0.3026067912578583,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 1.9972131252288818,
+          "speed": 0.1920868158340454,
+          "prob": 0.9999485015869141,
+          "lowSpeedBufferCap": -1.4247546941041946,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 2.0350723266601562,
+          "speed": 0.19031107425689697,
+          "prob": 0.9999585151672363,
+          "lowSpeedBufferCap": -1.4247546941041946,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 1367609785778,
+      "segment": 22,
+      "speed": 0.6938103437423706,
+      "recordedTarget": -0.3001781702041626,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 1.9443418979644775,
+          "speed": 0.21750813722610474,
+          "prob": 0.9999480247497559,
+          "lowSpeedBufferCap": -1.4234525859355927,
+          "slowLeadCap": null,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 1.9881525039672852,
+          "speed": 0.2155008614063263,
+          "prob": 0.9999578595161438,
+          "lowSpeedBufferCap": -1.4234525859355927,
+          "slowLeadCap": null,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3458937469966,
+      "segment": 57,
+      "speed": 5.978857517242432,
+      "recordedTarget": -3.4411721229553223,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.47966480255127,
+          "speed": 0.17203912138938904,
+          "prob": 0.9996205568313599,
+          "lowSpeedBufferCap": -2.744714379310608,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.9488607255617773
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.518816947937012,
+          "speed": 0.18232938647270203,
+          "prob": 0.9997692704200745,
+          "lowSpeedBufferCap": -2.744714379310608,
+          "slowLeadCap": -1.2,
+          "approachCap": -0.9318947958946223
+        }
+      ]
+    },
+    {
+      "ns": 3491597969262,
+      "segment": 57,
+      "speed": 17.378690719604492,
+      "recordedTarget": -0.11114770174026489,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 32.169891357421875,
+          "speed": 15.582053184509277,
+          "prob": 0.9978948831558228,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": null,
+          "approachCap": -0.4112114603462254
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 32.24564743041992,
+          "speed": 15.60722827911377,
+          "prob": 0.9979231953620911,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": null,
+          "approachCap": -0.4003916182374792
+        }
+      ]
+    },
+    {
+      "ns": 3508183788906,
+      "segment": 57,
+      "speed": 2.8908753395080566,
+      "recordedTarget": -0.6941267848014832,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 9.725460052490234,
+          "speed": 1.4850070476531982,
+          "prob": 0.9997725486755371,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.7170623698947004,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 9.80583667755127,
+          "speed": 1.472150444984436,
+          "prob": 0.9998841285705566,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.6991130760413363,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508228109200,
+      "segment": 57,
+      "speed": 2.8594789505004883,
+      "recordedTarget": -0.6906723976135254,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 9.778656005859375,
+          "speed": 1.412273645401001,
+          "prob": 0.9997643828392029,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.7332509414858068,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 9.857417106628418,
+          "speed": 1.4003812074661255,
+          "prob": 0.9998801350593567,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.7146523754598655,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508284914839,
+      "segment": 57,
+      "speed": 2.8278558254241943,
+      "recordedTarget": -0.6874658465385437,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 9.580392837524414,
+          "speed": 1.3744711875915527,
+          "prob": 0.9997564554214478,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.8217778683324227,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 9.672689437866211,
+          "speed": 1.3620452880859375,
+          "prob": 0.9998759031295776,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.7920767630680927,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508333932078,
+      "segment": 57,
+      "speed": 2.790245771408081,
+      "recordedTarget": -0.6847469210624695,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 9.576983451843262,
+          "speed": 1.3781774044036865,
+          "prob": 0.9997619986534119,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.7709807432609072,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 9.655569076538086,
+          "speed": 1.3648817539215088,
+          "prob": 0.9998829364776611,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.7505255820071245,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508385525348,
+      "segment": 57,
+      "speed": 2.7559688091278076,
+      "recordedTarget": -0.6813188791275024,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 9.364323616027832,
+          "speed": 1.3437918424606323,
+          "prob": 0.9997619986534119,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.872890882902615,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 9.439797401428223,
+          "speed": 1.331286072731018,
+          "prob": 0.9998822212219238,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.8457551746877392,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508435497453,
+      "segment": 57,
+      "speed": 2.721417188644409,
+      "recordedTarget": -0.6789513826370239,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 9.248580932617188,
+          "speed": 1.2939435243606567,
+          "prob": 0.9997571706771851,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.9482320734270576,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 9.323431015014648,
+          "speed": 1.282687783241272,
+          "prob": 0.9998788833618164,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -0.9138768347560463,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508479876180,
+      "segment": 57,
+      "speed": 2.687950849533081,
+      "recordedTarget": -0.676113486289978,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.808341979980469,
+          "speed": 1.2057058811187744,
+          "prob": 0.9997541904449463,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.899606704711914,
+          "speed": 1.1981266736984253,
+          "prob": 0.9998747110366821,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508535131482,
+      "segment": 57,
+      "speed": 2.6552655696868896,
+      "recordedTarget": -0.6843769550323486,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.846972465515137,
+          "speed": 1.2936155796051025,
+          "prob": 0.9997668862342834,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.935515403747559,
+          "speed": 1.284116506576538,
+          "prob": 0.9998742341995239,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.1282417503546995,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508582724779,
+      "segment": 57,
+      "speed": 2.622314453125,
+      "recordedTarget": -0.67640221118927,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.880980491638184,
+          "speed": 1.171630859375,
+          "prob": 0.9997619390487671,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.969620704650879,
+          "speed": 1.1638519763946533,
+          "prob": 0.9998709559440613,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508637191398,
+      "segment": 57,
+      "speed": 2.58892822265625,
+      "recordedTarget": -0.6808487772941589,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.603715896606445,
+          "speed": 1.1224180459976196,
+          "prob": 0.9997588396072388,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.691863059997559,
+          "speed": 1.115785837173462,
+          "prob": 0.9998685121536255,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508684899582,
+      "segment": 57,
+      "speed": 2.559762954711914,
+      "recordedTarget": -0.683182954788208,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.624720573425293,
+          "speed": 1.085557460784912,
+          "prob": 0.9997485876083374,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.726439476013184,
+          "speed": 1.0804657936096191,
+          "prob": 0.9998612999916077,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508735073909,
+      "segment": 57,
+      "speed": 2.528975486755371,
+      "recordedTarget": -0.683100700378418,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.783459663391113,
+          "speed": 0.99934983253479,
+          "prob": 0.9997309446334839,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.894253730773926,
+          "speed": 0.9958834648132324,
+          "prob": 0.9998502731323242,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508786074521,
+      "segment": 57,
+      "speed": 2.4895036220550537,
+      "recordedTarget": -0.6823567748069763,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.695801734924316,
+          "speed": 1.1138983964920044,
+          "prob": 0.999721348285675,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.795620918273926,
+          "speed": 1.1071281433105469,
+          "prob": 0.9998441934585571,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508836704594,
+      "segment": 57,
+      "speed": 2.46268892288208,
+      "recordedTarget": -0.6795775890350342,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.609868049621582,
+          "speed": 0.9488877058029175,
+          "prob": 0.9997073411941528,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.709807395935059,
+          "speed": 0.9459381103515625,
+          "prob": 0.9998338222503662,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508885668456,
+      "segment": 57,
+      "speed": 2.4277384281158447,
+      "recordedTarget": -0.6799564361572266,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.307894706726074,
+          "speed": 1.068803071975708,
+          "prob": 0.9997335076332092,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.38379955291748,
+          "speed": 1.0629651546478271,
+          "prob": 0.9998509883880615,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508935268878,
+      "segment": 57,
+      "speed": 2.391975164413452,
+      "recordedTarget": -0.6776322722434998,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.161457061767578,
+          "speed": 1.0130871534347534,
+          "prob": 0.9997292160987854,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.249797821044922,
+          "speed": 1.0079293251037598,
+          "prob": 0.9998477697372437,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3508989185444,
+      "segment": 57,
+      "speed": 2.3530709743499756,
+      "recordedTarget": -0.6800526976585388,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.42224407196045,
+          "speed": 0.9844790697097778,
+          "prob": 0.9997210502624512,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.51400089263916,
+          "speed": 0.9800652265548706,
+          "prob": 0.9998429417610168,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509029979323,
+      "segment": 57,
+      "speed": 2.3295350074768066,
+      "recordedTarget": -0.675289511680603,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.232938766479492,
+          "speed": 0.9092189073562622,
+          "prob": 0.9997074604034424,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.337200164794922,
+          "speed": 0.9056432247161865,
+          "prob": 0.999832808971405,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509085002306,
+      "segment": 57,
+      "speed": 2.2989180088043213,
+      "recordedTarget": -0.6762902736663818,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.416200637817383,
+          "speed": 0.7530386447906494,
+          "prob": 0.9996867179870605,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.520689010620117,
+          "speed": 0.7524254322052002,
+          "prob": 0.9998180866241455,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509137096891,
+      "segment": 57,
+      "speed": 2.2625253200531006,
+      "recordedTarget": -0.6741945743560791,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.361732482910156,
+          "speed": 0.7497979998588562,
+          "prob": 0.9996761083602905,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.462522506713867,
+          "speed": 0.7491651177406311,
+          "prob": 0.9998108148574829,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509184373084,
+      "segment": 57,
+      "speed": 2.2280592918395996,
+      "recordedTarget": -0.6739041209220886,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.234455108642578,
+          "speed": 0.6136089563369751,
+          "prob": 0.9996649026870728,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.342281341552734,
+          "speed": 0.613068163394928,
+          "prob": 0.9998009204864502,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509237336814,
+      "segment": 57,
+      "speed": 2.1922385692596436,
+      "recordedTarget": -0.6743656396865845,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.944895267486572,
+          "speed": 0.6470813751220703,
+          "prob": 0.9996509552001953,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.04573917388916,
+          "speed": 0.647200882434845,
+          "prob": 0.9997878074645996,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509284553637,
+      "segment": 57,
+      "speed": 2.159977436065674,
+      "recordedTarget": -0.67657870054245,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.008718490600586,
+          "speed": 0.5191593170166016,
+          "prob": 0.9996228814125061,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.114347457885742,
+          "speed": 0.518720269203186,
+          "prob": 0.999767005443573,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509334210721,
+      "segment": 57,
+      "speed": 2.1262617111206055,
+      "recordedTarget": -0.6768352389335632,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.987446308135986,
+          "speed": 0.4352027475833893,
+          "prob": 0.9995843172073364,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.080673217773438,
+          "speed": 0.4350198805332184,
+          "prob": 0.9997411370277405,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509383927956,
+      "segment": 57,
+      "speed": 2.0958242416381836,
+      "recordedTarget": -0.6762240529060364,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.125645637512207,
+          "speed": 0.46474695205688477,
+          "prob": 0.9995762705802917,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.219518661499023,
+          "speed": 0.46393173933029175,
+          "prob": 0.9997377395629883,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509434821237,
+      "segment": 57,
+      "speed": 2.0615599155426025,
+      "recordedTarget": -0.6792551875114441,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 8.206500053405762,
+          "speed": 0.36751940846443176,
+          "prob": 0.9995589852333069,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.28555965423584,
+          "speed": 0.3672149181365967,
+          "prob": 0.9997305870056152,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509484984164,
+      "segment": 57,
+      "speed": 2.027620315551758,
+      "recordedTarget": -0.6821405291557312,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.960519313812256,
+          "speed": 0.3256847858428955,
+          "prob": 0.9995354413986206,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 8.038204193115234,
+          "speed": 0.3256262540817261,
+          "prob": 0.9997177124023438,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509531850339,
+      "segment": 57,
+      "speed": 1.9975303411483765,
+      "recordedTarget": -0.6850621700286865,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.860056400299072,
+          "speed": 0.31746476888656616,
+          "prob": 0.999526858329773,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.9342570304870605,
+          "speed": 0.31816697120666504,
+          "prob": 0.9997112154960632,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509578261918,
+      "segment": 57,
+      "speed": 1.9723798036575317,
+      "recordedTarget": -0.6916042566299438,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.808239459991455,
+          "speed": 0.09951536357402802,
+          "prob": 0.9994966983795166,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.8789849281311035,
+          "speed": 0.10258781909942627,
+          "prob": 0.9996958374977112,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509633701219,
+      "segment": 57,
+      "speed": 1.9366363286972046,
+      "recordedTarget": -0.697941780090332,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.767181873321533,
+          "speed": 0.09261137992143631,
+          "prob": 0.9994730949401855,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.836702823638916,
+          "speed": 0.09559283405542374,
+          "prob": 0.999682605266571,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509688024522,
+      "segment": 57,
+      "speed": 1.8971147537231445,
+      "recordedTarget": -0.7031243443489075,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.5050272941589355,
+          "speed": 0.11634683609008789,
+          "prob": 0.9994527697563171,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.5784077644348145,
+          "speed": 0.1193130761384964,
+          "prob": 0.9996654391288757,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509732431687,
+      "segment": 57,
+      "speed": 1.8710477352142334,
+      "recordedTarget": -0.7059385180473328,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.462021350860596,
+          "speed": 0.10953517258167267,
+          "prob": 0.9994468092918396,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.5354228019714355,
+          "speed": 0.1134941577911377,
+          "prob": 0.9996607303619385,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509785867773,
+      "segment": 57,
+      "speed": 1.8380094766616821,
+      "recordedTarget": -0.7123424410820007,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.462586879730225,
+          "speed": 0.03196989744901657,
+          "prob": 0.9995032548904419,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.5331339836120605,
+          "speed": 0.036308661103248596,
+          "prob": 0.9996854066848755,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509832696454,
+      "segment": 57,
+      "speed": 1.80303156375885,
+      "recordedTarget": -0.7164366841316223,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.356415271759033,
+          "speed": 0.039591528475284576,
+          "prob": 0.9995957016944885,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.43217134475708,
+          "speed": 0.04331308603286743,
+          "prob": 0.9997547268867493,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509885420261,
+      "segment": 57,
+      "speed": 1.7693136930465698,
+      "recordedTarget": -0.7211434841156006,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.271440029144287,
+          "speed": 0.03372125327587128,
+          "prob": 0.9995871186256409,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.34472131729126,
+          "speed": 0.0382949560880661,
+          "prob": 0.9997491836547852,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509935064226,
+      "segment": 57,
+      "speed": 1.7351677417755127,
+      "recordedTarget": -0.7211097478866577,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.331893444061279,
+          "speed": 0.02664922922849655,
+          "prob": 0.9996057152748108,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.405894756317139,
+          "speed": 0.030672423541545868,
+          "prob": 0.9997507929801941,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3509984993634,
+      "segment": 57,
+      "speed": 1.7013884782791138,
+      "recordedTarget": -0.7258388996124268,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.027548313140869,
+          "speed": -0.015041716396808624,
+          "prob": 0.9995915293693542,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.097679615020752,
+          "speed": -0.010696619749069214,
+          "prob": 0.999740719795227,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3510035305667,
+      "segment": 57,
+      "speed": 1.665055513381958,
+      "recordedTarget": -0.7270675897598267,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.063408374786377,
+          "speed": -0.011410348117351532,
+          "prob": 0.9995799660682678,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.1316237449646,
+          "speed": -0.007211469113826752,
+          "prob": 0.9997340440750122,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3510085895645,
+      "segment": 57,
+      "speed": 1.6292555332183838,
+      "recordedTarget": -0.7270461320877075,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.094831943511963,
+          "speed": 0.03333473950624466,
+          "prob": 0.9995757341384888,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.153977870941162,
+          "speed": 0.03690695762634277,
+          "prob": 0.9997383952140808,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3510136612018,
+      "segment": 57,
+      "speed": 1.5860000848770142,
+      "recordedTarget": -0.7328553795814514,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 7.0016560554504395,
+          "speed": -0.012488752603530884,
+          "prob": 0.9995731115341187,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 7.060665607452393,
+          "speed": -0.008854284882545471,
+          "prob": 0.999745786190033,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3510185002443,
+      "segment": 57,
+      "speed": 1.556523323059082,
+      "recordedTarget": -0.738673985004425,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 6.84657621383667,
+          "speed": -0.03079347312450409,
+          "prob": 0.999631404876709,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 6.902328014373779,
+          "speed": -0.027060896158218384,
+          "prob": 0.9997768998146057,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    },
+    {
+      "ns": 3510235613773,
+      "segment": 57,
+      "speed": 1.521154761314392,
+      "recordedTarget": -0.7446043491363525,
+      "recordedShouldStop": false,
+      "leads": [
+        {
+          "lead": "leadOne",
+          "distance": 6.744155406951904,
+          "speed": -0.04959295690059662,
+          "prob": 0.999610424041748,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        },
+        {
+          "lead": "leadTwo",
+          "distance": 6.796488285064697,
+          "speed": -0.046167246997356415,
+          "prob": 0.9997655749320984,
+          "lowSpeedBufferCap": null,
+          "slowLeadCap": -1.2,
+          "approachCap": null
+        }
+      ]
+    }
+  ]
+}

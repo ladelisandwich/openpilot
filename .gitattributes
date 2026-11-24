@@ -1,0 +1,65 @@
+* text=auto eol=lf
+
+# Binary resources are ordinary Git blobs.
+*.onnx -text
+openpilot/selfdrive/modeld/models/big_*_tinygrad.pkl -text
+*.svg -text
+*.png -text
+*.gif -text
+*.ttf -text
+*.otf -text
+*.woff -text
+*.woff2 -text
+*.wav -text
+openpilot/starpilot/galaxy/web/vendor/vue/vue.esm-browser.js -text
+*.apk -text
+openpilot/starpilot/galaxy/bin/hev-socks5-tunnel_linux_arm64 -text
+openpilot/starpilot/galaxy/bin/hostapd_linux_arm64 -text
+openpilot/starpilot/galaxy/bin/hostapd_cli_linux_arm64 -text
+openpilot/starpilot/soloist/pulseaudio/bin/pulseaudio -text
+openpilot/starpilot/soloist/pulseaudio/bin/pactl -text
+openpilot/starpilot/soloist/bluealsa/bin/bluealsa-aplay -text
+openpilot/starpilot/soloist/bluealsa/bin/bluealsad -text
+
+openpilot/selfdrive/car/tests/test_models_segs.txt -text
+openpilot/common/hardware/comma/updater -text
+
+# Dependency snapshots keep their own storage attributes.
+msgq_repo/** !filter !diff !merge -text
+opendbc_repo/** !filter !diff !merge -text
+panda/** !filter !diff !merge -text
+rednose_repo/** !filter !diff !merge -text
+teleoprtc_repo/** !filter !diff !merge -text
+tinygrad_repo/** !filter !diff !merge -text
+tinygrad_model_runtime/** !filter !diff !merge -text
+
+# Compiled model parts must retain exact binary bytes.
+*.pkl.chunk* -text
+*.pkl -text
+
+# Native release artifacts must retain exact binary bytes.
+*.a -text
+*.so -text
+*.so.* -text
+openpilot/selfdrive/pandad/pandad -text
+openpilot/tools/replay/replay -text
+openpilot/system/camerad/camerad -text
+openpilot/system/loggerd/bootlog -text
+openpilot/system/loggerd/encoderd -text
+openpilot/system/loggerd/loggerd -text
+openpilot/starpilot/galaxy/bin/frpc_linux_arm64 -text
+openpilot/starpilot/maps/provider/mapd -text
+openpilot/tools/arabesque_firefox/offline/*.deb -text
+openpilot/tools/arabesque_firefox/offline/*.tar.xz -text
+openpilot/selfdrive/test/process_replay/refs/starpilot/*.zst -text
+
+# Published Panda object files are AArch64 ELF, not text.
+openpilot/selfdrive/pandad/main.o -text
+openpilot/selfdrive/pandad/panda.o -text
+openpilot/selfdrive/pandad/panda_safety.o -text
+openpilot/selfdrive/pandad/panda_usb.o -text
+openpilot/selfdrive/pandad/pandad.o -text
+openpilot/selfdrive/pandad/spi.o -text
+
+# Compressed recorded regression fixture; retain exact binary bytes.
+openpilot/starpilot/tests/testdata/ford_mache_lead_departure.json.gz -text

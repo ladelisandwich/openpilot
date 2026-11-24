@@ -1,0 +1,63 @@
+{
+  "platform": "TOYOTA_RAV4_TSS2_2023",
+  "firmware": [
+    {
+      "ecu": "eps",
+      "fwVersion": "38393635423432333731000000000000",
+      "address": 1953,
+      "subAddress": 0,
+      "brand": "toyota",
+      "bus": 0,
+      "logging": false
+    },
+    {
+      "ecu": "engine",
+      "fwVersion": "0138393636333441533830303100000000",
+      "address": 1792,
+      "subAddress": 0,
+      "brand": "toyota",
+      "bus": 0,
+      "logging": false
+    },
+    {
+      "ecu": "abs",
+      "fwVersion": "0146313532363432463831303000000000",
+      "address": 1968,
+      "subAddress": 0,
+      "brand": "toyota",
+      "bus": 0,
+      "logging": false
+    },
+    {
+      "ecu": "fwdCamera",
+      "fwVersion": "023836343646305230353330300000000038363436473052303233303000000000",
+      "address": 1872,
+      "subAddress": 109,
+      "brand": "toyota",
+      "bus": 0,
+      "logging": false
+    },
+    {
+      "ecu": "fwdRadar",
+      "fwVersion": "0138383231463052303331303000000000",
+      "address": 1872,
+      "subAddress": 15,
+      "brand": "toyota",
+      "bus": 0,
+      "logging": false
+    }
+  ],
+  "advertisements": [
+    {
+      "bus": 0,
+      "address": 767,
+      "data": "00000409"
+    },
+    {
+      "bus": 2,
+      "address": 767,
+      "data": "00000409"
+    }
+  ],
+  "scope": "Anonymized 2025 RAV4 Hybrid discovery evidence. Four-byte filter presence is not the legacy eight-byte SDSU status signal. No VIN, GPS, credentials or driver data."
+}

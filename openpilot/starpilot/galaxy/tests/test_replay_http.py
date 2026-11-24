@@ -1,0 +1,310 @@
+"""Browser sessions cannot borrow replay authority or arbitrary media paths."""
+
+import http.client
+import json
+from pathlib import Path
+import tempfile
+import threading
+import unittest
+from unittest.mock import patch
+
+from openpilot.starpilot.galaxy.access import GalaxyAccessOwner
+from openpilot.starpilot.galaxy.server import make_server
+
+
+SESSION = '1' * 32
+CLIENT = '2' * 32
+OWNER = '3' * 32
+
+
+class ReplayHTTPTest(unittest.TestCase):
+  def setUp(self):
+    self.temp = tempfile.TemporaryDirectory()
+    self.root = Path(self.temp.name)
+    def ram_session(session_id):
+      return self.root / 'ram' / ('msgq_replay-' + session_id[:24]) / session_id
+    override = patch('openpilot.starpilot.replay.media.web_media_dir', ram_session)
+    override.start()
+    self.addCleanup(override.stop)
+    self.media = ram_session(SESSION) / 'media' / '1'
+    self.media.mkdir(parents=True)
+    (self.media / 'init.mp4').write_bytes(b'initialization')
+    for sequence in range(1, 10):
+      (self.media / f'{sequence}.m4s').write_bytes(f'fragment-{sequence}'.encode())
+    self.access = GalaxyAccessOwner(self.root / 'access')
+    self.access.configure('password123', lambda: True)
+    self.calls = []
+    self.entered, self.release = threading.Event(), threading.Event()
+    self.release.set()
+    self.path_override = None
+    self.evicted = False
+    self.media_ready = True
+    self.replay_state = 'playing'
+    self.export_receipt = None
+
+    def replay(payload):
+      self.calls.append(payload)
+      if payload['op'] == 'export-file':
+        self.entered.set()
+        self.release.wait(2)
+        return {'ok': True, 'result': self.export_receipt}
+      if payload['op'] == 'media':
+        if self.evicted:
+          return {'ok': True, 'result': {'available': False, 'code': 'media_evicted'}}
+        self.entered.set()
+        self.release.wait(2)
+        sequence = payload['sequence']
+        if sequence > 9:
+          return {'ok': True, 'result': {'available': False}}
+        rows = []
+        for selected in range(sequence, min(10, sequence + (1 if sequence == 0 else payload.get('count', 1)))):
+          path = self.media / ('init.mp4' if selected == 0 else f'{selected}.m4s')
+          rows.append({'mediaPath': str(self.path_override or path), 'length': path.stat().st_size,
+                       'epoch': payload['epoch'], 'sequence': selected})
+        result = rows[0] if sequence == 0 or payload.get('count', 1) == 1 else {'fragments': rows}
+        return {'ok': True, 'result': result}
+      return {'ok': True, 'result': {'schemaVersion': 1, 'ownerId': OWNER, 'sessionId': SESSION,
+                                    'state': self.replay_state if self.media_ready else 'seeking', 'mediaReady': self.media_ready,
+                                    'epoch': 1, 'offroad': True, 'owned': True, 'framePath': '/private/frame'}}
+
+    self.server = make_server(port=0, owner=self.access, parked=lambda: True, replay_client=replay, replay_root=self.root)
+    self.thread = threading.Thread(target=self.server.serve_forever, kwargs={'poll_interval': .01}, daemon=True)
+    self.thread.start()
+
+  def tearDown(self):
+    self.release.set()
+    self.server.shutdown()
+    self.thread.join(2)
+    self.server.server_close()
+    self.temp.cleanup()
+
+  def request(self, path, payload=None, cookie=None, origin=True, local=True, method=None, extra_headers=None):
+    headers = {} if local else {'Forwarded': 'for=203.0.113.8'}
+    if cookie:
+      headers['Cookie'] = cookie
+    if payload is not None:
+      headers['Content-Type'] = 'application/json'
+      if origin:
+        headers['Origin'] = f'http://127.0.0.1:{self.server.server_port}'
+    headers.update(extra_headers or {})
+    connection = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=3)
+    try:
+      connection.request(method or ('GET' if payload is None else 'POST'), path, None if payload is None else json.dumps(payload), headers)
+      response = connection.getresponse()
+      return response.status, response.read(), dict(response.getheaders())
+    finally:
+      connection.close()
+
+  def login(self):
+    return self.request('/api/auth/login', {'password': 'password123'})[2]['Set-Cookie'].split(';', 1)[0]
+
+  def test_forwarded_session_cannot_access_routes(self):
+    cookie = self.login()
+    _, body, _ = self.request('/api/auth/session', cookie=cookie, local=False)
+    self.assertTrue(json.loads(body)['authenticated'])
+    self.assertFalse(json.loads(body)['localAccess'])
+    for path in ('/api/replay/catalog', f'/api/replay/status?clientId={CLIENT}',
+                 '/api/replay/detail?routeId=00000042--abcdef1234',
+                 f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=0',
+                 f'/api/replay/export-download?exportId={SESSION}&clientId={CLIENT}',
+                 '/api/recordings/detail?routeId=00000042--abcdef1234',
+                 '/api/recordings/local', '/api/recordings/segment-summary?segmentName=00000042--abcdef1234--0',
+                 '/api/recordings/logs/00000042--abcdef1234', '/api/recordings/files/00000042--abcdef1234--0/rlog.zst',
+                 '/api/recordings/media/00000042--abcdef1234--0',
+                 '/api/recordings/route/00000042--abcdef1234/fcamera'):
+      with self.subTest(path=path):
+        status, body, _ = self.request(path, cookie=cookie, local=False)
+        self.assertEqual(status, 403)
+        self.assertEqual(json.loads(body)['code'], 'local_only')
+    for path in ('/api/replay/start', '/api/replay/control', '/api/replay/stop', '/api/replay/export-start',
+                 '/api/recordings/action', '/api/recordings/delete-videos'):
+      with self.subTest(path=path):
+        status, body, _ = self.request(path, {'clientId': CLIENT}, cookie, local=False)
+        self.assertEqual(status, 403)
+        self.assertEqual(json.loads(body)['code'], 'local_only')
+    self.assertEqual(self.calls, [], 'forwarded playback never reaches the replay owner')
+    self.assertIsNone(getattr(self.server, 'recording_media_source', None), 'forwarded video cannot prepare a media source')
+
+  def test_auth_origin_and_actor_binding(self):
+    self.assertEqual(self.request('/api/replay/catalog')[0], 401)
+    self.assertEqual(self.calls, [])
+    first, second = self.login(), self.login()
+    self.assertEqual(self.request('/api/replay/start', {'clientId': CLIENT}, first, origin=False)[0], 403)
+    payload = {'clientId': CLIENT, 'routeId': '00000042--abcdef1234', 'target': 'web', 'requestId': '4' * 32,
+               'expectedOwnerId': OWNER}
+    status, body, _ = self.request('/api/replay/start', payload, first)
+    self.assertEqual(status, 200)
+    self.assertNotIn(b'/private/frame', body)
+    first_actor = self.calls[-1]['clientId']
+    self.assertNotEqual(first_actor, CLIENT)
+    self.assertEqual(self.request('/api/replay/status?clientId=' + CLIENT, cookie=first)[0], 200)
+    self.assertEqual(self.calls[-1]['clientId'], first_actor)
+    self.request('/api/replay/start', payload, second)
+    self.assertNotEqual(self.calls[-1]['clientId'], first_actor)
+    count = len(self.calls)
+    self.assertEqual(self.request('/api/replay/start', {**payload, 'target': 'native'}, first)[0], 400)
+    self.assertEqual(self.request('/api/replay/start', {key: value for key, value in payload.items() if key != 'target'}, first)[0], 400)
+    self.assertEqual(len(self.calls), count, 'Galaxy cannot ask the owner for a native viewer')
+    self.assertEqual(self.request('/api/replay/start', {**payload, 'op': 'shell'}, first)[0], 400)
+    self.assertEqual(self.request('/api/replay/media?sessionId=../x&clientId=' + CLIENT + '&epoch=1&sequence=0', cookie=first)[0], 400)
+
+  def test_timeline_uses_authenticated_actor_and_bounded_cursor(self):
+    path = f'/api/replay/timeline?sessionId={SESSION}&clientId={CLIENT}&cursor=0'
+    self.assertEqual(self.request(path)[0], 401)
+    cookie = self.login()
+    status, body, _ = self.request(path, cookie=cookie)
+    self.assertEqual(status, 200)
+    self.assertNotIn(b'/private/frame', body)
+    self.assertEqual(self.calls[-1]['cursor'], 0)
+    self.assertEqual(self.calls[-1]['op'], 'timeline')
+    self.assertNotEqual(self.calls[-1]['clientId'], CLIENT)
+    count = len(self.calls)
+    for suffix in ('-1', 'true', '1.5', '999999999'):
+      self.assertEqual(self.request(path[:-1] + suffix, cookie=cookie)[0], 400)
+    self.assertEqual(self.request(path, cookie=cookie, local=False)[0], 403)
+    self.assertEqual(len(self.calls), count)
+
+  def test_export_scope_and_authenticated_private_download(self):
+    folder = self.root / 'exports' / SESSION
+    folder.mkdir(parents=True, mode=0o700)
+    folder.parent.chmod(0o700)
+    output = folder / 'replay.mp4'
+    output.write_bytes(b'exported-video-with-ui')
+    output.chmod(0o600)
+    self.export_receipt = {'id': SESSION, 'bytes': output.stat().st_size, 'filename': 'route-replay.mp4'}
+    path = f'/api/replay/export-download?exportId={SESSION}&clientId={CLIENT}'
+    self.assertEqual(self.request(path)[0], 401)
+    cookie = self.login()
+    payload = {'clientId': CLIENT, 'routeId': '00000042--abcdef1234', 'requestId': '4' * 32,
+               'expectedOwnerId': OWNER, 'segment': 0}
+    self.assertEqual(self.request('/api/replay/export-start', payload, cookie, origin=False)[0], 403)
+    self.assertEqual(self.request('/api/replay/export-start', payload, cookie)[0], 200)
+    self.assertEqual(self.calls[-1]['op'], 'export-start')
+    self.assertEqual(self.calls[-1]['segment'], 0)
+    self.assertNotEqual(self.calls[-1]['clientId'], CLIENT)
+    status, body, headers = self.request(path, cookie=cookie, extra_headers={'Range': 'bytes=2-7'})
+    self.assertEqual((status, body), (206, b'ported'))
+    self.assertEqual(headers['Content-Disposition'], 'attachment; filename="route-replay.mp4"')
+    self.assertEqual(headers['Cache-Control'], 'no-store')
+    status, body, headers = self.request(path, cookie=cookie, method='HEAD')
+    self.assertEqual((status, body), (200, b''))
+    self.assertEqual(int(headers['Content-Length']), output.stat().st_size)
+    self.assertEqual(self.request(path, cookie=cookie, extra_headers={'Range': 'bytes=500-'})[0], 416)
+    output.unlink()
+    output.symlink_to(self.root / 'access' / 'secret')
+    self.assertEqual(self.request(path, cookie=cookie)[0], 503)
+
+  def test_logout_during_export_receipt_withholds_download(self):
+    cookie = self.login()
+    self.export_receipt = {'id': SESSION, 'bytes': 1, 'filename': 'replay.mp4'}
+    self.release.clear()
+    responses = []
+    pending = threading.Thread(target=lambda: responses.append(self.request(
+      f'/api/replay/export-download?exportId={SESSION}&clientId={CLIENT}', cookie=cookie)))
+    pending.start()
+    self.assertTrue(self.entered.wait(2))
+    self.request('/api/auth/logout', {}, cookie)
+    self.release.set()
+    pending.join(2)
+    self.assertEqual(responses[0][0], 401)
+    self.assertNotIn(b'exported-video', responses[0][1])
+
+  def test_selected_segment_reaches_shared_owner(self):
+    cookie = self.login()
+    for segment in (0, 2):
+      payload = {'clientId': CLIENT, 'routeId': '00000042--abcdef1234', 'target': 'web',
+                 'requestId': '4' * 32, 'expectedOwnerId': OWNER, 'segment': segment}
+      self.assertEqual(self.request('/api/replay/start', payload, cookie)[0], 200)
+      self.assertEqual(self.calls[-1]['segment'], segment)
+      self.assertEqual(self.calls[-1]['target'], 'web')
+
+  def test_media_batch_budget_and_no_path_disclosure(self):
+    cookie = self.login()
+    path = f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence='
+    status, body, headers = self.request(path + '0', cookie=cookie)
+    self.assertEqual((status, body), (200, b'initialization'))
+    self.assertEqual(headers['Content-Type'], 'video/mp4')
+    self.assertEqual(headers['X-Replay-Epoch'], '1')
+    self.assertEqual(headers['Cache-Control'], 'no-store')
+    self.calls.clear()
+    status, body, headers = self.request(path + '1', cookie=cookie)
+    self.assertEqual([call.get('count', 1) for call in self.calls if call['op'] == 'media'], [8, 1])
+    self.assertEqual(status, 200)
+    self.assertEqual(body, b''.join(f'fragment-{number}'.encode() for number in range(1, 9)))
+    self.assertEqual(headers['X-Replay-Next-Sequence'], '9')
+    self.assertEqual(self.request(path + '10', cookie=cookie)[0], 202)
+    self.path_override = self.root / 'access' / 'secret'
+    status, body, _ = self.request(path + '0', cookie=cookie)
+    self.assertEqual(status, 503)
+    self.assertNotIn(str(self.path_override).encode(), body)
+
+  def test_buffering_keeps_published_media_and_waits_for_missing_fragment(self):
+    self.replay_state = 'buffering'
+    cookie = self.login()
+    path = f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence='
+    status, body, _ = self.request(path + '1', cookie=cookie)
+    self.assertEqual(status, 200)
+    self.assertEqual(body, b''.join(f'fragment-{number}'.encode() for number in range(1, 9)))
+    self.assertEqual(self.request(path + '10', cookie=cookie)[0], 202)
+
+  def test_logout_during_slow_media_withholds_bytes(self):
+    cookie = self.login()
+    self.release.clear()
+    responses = []
+    path = f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=0'
+    pending = threading.Thread(target=lambda: responses.append(self.request(path, cookie=cookie)))
+    pending.start()
+    self.assertTrue(self.entered.wait(1))
+    self.assertEqual(self.request('/api/auth/logout', {}, cookie)[0], 200)
+    self.release.set()
+    pending.join(2)
+    self.assertEqual(responses[0][0], 401)
+    self.assertNotIn(b'initialization', responses[0][1])
+
+  def test_eviction_is_a_conflict_not_endless_pending(self):
+    self.evicted = True
+    status, body, _ = self.request(f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=1', cookie=self.login())
+    self.assertEqual(status, 409)
+    self.assertEqual(json.loads(body)['code'], 'media_evicted')
+
+  def test_symlink_media_is_rejected(self):
+    path = self.media / 'init.mp4'
+    path.unlink()
+    outside = self.root / 'outside'
+    outside.write_bytes(b'initialization')
+    path.symlink_to(outside)
+    status, body, _ = self.request(f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=0', cookie=self.login())
+    self.assertEqual(status, 409)
+    self.assertNotIn(b'initialization', body)
+
+  def test_persistent_session_path_cannot_replace_ram_media(self):
+    path = self.root / 'sessions' / SESSION / 'media' / '1' / 'init.mp4'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'initialization')
+    self.path_override = path
+    status, body, _ = self.request(f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=0', cookie=self.login())
+    self.assertEqual(status, 503)
+    self.assertNotIn(b'initialization', body)
+
+  def test_symlink_media_directory_is_rejected(self):
+    outside = self.root / 'outside'
+    self.media.rename(outside)
+    self.media.symlink_to(outside, target_is_directory=True)
+    status, body, _ = self.request(f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=0', cookie=self.login())
+    self.assertEqual(status, 409)
+    self.assertNotIn(b'initialization', body)
+
+  def test_accepted_seek_with_same_epoch_withholds_media(self):
+    cookie = self.login()
+    self.media_ready = False
+    path = f'/api/replay/media?sessionId={SESSION}&clientId={CLIENT}&epoch=1&sequence=0'
+    connection = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=3)
+    try:
+      connection.request('GET', path, headers={'Cookie': cookie})
+      response = connection.getresponse()
+      self.assertEqual(response.status, 200)
+      with self.assertRaises(http.client.IncompleteRead) as receipt:
+        response.read()
+      self.assertEqual(receipt.exception.partial, b'')
+    finally:
+      connection.close()

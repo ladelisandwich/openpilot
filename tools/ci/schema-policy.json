@@ -1,0 +1,387 @@
+{
+  "schema_version": 2,
+  "upstream_commit": "ad4c9cdf1857034bb06c12e4b0cfba093e6ae3d6",
+  "opendbc_commit": "35f7e0813462607ef1d703e52313e7571e31405d",
+  "unchanged_schemas": {
+    "openpilot/cereal/deprecated.capnp": "b3aa5c13de40001ed7376cef858500fb003f7698f96131cd0db18d878fa1af0d",
+    "openpilot/cereal/include/c++.capnp": "fb306076cd38c27af1aed20fac6395e9a46fbe5b5df6a248b5f1b6845a079c44",
+    "opendbc_repo/opendbc/car/car.capnp": "098a19d69e8d233ac653503b53761a94824f31812757a11a7ded1589fe1e0788",
+    "opendbc_repo/opendbc/car/include/c++.capnp": "fb306076cd38c27af1aed20fac6395e9a46fbe5b5df6a248b5f1b6845a079c44",
+    "opendbc_repo/opendbc/car/rlog.capnp": "76331a09f36764d08228ba1ed6c03419cc8cdfcc797db98c4d56fab52a6ac050"
+  },
+  "log_sha256": "aa5d562b94a3452f067eb74299c7997716862b84e2276113786f80492f8f59f8",
+  "custom_header": "using Cxx = import \"/include/c++.capnp\";\n$Cxx.namespace(\"cereal\");\nusing Car = import \"/car.capnp\";\n\n@0xb526ba661d550a59;\n\n# custom.capnp: a home for empty structs reserved for custom forks\n# These structs are guaranteed to remain reserved and empty in mainline\n# cereal, so use these if you want custom events in your fork.\n\n# DO rename the structs\n# DON'T change the identifier (e.g. @0x81c2f05a394cf4af)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n# Automatic FLM adds children only to existing reserved fork carriers.\n# All evidence clocks are explicitly MONOTONIC; default/version0 is invalid.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n# Live tracking trials are a separate protocol, never ReplayValidation.\n\n\n\n\n\n\n\n\n",
+  "historical_empty_slots": [],
+  "historical_restored": {
+    "10": {
+      "type_id": "0xcb9fd56c7057593a",
+      "ordinal": 136,
+      "field": "desiredCurvature @0 :Float32;"
+    },
+    "11": {
+      "type_id": "0xc2243c65e0340384",
+      "ordinal": 137,
+      "field": "active @0 :Bool;"
+    }
+  },
+  "reserved": [
+    {
+      "struct": "CustomReserved0",
+      "type_id": "0x81c2f05a394cf4af",
+      "field": "customReserved0",
+      "ordinal": 107
+    },
+    {
+      "struct": "CustomReserved1",
+      "type_id": "0xaedffd8f31e7b55d",
+      "field": "customReserved1",
+      "ordinal": 108
+    },
+    {
+      "struct": "CustomReserved2",
+      "type_id": "0xf35cc4560bbf6ec2",
+      "field": "customReserved2",
+      "ordinal": 109
+    },
+    {
+      "struct": "CustomReserved3",
+      "type_id": "0xda96579883444c35",
+      "field": "customReserved3",
+      "ordinal": 110
+    },
+    {
+      "struct": "CustomReserved4",
+      "type_id": "0x80ae746ee2596b11",
+      "field": "customReserved4",
+      "ordinal": 111
+    },
+    {
+      "struct": "CustomReserved5",
+      "type_id": "0xa5cd762cd951a455",
+      "field": "customReserved5",
+      "ordinal": 112
+    },
+    {
+      "struct": "CustomReserved6",
+      "type_id": "0xf98d843bfd7004a3",
+      "field": "customReserved6",
+      "ordinal": 113
+    },
+    {
+      "struct": "CustomReserved7",
+      "type_id": "0xb86e6369214c01c8",
+      "field": "customReserved7",
+      "ordinal": 114
+    },
+    {
+      "struct": "CustomReserved8",
+      "type_id": "0xf416ec09499d9d19",
+      "field": "customReserved8",
+      "ordinal": 115
+    },
+    {
+      "struct": "CustomReserved9",
+      "type_id": "0xa1680744031fdb2d",
+      "field": "customReserved9",
+      "ordinal": 116
+    },
+    {
+      "struct": "CustomReserved10",
+      "type_id": "0xcb9fd56c7057593a",
+      "field": "customReserved10",
+      "ordinal": 136
+    },
+    {
+      "struct": "CustomReserved11",
+      "type_id": "0xc2243c65e0340384",
+      "field": "customReserved11",
+      "ordinal": 137
+    },
+    {
+      "struct": "CustomReserved12",
+      "type_id": "0x9ccdc8676701b412",
+      "field": "customReserved12",
+      "ordinal": 138
+    },
+    {
+      "struct": "CustomReserved13",
+      "type_id": "0xcd96dafb67a082d0",
+      "field": "customReserved13",
+      "ordinal": 139
+    },
+    {
+      "struct": "CustomReserved14",
+      "type_id": "0xb057204d7deadf3f",
+      "field": "customReserved14",
+      "ordinal": 140
+    },
+    {
+      "struct": "CustomReserved15",
+      "type_id": "0xbd443b539493bc68",
+      "field": "customReserved15",
+      "ordinal": 141
+    },
+    {
+      "struct": "CustomReserved16",
+      "type_id": "0xfc6241ed8877b611",
+      "field": "customReserved16",
+      "ordinal": 142
+    },
+    {
+      "struct": "CustomReserved17",
+      "type_id": "0xa30662f84033036c",
+      "field": "customReserved17",
+      "ordinal": 143
+    },
+    {
+      "struct": "CustomReserved18",
+      "type_id": "0xc86a3d38d13eb3ef",
+      "field": "customReserved18",
+      "ordinal": 144
+    },
+    {
+      "struct": "CustomReserved19",
+      "type_id": "0xa4f1eb3323f5f582",
+      "field": "customReserved19",
+      "ordinal": 145
+    }
+  ],
+  "raw_reserved": {
+    "124": "customReservedRawData0",
+    "125": "customReservedRawData1",
+    "126": "customReservedRawData2"
+  },
+  "historical_prefixes": {
+    "0": {
+      "type_id": "0x81c2f05a394cf4af",
+      "name": "StarPilotCarControl",
+      "body": "\n  hudControl @0 :HUDControl;\n  steeringLimitInfo @1 :SteeringLimitInfo;\n\n  struct HUDControl {\n    audibleAlert @0 :AudibleAlert;\n\n    enum AudibleAlert {\n      none @0;\n\n      engage @1;\n      disengage @2;\n      refuse @3;\n\n      warningSoft @4;\n      warningImmediate @5;\n\n      prompt @6;\n      promptRepeat @7;\n      promptDistracted @8;\n\n      # Random Events\n      angry @9;\n      continued @10;\n      dejaVu @11;\n      doc @12;\n      fart @13;\n      firefox @14;\n      goat @15;\n      hal9000 @16;\n      mail @17;\n      nessie @18;\n      noice @19;\n      startup @20;\n      thisIsFine @21;\n      uwu @22;\n    }\n  }\n\n  struct SteeringLimitInfo {\n    valid @0 :Bool;\n    modelLimitErrorDeg @1 :Float32;\n    resumeLimitErrorDeg @2 :Float32;\n    cooperativeLimitErrorDeg @3 :Float32;\n    cooperativeOffsetDeg @4 :Float32;\n    monoTime @5 :UInt64;\n    combinedLimitErrorDeg @6 :Float32;\n  }\n",
+      "source_commit": "c2109496a72e85ca702ecef7aff53ff45adcfb8c",
+      "source_path": "cereal/custom.capnp"
+    },
+    "3": {
+      "type_id": "0xda96579883444c35",
+      "name": "StarPilotLongitudinalPlan",
+      "body": "\n  version @0 :UInt16;\n  sourcePlanMonoTime @1 :UInt64;\n  modelMonoTime @2 :UInt64;\n  driveStartMonoTime @3 :UInt64;\n  forceStopHolding @4 :Bool;\n"
+    },
+    "2": {
+      "type_id": "0xf35cc4560bbf6ec2",
+      "name": "StarPilotCarState",
+      "body": "\n  accelPressed @0 :Bool;\n  alwaysOnLateralEnabled @1 :Bool;\n  brakeLights @2 :Bool;\n  dashboardSpeedLimit @3 :Float32;\n  decelPressed @4 :Bool;\n  distancePressed @5 :Bool;\n  distanceLongPressed @6 :Bool;\n  distanceVeryLongPressed @7 :Bool;\n  ecoGear @8 :Bool;\n  forceCoast @9 :Bool;\n  isParked @10 :Bool;\n  pauseLateral @11 :Bool;\n  pauseLongitudinal @12 :Bool;\n  sportGear @13 :Bool;\n  trafficModeEnabled @14 :Bool;\n  gasStack @15 :Bool;  # Compatibility with older StarPilot payloads\n  modePressed @16 :Bool;\n  customPressed @17 :Bool;\n  alwaysOnLateralAllowed @18 :Bool;\n  dashboardStopSign @19 :UInt8;  # 0 = no signal / platform doesn't publish\n  cancelPressed @20 :Bool;\n  cancelLongPressed @21 :Bool;\n  cancelVeryLongPressed @22 :Bool;\n  pedalMaxRegen @23 :Bool;  # pedal at max regen, driver should use brake for more decel\n  pedalLongActive @24 :Bool;  # Pre-AP pedal longitudinal mode is active (enableLongControl)\n  teslaCCEngaged @25 :Bool;  # rising edge of stock Tesla CC engaging (no-pedal mode)\n  teslaCCDisengaged @26 :Bool;  # falling edge of stock Tesla CC\n  teslaCCNotArmed @27 :Bool;  # lateral engaged but DI_cruiseState != STANDBY/ENABLED\n  accelHardCruise @28 :Bool;  # current/releasing accel cruise button came from GM hard-press signal\n  decelHardCruise @29 :Bool;  # current/releasing decel cruise button came from GM hard-press signal\n  pulseAndGlide @30 :Bool;  # developer-only wheel-button pulse-and-glide mode is enabled",
+      "source_commit": "6de77049b3c3dc77c7275e9ff724a96f9e72a19d",
+      "source_path": "cereal/custom.capnp"
+    },
+    "6": {
+      "type_id": "0xf98d843bfd7004a3",
+      "name": "CustomReserved6",
+      "body": "\naccelerationJerk @0 :Float32; cscControllingSpeed @1 :Bool; cscSpeed @2 :Float32;\ncscTraining @3 :Bool; dangerFactor @4 :Float32; dangerJerk @5 :Float32;\ndesiredFollowDistance @6 :Int64; experimentalMode @7 :Bool; forcingStop @8 :Bool;\nforcingStopLength @9 :Float32; starpilotEvents @10 :AnyPointer; starpilotToggles @11 :Text;\nincreasedStoppedDistance @12 :Float32; lateralCheck @13 :Bool; laneWidthLeft @14 :Float32;\nlaneWidthRight @15 :Float32; maxAcceleration @16 :Float32; minAcceleration @17 :Float32;\nredLight @18 :Bool; roadCurvature @19 :Float32;\nslcMapSpeedLimit @20 :Float32;\nslcMapboxSpeedLimit @21 :Float32; slcNextSpeedLimit @22 :Float32; slcOverriddenSpeed @23 :Float32;\nslcSpeedLimit @24 :Float32; slcSpeedLimitOffset @25 :Float32; slcSpeedLimitSource @26 :Text;\n",
+      "source_commit": "77b44257a0a2a6e574d8e375ab61004be21b7a6e",
+      "source_path": "openpilot/cereal/custom.capnp"
+    },
+    "1": {
+      "type_id": "0xaedffd8f31e7b55d",
+      "name": "StarPilotCarParams",
+      "body": "\n  alternativeExperience @0 :Int16;\n  canUsePedal @1 :Bool;\n  canUseSDSU @2 :Bool;\n  flags @3 :UInt32;\n  isHDA2 @4 :Bool;\n  openpilotLongitudinalControlDisabled @5 :Bool;\n  safetyConfigs @6 :List(SafetyConfig);\n  pcmCruiseSpeed @7 :Bool = true;\n  redneckCruiseAvailable @8 :Bool;\n\n  struct SafetyConfig {\n    safetyParam @0 :UInt16;\n  }\n\n  learning @9 :AutoSteeringLearning;\n\n  struct AutoSteeringLearning {\n    version @0 :UInt16;\n    status @1 :Status;\n    reason @2 :Text;\n    identity @3 :Identity;\n    session @4 :Text;\n    sequence @5 :UInt64;\n    observedMonoTime @6 :UInt64;  # MONOTONIC, separate from Event BOOTTIME.\n    validUntilMonoTime @7 :UInt64;\n    sourceWindowStartMonoTime @8 :UInt64;\n    sourceWindowEndMonoTime @9 :UInt64;\n    family @10 :Family;\n    latAccelFactor @11 :Float64;\n    acceptancePolicyId @12 :Text;\n    trainWindows @13 :UInt32;\n    heldoutWindows @14 :UInt32;\n    trainBaselineLoss @15 :Float64;\n    trainCandidateLoss @16 :Float64;\n    heldoutBaselineLoss @17 :Float64;\n    heldoutCandidateLoss @18 :Float64;\n\n    enum Status { unavailable @0; collecting @1; candidate @2; rejected @3; qualifiedFit @4; }\n    enum Family { none @0; linearFactor @1; }\n    struct Identity {\n      vehicle @0 :Text;\n      brand @1 :Text;\n      controller @2 :Text;\n      policy @3 :Text;\n      profile @4 :Text;\n      conversionVersion @5 :Text;\n      firmwareSha256 @6 :Text;\n      basis @7 :List(Float64);\n      baselineSha256 @8 :Text;\n      preferenceSha256 @9 :Text;\n      resetGeneration @10 :Text;\n      controllerRevision @11 :Text;\n    }\n  }\n",
+      "historical_source_commit": "61fd19556f985ef462bda9c103396108ea69ad14",
+      "historical_source_path": "cereal/custom.capnp",
+      "historical_body_sha256": "d95c3b15a6e51608a8157bc3adc965d3914d4ae94364f9ea605c757cc7924ec8",
+      "learning_source_commit": "c204f0b165db7769bd795768e4e25019748ee12c",
+      "learning_source_path": "openpilot/cereal/custom.capnp"
+    },
+    "5": {
+      "name": "StarPilotSteeringTracking",
+      "type_id": "0xa5cd762cd951a455",
+      "body": "\n  version @0 :UInt16;\n  sourceReceipt @1 :AutomaticLearningSourceReceipt;\n  trial @2 :LiveTrackingTrial;\n  restore @3 :LiveTrackingRestore;\n"
+    }
+  },
+  "reviewed_enum_additions": {
+    "opendbc_repo/opendbc/car/car.capnp": {
+      "enum": "SafetyModel",
+      "field": "teslaPreap @39;"
+    }
+  },
+  "reviewed_payload_children": {
+    "LearningControlEvidence": {
+      "type_id": "0xf2447170bb68f358",
+      "body": "\n  version @0 :UInt16;\n  identity @1 :Text;\n  generation @2 :UInt64;\n  controlMonoTime @3 :UInt64;\n  sourceStateMonoTime @4 :UInt64;\n  domain @5 :Text;\n  stageRevision @6 :Text;\n  responseRevision @7 :Text;\n  requested @8 :Float64;\n  features @9 :List(Float64);\n  baselinePrediction @10 :Float64;\n  enabled @11 :Bool;\n  manual @12 :Bool;\n  active @13 :Bool;\n  valid @14 :Bool;\n  override @15 :Bool;\n  fault @16 :Bool;\n  saturated @17 :Bool;\n  limited @18 :Bool;\n  modelWobble @19 :Bool;\n  controllerChatter @20 :Bool;\n  stageSchemaRevision @21 :Text;\n  stageValues @22 :List(StageValue);\n  appliedCoordinates @23 :List(Float64);\n  sourceEpoch @24 :Text;\n  sourceReceiptMonoTime @25 :UInt64;\n  controllerMode @26 :Text;\n  policy @27 :Text;\n  baselineRevision @28 :Text;\n  baselineValues @29 :List(Float64);\n  controllerRevision @30 :Text;\n  replaySnapshot @31 :List(NamedValue);\n  replayInputs @32 :List(NamedValue);\n  snapshotSequence @33 :UInt64;\n  turnAssist @34 :Bool;\n  appliedParameterNames @35 :List(Text);\n  nativeRequired @36 :Bool;\n  nativeObservedMonoTime @37 :UInt64;\n  nativeValidUntilMonoTime @38 :UInt64;\n  nativeAllowed @39 :Bool;\n  nativeIdentity @40 :Text;\n  appliedProfileSequence @41 :UInt64;\n  appliedProfileObservedMonoTime @42 :UInt64;\n  appliedProfileValidUntilMonoTime @43 :UInt64;\n  effectTrace @44 :FullEffectTrace;\n  effectPrepareMonoTime @45 :UInt64; # Exact MONOTONIC owner tick, not carControl publication.\n  vehicleModelAnchor @46 :List(Float64); # Actual owner stable (sR,cF,cR), empty on old senders.\n  liveAppliedCoordinates @47 :List(Float64); # Actual same-frame live full30 hooks, never offered target.\n  struct FullEffectTrace {\n    version @0 :UInt16;\n    envelope @1 :AutomaticRuntimeProfile.FullSurfaceEnvelope;\n    controlMonoTime @2 :UInt64;\n    previousMonoTime @3 :UInt64;\n    qualified @4 :Bool;\n    before @5 :List(StageValue);\n    target @6 :List(StageValue);\n    applied @7 :List(StageValue);\n    appliedFullProfileSha256 @8 :Text;\n  }\n  struct NamedValue {\n    name @0 :Text;\n    union { number @1 :Float64; text @2 :Text; boolean @3 :Bool; }\n  }\n  struct StageValue { name @0 :Text; value @1 :Float64; }\n",
+      "owners": [
+        {
+          "scope": "StarPilotLateralState",
+          "field": "learningEvidence",
+          "ordinal": 9,
+          "target": "LearningControlEvidence",
+          "declaration": "learningEvidence@9:LearningControlEvidence"
+        }
+      ]
+    },
+    "LearningAppliedEvidence": {
+      "type_id": "0xbab0f51a74ffee6e",
+      "body": "\n  version @0 :UInt16;\n  controlMonoTime @1 :UInt64;\n  sourceStateMonoTime @2 :UInt64;\n  appliedMonoTime @3 :UInt64;\n  domain @4 :Text;\n  applied @5 :Float64;\n  valid @6 :Bool;\n  active @7 :Bool;\n  override @8 :Bool;\n  fault @9 :Bool;\n  limited @10 :Bool;\n  nativeAllowed @11 :Bool;\n  projection @12 :LearningTorqueProjection;\n  # Carrier continuity only; never a command/physical/native lease timestamp.\n  carrierFrame @13 :UInt64;\n  carrierObservedMonoTime @14 :UInt64;\n",
+      "owners": [
+        {
+          "scope": "StarPilotCarState",
+          "field": "appliedEvidence",
+          "ordinal": 34,
+          "target": "LearningAppliedEvidence",
+          "declaration": "appliedEvidence@34:LearningAppliedEvidence"
+        }
+      ]
+    },
+    "AutomaticRuntimeProfile": {
+      "type_id": "0xef38d302825641e3",
+      "body": "\n  version @0 :UInt16;\n  identity @1 :Text;\n  sequence @2 :UInt64;\n  observedMonoTime @3 :UInt64;\n  validUntilMonoTime @4 :UInt64;\n  policy @5 :Text;\n  parameters @6 :List(Parameter);\n  coefficients @7 :List(Float64);\n  trainIds @8 :List(Text);\n  heldoutIds @9 :List(Text);\n  baselineLoss @10 :Float64;\n  candidateLoss @11 :Float64;\n  cohortImprovements @12 :List(CohortImprovement);\n  replay @13 :ReplayValidation;\n  fullSurface @14 :FullSurfaceEnvelope;\n  struct FullSurfaceEnvelope {\n    version @0 :UInt16;\n    manifestSha256 @1 :Text;\n    fullOriginalAnchor @2 :Text;\n    trialAnchor @3 :Text;\n    contextKey @4 :Text;\n    cpSha256 @5 :Text;\n    controllerRevision @6 :Text;\n    sourceEpoch @7 :Text;\n    resetGeneration @8 :Text;\n    selectedBaselineRevision @9 :Text;\n    priorFullProfileSha256 @10 :Text;\n    fullProfileSha256 @11 :Text;\n    priorCoordinates @12 :List(Coordinate);\n    coordinates @13 :List(Coordinate);\n    trialNames @14 :List(Text);\n    persistentSourceEpoch @15 :Text;\n    operation @16 :Text;\n    historyFullProfileSha256 @17 :Text;\n    restoreTransactionSha256 @18 :Text;\n    struct Coordinate {\n      name @0 :Text;\n      value @1 :Float64;\n    }\n  }\n  struct ReplayValidation {\n    baselineRevision @0 :Text;\n    physicalModelRevision @1 :Text;\n    noSaturationRegression @2 :Bool;\n    noSlewRegression @3 :Bool;\n    worstCohortImprovement @4 :Float64;\n    nativeBaselineValues @5 :List(Float64);\n  }\n  struct Parameter {\n    name @0 :Text;\n    stageRevision @1 :Text;\n    low @2 :Float64;\n    high @3 :Float64;\n    maxStep @4 :Float64;\n    slewPerS @5 :Float64;\n    excitationFloor @6 :Float64 = 0.01;\n  }\n  struct CohortImprovement {\n    name @0 :Text;\n    lowerBound @1 :Float64;\n  }\n",
+      "owners": [
+        {
+          "scope": "StarPilotCarParams.AutoSteeringLearning",
+          "field": "runtimeProfile",
+          "ordinal": 19,
+          "target": "AutomaticRuntimeProfile",
+          "declaration": "runtimeProfile@19:AutomaticRuntimeProfile"
+        }
+      ]
+    },
+    "AutomaticLearningSourceReceipt": {
+      "type_id": "0x9fe2d23e75805149",
+      "body": "\n  version @0 :UInt16;\n  enabled @1 :Bool;\n  manual @2 :Bool;\n  resetGeneration @3 :Text;\n  sourceEpoch @4 :Text;\n  observedMonoTime @5 :UInt64;\n  validUntilMonoTime @6 :UInt64;\n  cpSha256 @7 :Text;\n  calibrationBasis @8 :List(Float64);\n  calibrationGeneration @9 :Text;\n  persistentSourceEpoch @10 :Text;\n",
+      "owners": [
+        {
+          "scope": "StarPilotCarParams.AutoSteeringLearning",
+          "field": "sourceReceipt",
+          "ordinal": 20,
+          "target": "AutomaticLearningSourceReceipt",
+          "declaration": "sourceReceipt@20:AutomaticLearningSourceReceipt"
+        },
+        {
+          "scope": "StarPilotSteeringTracking",
+          "field": "sourceReceipt",
+          "ordinal": 1,
+          "target": "AutomaticLearningSourceReceipt",
+          "declaration": "sourceReceipt@1:AutomaticLearningSourceReceipt"
+        }
+      ]
+    },
+    "LearningApplication": {
+      "type_id": "0x82b6c8ea6a6efabd",
+      "body": "\n  version @0 :UInt16;\n  identity @1 :Text;\n  profileSequence @2 :UInt64;\n  observedMonoTime @3 :UInt64;\n  status @4 :Text;\n  actualCoordinates @5 :List(Float64);\n  reason @6 :Text;\n  baselineRevision @7 :Text;\n  physicalModelRevision @8 :Text;\n  effectManifestSha256 @9 :Text;\n  effectOriginalAnchor @10 :Text;\n  effectAppliedProfileSha256 @11 :Text;\n",
+      "owners": [
+        {
+          "scope": "StarPilotCarState",
+          "field": "learningApplication",
+          "ordinal": 36,
+          "target": "LearningApplication",
+          "declaration": "learningApplication@36:LearningApplication"
+        },
+        {
+          "scope": "StarPilotLateralState",
+          "field": "learningApplication",
+          "ordinal": 10,
+          "target": "LearningApplication",
+          "declaration": "learningApplication@10:LearningApplication"
+        }
+      ]
+    },
+    "FordLearningEvidence": {
+      "type_id": "0xd1dfbadb6a811fee",
+      "body": "\n  version @0 :UInt16;\n  identity @1 :Text;\n  generation @2 :UInt64;\n  sourceEpoch @3 :Text;\n  baselineRevision @4 :Text;\n  baselineValues @5 :List(Float64);\n  controllerRevision @6 :Text;\n  cpSha256 @7 :Text;\n  controllerMode @8 :Text;\n  policy @9 :Text;\n  conversionRevision @10 :Text;\n  stageRevision @11 :Text;\n  sourceReceiptMonoTime @12 :UInt64;\n  sourceValidUntilMonoTime @13 :UInt64;\n  enabled @14 :Bool;\n  manual @15 :Bool;\n  rows @16 :List(FordLearningEvent);\n  dropped @17 :UInt64;\n  appliedProfileSequence @18 :UInt64;\n  appliedProfileObservedMonoTime @19 :UInt64;\n  appliedProfileValidUntilMonoTime @20 :UInt64;\n",
+      "owners": [
+        {
+          "scope": "StarPilotCarState",
+          "field": "fordLearningEvidence",
+          "ordinal": 35,
+          "target": "FordLearningEvidence",
+          "declaration": "fordLearningEvidence@35:FordLearningEvidence"
+        }
+      ]
+    },
+    "FordLearningEvent": {
+      "type_id": "0xb276dede9e6b2cc4",
+      "body": "\n  eventMonoTime @0 :UInt64;\n  sequence @1 :UInt64;\n  kind @2 :Text;\n  inputs @3 :List(LearningControlEvidence.NamedValue);\n  appliedCoefficient @4 :Float64;\n  actualPending @5 :List(Float64);\n  actualCommand @6 :List(Float64);\n  controlMonoTime @7 :UInt64;\n  pendingControlMonoTime @8 :UInt64;\n  announcedControlMonoTime @9 :UInt64;\n  carStateMonoTime @10 :UInt64;\n  nativeAllowed @11 :Bool;\n  fault @12 :Bool;\n  override @13 :Bool;\n  limited @14 :Bool;\n  hasWirePath @15 :Bool;\n  actualWirePath @16 :Float64;\n  checkpoint @17 :List(LearningControlEvidence.NamedValue);\n  checkpointSequence @18 :UInt64;\n  sourceReceiptMonoTime @19 :UInt64;\n  sourceValidUntilMonoTime @20 :UInt64;\n  appliedProfileSequence @21 :UInt64;\n  appliedProfileObservedMonoTime @22 :UInt64;\n  appliedProfileValidUntilMonoTime @23 :UInt64;\n  nativeIdentity @24 :Text;\n  nativeObservedMonoTime @25 :UInt64;\n  nativeValidUntilMonoTime @26 :UInt64;\n  nativeValidatedMonoTime @27 :UInt64;\n  nativeCommandMonoTime @28 :UInt64;\n  announcedCoefficient @29 :Float64;\n",
+      "owners": []
+    },
+    "CentreApplicationWitness": {
+      "type_id": "0xab0b33cac682523e",
+      "body": "\n  version @0 :UInt16;\n  identity @1 :Text;\n  sourceEpoch @2 :Text;\n  controlMonoTime @3 :UInt64;\n  profileSequence @4 :UInt64;\n  actualCoordinates @5 :List(Float64);\n  baselineRevision @6 :Text;\n  physicalModelRevision @7 :Text;\n  originalObservedMonoTime @8 :UInt64;\n  originalValidUntilMonoTime @9 :UInt64;\n  baselineFriction @10 :Float64;\n  actualFriction @11 :Float64;\n",
+      "owners": [
+        {
+          "scope": "StarPilotCarParams.AutoSteeringLearning",
+          "field": "centreApplicationWitness",
+          "ordinal": 21,
+          "target": "CentreApplicationWitness",
+          "declaration": "centreApplicationWitness@21:CentreApplicationWitness"
+        }
+      ]
+    },
+    "LearningTorqueProjection": {
+      "type_id": "0xf078f562cbce49ad",
+      "body": "\n  version @0 :UInt16;\n  family @1 :Text;\n  fingerprint @2 :Text;\n  flags @3 :UInt64;\n  codecId @4 :Text;\n  mappingKind @5 :Text;\n  frame @6 :UInt64;\n  requestedTorque @7 :Float64;\n  codecInputTorque @8 :Float64;\n  unlimitedRaw @9 :Int32;\n  finalRaw @10 :Int32;\n  effectiveMax @11 :Float64;\n  lookupX @12 :List(Float64);\n  lookupY @13 :List(Float64);\n  limiterKind @14 :Text;\n  previousTorque @15 :Float64;\n  measuredTorque @16 :Float64;\n  limits @17 :List(LearningControlEvidence.StageValue);\n  shape @18 :List(LearningControlEvidence.NamedValue);\n  steerRequested @19 :Bool;\n  canAddress @20 :UInt32;\n  canBus @21 :UInt16;\n  canData @22 :Data;\n  reportedTorque @23 :Float64;\n  unlimitedRawPresent @24 :Bool;\n",
+      "owners": []
+    },
+    "LiveTrackingBinding": {
+      "type_id": "0x9f853f7eb4110c72",
+      "body": "\n identity @0 :Text; cpSha256 @1 :Text; controllerRevision @2 :Text;\n baselineRevision @3 :Text; sourceEpoch @4 :Text; resetGeneration @5 :Text;\n calibrationGeneration @6 :Text; vehicleModelGeneration @7 :Text;\n nativeIdentity @8 :Text; physicalModelRevision @9 :Text; persistentSourceEpoch @10 :Text;\n nativeRequired @11 :Bool;\n",
+      "owners": []
+    },
+    "LiveTrackingTrial": {
+      "type_id": "0xe6f67224bc0ee1a3",
+      "body": "\n version @0 :UInt16; protocol @1 :Text; binding @2 :LiveTrackingBinding;\n trialId @3 :Text; sequence @4 :UInt64; phase @5 :Text; group @6 :Text;\n names @7 :List(Text); baseline @8 :List(Coordinate); target @9 :List(Coordinate);\n baselineSha256 @10 :Text; targetSha256 @11 :Text;\n startedMonoTime @12 :UInt64; observedMonoTime @13 :UInt64; validUntilMonoTime @14 :UInt64;\n responseWitness @15 :LiveTrackingResponseWitness;\n targetSequence @16 :UInt64; deadlineMonoTime @17 :UInt64;\n struct Coordinate { name @0 :Text; value @1 :Float64; }\n",
+      "owners": [
+        {
+          "scope": "StarPilotSteeringTracking",
+          "field": "trial",
+          "ordinal": 2,
+          "target": "LiveTrackingTrial",
+          "declaration": "trial@2:LiveTrackingTrial"
+        }
+      ]
+    },
+    "LiveTrackingApplication": {
+      "type_id": "0xdb85b982067f1bc1",
+      "body": "\n version @0 :UInt16; binding @1 :LiveTrackingBinding; trialId @2 :Text;\n sequence @3 :UInt64; controlMonoTime @4 :UInt64; status @5 :Text;\n applied @6 :List(LiveTrackingTrial.Coordinate); appliedSha256 @7 :Text;\n confirmedTargetSha256 @8 :Text; reason @9 :Text; targetSequence @10 :UInt64;\n",
+      "owners": [
+        {
+          "scope": "StarPilotLateralState",
+          "field": "trackingApplication",
+          "ordinal": 12,
+          "target": "LiveTrackingApplication",
+          "declaration": "trackingApplication@12:LiveTrackingApplication"
+        }
+      ]
+    },
+    "LiveTrackingRestore": {
+      "type_id": "0xef6257bed9318012",
+      "body": "\n version @0 :UInt16; protocol @1 :Text; binding @2 :LiveTrackingBinding;\n historyScope @3 :Text; historyTrialId @4 :Text; target @5 :List(LiveTrackingTrial.Coordinate);\n targetSha256 @6 :Text; sequence @7 :UInt64; observedMonoTime @8 :UInt64;\n validUntilMonoTime @9 :UInt64; responseWitness @10 :LiveTrackingResponseWitness;\n",
+      "owners": [
+        {
+          "scope": "StarPilotSteeringTracking",
+          "field": "restore",
+          "ordinal": 3,
+          "target": "LiveTrackingRestore",
+          "declaration": "restore@3:LiveTrackingRestore"
+        }
+      ]
+    },
+    "LiveTrackingResponseCertificate": {
+      "type_id": "0xbbb8f17940692312",
+      "body": "\n version @0 :Text; modelRevision @1 :Text; lagNs @2 :UInt64;\n slope @3 :Float64; intercept @4 :Float64; commandLow @5 :Float64;\n commandHigh @6 :Float64; heldoutRmse @7 :Float64;\n trainBlockIds @8 :List(Text); heldoutBlockIds @9 :List(Text);\n sourceInventorySha256 @10 :Text; identificationSha256 @11 :Text; identifiedMonoTime @12 :UInt64;\n provenance @13 :Text; parentModelRevision @14 :Text; requalificationSha256 @15 :Text;\n",
+      "owners": []
+    },
+    "LiveTrackingResponseWitness": {
+      "type_id": "0xdaa1a9f0d8968e31",
+      "body": "\n certificate @0 :LiveTrackingResponseCertificate;\n lastControlMonoTime @1 :UInt64; lastApplyMonoTime @2 :UInt64; lastPoseMonoTime @3 :UInt64;\n windowStartMonoTime @4 :UInt64; independentPoses @5 :UInt16;\n residualRmse @6 :Float64; validUntilMonoTime @7 :UInt64;\n",
+      "owners": []
+    }
+  },
+  "reviewed_payload_children_source": {
+    "commit": "b151ca11cb4d88f32d7adfdbcff50baf29f4fbbc",
+    "schema_sha256": "495664ec8d6e9def2419d910399efc30dc1899930a50648d11812323a5d8cdf5",
+    "generated_header_sha256": "e00c814e7828bf5eb4e38893a7eaaf6a9317b317bec7af23922eccb44b39d13f",
+    "reason": "Review the already shipped Global FLM Auto Learn payload children and reserved Event @112 carrier. Existing upstream schemas, type IDs, field ordinals and exact helper bodies remain pinned."
+  },
+  "log_reference": {
+    "validated_fork_baseline_commit": "aa397cad544b52f27f1bf0364ac476c360adb44d",
+    "validated_baseline_sha256": "4036fc4a3e653d877eee57a902fe59776dca607d95c17d29ca46b0db4c9313d9",
+    "upstream_patch_commits": [
+      "e3761688184285e2ba960da4184b2b5beceed4d6"
+    ]
+  }
+}

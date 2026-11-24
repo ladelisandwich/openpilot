@@ -1,0 +1,40 @@
+Import('env', 'arch', 'common', 'messaging')
+
+if GetOption('extras') or any(target.startswith('openpilot/selfdrive/pandad/tests/') for target in COMMAND_LINE_TARGETS):
+  # Header-only AOL USB/status negotiation test also builds on Darwin hosts.
+  if arch != "Darwin":
+    usb_test = env.Object('tests/panda_usb_test.o', 'panda_usb.cc')
+    env.Program('tests/test_panda_usb', ['tests/test_panda_usb.cc', usb_test], LIBS=[common, 'pthread'])
+  env.Program('tests/test_aol_protocol', ['tests/test_aol_protocol.cc'])
+  env.Program('tests/test_aol_wire', ['tests/test_aol_wire.cc'], LIBS=[messaging, 'capnp', 'kj'])
+  env.Program('tests/test_panda_faults', ['tests/test_panda_faults.cc'], LIBS=[messaging, 'capnp', 'kj'])
+  # Compose producer freshness, session negotiation and native ACK wire contracts.
+  env.Program('tests/test_producer_timing', ['tests/test_producer_timing.cc'], LIBS=[messaging, 'capnp', 'kj'])
+  env.Program('tests/test_producer_sink', ['tests/test_producer_sink.cc'], LIBS=[messaging, 'capnp', 'kj'])
+
+if arch != "Darwin":
+  libs = [common, messaging, 'pthread', 'usb-1.0']
+  panda = env.Library('panda', ['panda.cc', 'panda_usb.cc', 'spi.cc'])
+
+  env.Program('pandad', ['main.cc', 'pandad.cc', 'panda_safety.cc'], LIBS=[panda] + libs)
+
+  if GetOption('extras') or any(target.startswith('openpilot/selfdrive/pandad/tests/') for target in COMMAND_LINE_TARGETS):
+    env.Program('tests/test_pandad_canprotocol', ['tests/test_pandad_canprotocol.cc'], LIBS=[panda] + libs)
+
+  if GetOption('extras') or any(target.startswith('openpilot/selfdrive/pandad/tests/') for target in COMMAND_LINE_TARGETS):
+    env.Program('tests/test_panda_owner', ['tests/test_panda_owner.cc', 'panda_safety.cc'], LIBS=[panda] + libs)
+
+  # Exercise the real publisher/worker with injected Panda and sysfs I/O only.
+  if GetOption('extras') or any(target.startswith('openpilot/selfdrive/pandad/tests/') for target in COMMAND_LINE_TARGETS):
+    power_test = env.Clone()
+    power_test.Append(LINKFLAGS=[
+      '-Wl,--wrap=_ZN4util9read_fileERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE',
+      '-Wl,--wrap=_ZN9PubMaster4sendEPKcR14MessageBuilder',
+    ])
+    power_test.Program('tests/test_peripheral_state', ['tests/test_peripheral_state.cc', power_test.Object('tests/peripheral_panda_safety.o', 'panda_safety.cc')], LIBS=[panda] + libs)
+
+  if GetOption('extras') or any(target.startswith('openpilot/selfdrive/pandad/tests/test_preap_pedal_startup') for target in COMMAND_LINE_TARGETS):
+    env.Program('tests/test_preap_pedal_startup', ['tests/test_preap_pedal_startup.cc', env.Object('tests/preap_panda_safety.o', 'panda_safety.cc')], LIBS=[panda] + libs + ['dl'])
+
+  if GetOption('extras') or any(target.startswith('openpilot/selfdrive/pandad/tests/test_panda_debug') for target in COMMAND_LINE_TARGETS):
+    env.Program('tests/test_panda_debug', ['tests/test_panda_debug.cc'], LIBS=[panda] + libs)

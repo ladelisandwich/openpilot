@@ -1,0 +1,4356 @@
+{
+ "TOYOTA_ALPHARD_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_ALPHARD_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2088.71337890625,
+   "wheelbase": 3.0,
+   "centerToFront": 1.3200000524520874,
+   "steerRatio": 14.199999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4409.470703125,
+   "tireStiffnessFront": 113760.53125,
+   "tireStiffnessRear": 141296.75,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.14045600593090057,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.6897259950637817,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.3208264112472534,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_ALPHARD_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2088.71337890625,
+   "wheelbase": 3.0,
+   "centerToFront": 1.3200000524520874,
+   "steerRatio": 14.199999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4409.470703125,
+   "tireStiffnessFront": 113760.53125,
+   "tireStiffnessRear": 141296.75,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.14045600593090057,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.6897259950637817,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.3208264112472534,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_ALPHARD_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2088.71337890625,
+   "wheelbase": 3.0,
+   "centerToFront": 1.3200000524520874,
+   "steerRatio": 14.199999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4409.470703125,
+   "tireStiffnessFront": 113760.53125,
+   "tireStiffnessRear": 141296.75,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.14045600593090057,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.6897259950637817,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.3208264112472534,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_AVALON_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_AVALON_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1725.8399658203125,
+   "wheelbase": 2.819999933242798,
+   "centerToFront": 1.2408000230789185,
+   "steerRatio": 14.800000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3219.317626953125,
+   "tireStiffnessFront": 169003.796875,
+   "tireStiffnessRear": 209911.890625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1145399957895279,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.3154404163360596,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.77779221534729,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.79830002784729,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_AVALON_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1725.8399658203125,
+   "wheelbase": 2.819999933242798,
+   "centerToFront": 1.2408000230789185,
+   "steerRatio": 14.800000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3219.317626953125,
+   "tireStiffnessFront": 169003.796875,
+   "tireStiffnessRear": 209911.890625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1145399957895279,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.3154404163360596,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.77779221534729,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.79830002784729,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_AVALON_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1725.8399658203125,
+   "wheelbase": 2.819999933242798,
+   "centerToFront": 1.2408000230789185,
+   "steerRatio": 14.800000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3219.317626953125,
+   "tireStiffnessFront": 169003.796875,
+   "tireStiffnessRear": 209911.890625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1145399957895279,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.3154404163360596,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.77779221534729,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.79830002784729,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_CAMRY_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_CAMRY_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1678.2127685546875,
+   "wheelbase": 2.8244800567626953,
+   "centerToFront": 1.2427712678909302,
+   "steerRatio": 13.699999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3140.43017578125,
+   "tireStiffnessFront": 163310.546875,
+   "tireStiffnessRear": 202840.5625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.11843600124120712,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.354832410812378,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.3689000606536865,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.7932999730110168,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_CAMRY_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1678.2127685546875,
+   "wheelbase": 2.8244800567626953,
+   "centerToFront": 1.2427712678909302,
+   "steerRatio": 13.699999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3140.43017578125,
+   "tireStiffnessFront": 163310.546875,
+   "tireStiffnessRear": 202840.5625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.11843600124120712,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.354832410812378,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.3689000606536865,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.7932999730110168,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_CAMRY_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1678.2127685546875,
+   "wheelbase": 2.8244800567626953,
+   "centerToFront": 1.2427712678909302,
+   "steerRatio": 13.699999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3140.43017578125,
+   "tireStiffnessFront": 163310.546875,
+   "tireStiffnessRear": 202840.5625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.11843600124120712,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.354832410812378,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.3689000606536865,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.7932999730110168,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_COROLLA_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_COROLLA_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1523.9915771484375,
+   "wheelbase": 2.6700000762939453,
+   "centerToFront": 1.1748000383377075,
+   "steerRatio": 13.899999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2548.41552734375,
+   "tireStiffnessFront": 83003.296875,
+   "tireStiffnessRear": 103094.59375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.19570063054561615,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.991132378578186,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.868866205215454,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_COROLLA_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1523.9915771484375,
+   "wheelbase": 2.6700000762939453,
+   "centerToFront": 1.1748000383377075,
+   "steerRatio": 13.899999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2548.41552734375,
+   "tireStiffnessFront": 83003.296875,
+   "tireStiffnessRear": 103094.59375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.19570063054561615,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.991132378578186,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.868866205215454,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_COROLLA_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1523.9915771484375,
+   "wheelbase": 2.6700000762939453,
+   "centerToFront": 1.1748000383377075,
+   "steerRatio": 13.899999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2548.41552734375,
+   "tireStiffnessFront": 83003.296875,
+   "tireStiffnessRear": 103094.59375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.19570063054561615,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.991132378578186,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.868866205215454,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_HIGHLANDER_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_HIGHLANDER_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2184.42138671875,
+   "wheelbase": 2.8194000720977783,
+   "centerToFront": 1.2405359745025635,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4073.0048828125,
+   "tireStiffnessFront": 214366.15625,
+   "tireStiffnessRear": 266254.375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.14519673585891724,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.9617570638656616,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.8611643314361572,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.800000011920929,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_HIGHLANDER_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2184.42138671875,
+   "wheelbase": 2.8194000720977783,
+   "centerToFront": 1.2405359745025635,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4073.0048828125,
+   "tireStiffnessFront": 214366.15625,
+   "tireStiffnessRear": 266254.375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.14519673585891724,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.9617570638656616,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.8611643314361572,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.800000011920929,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_HIGHLANDER_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2184.42138671875,
+   "wheelbase": 2.8194000720977783,
+   "centerToFront": 1.2405359745025635,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4073.0048828125,
+   "tireStiffnessFront": 214366.15625,
+   "tireStiffnessRear": 266254.375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.14519673585891724,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.9617570638656616,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.8611643314361572,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.800000011920929,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_PRIUS_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_PRIUS_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1548.9390869140625,
+   "wheelbase": 2.7000200748443604,
+   "centerToFront": 1.1880087852478027,
+   "steerRatio": 13.399999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2648.7041015625,
+   "tireStiffnessFront": 121051.9375,
+   "tireStiffnessRear": 150353.046875,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.17096799612045288,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.972599983215332,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.9104337692260742,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.6370999813079834,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_PRIUS_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1548.9390869140625,
+   "wheelbase": 2.7000200748443604,
+   "centerToFront": 1.1880087852478027,
+   "steerRatio": 13.399999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2648.7041015625,
+   "tireStiffnessFront": 121051.9375,
+   "tireStiffnessRear": 150353.046875,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.17096799612045288,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.972599983215332,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.9104337692260742,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.6370999813079834,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_PRIUS_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1548.9390869140625,
+   "wheelbase": 2.7000200748443604,
+   "centerToFront": 1.1880087852478027,
+   "steerRatio": 13.399999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2648.7041015625,
+   "tireStiffnessFront": 121051.9375,
+   "tireStiffnessRear": 150353.046875,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.17096799612045288,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.972599983215332,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.9104337692260742,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.6370999813079834,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_RAV4_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_RAV4_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1762.1273193359375,
+   "wheelbase": 2.6898601055145264,
+   "centerToFront": 1.1835384368896484,
+   "steerRatio": 14.300000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2990.623779296875,
+   "tireStiffnessFront": 171476.46875,
+   "tireStiffnessRear": 212983.0625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.12075842916965485,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.9557514190673828,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.087101936340332,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.7932999730110168,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_RAV4_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1762.1273193359375,
+   "wheelbase": 2.6898601055145264,
+   "centerToFront": 1.1835384368896484,
+   "steerRatio": 14.300000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2990.623779296875,
+   "tireStiffnessFront": 171476.46875,
+   "tireStiffnessRear": 212983.0625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.12075842916965485,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.9557514190673828,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.087101936340332,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.7932999730110168,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_RAV4_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1762.1273193359375,
+   "wheelbase": 2.6898601055145264,
+   "centerToFront": 1.1835384368896484,
+   "steerRatio": 14.300000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 2990.623779296875,
+   "tireStiffnessFront": 171476.46875,
+   "tireStiffnessRear": 212983.0625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.12075842916965485,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.9557514190673828,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.087101936340332,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.7932999730110168,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "TOYOTA_MIRAI": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_MIRAI",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2086.445556640625,
+   "wheelbase": 2.9100000858306885,
+   "centerToFront": 1.280400037765503,
+   "steerRatio": 14.800000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4144.36669921875,
+   "tireStiffnessFront": 204751.375,
+   "tireStiffnessRear": 254312.3125,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.20182618498802185,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.506899833679199,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.7417213916778564,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.800000011920929,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_MIRAI",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2086.445556640625,
+   "wheelbase": 2.9100000858306885,
+   "centerToFront": 1.280400037765503,
+   "steerRatio": 14.800000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4144.36669921875,
+   "tireStiffnessFront": 204751.375,
+   "tireStiffnessRear": 254312.3125,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.20182618498802185,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.506899833679199,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.7417213916778564,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.800000011920929,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "TOYOTA_MIRAI",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2086.445556640625,
+   "wheelbase": 2.9100000858306885,
+   "centerToFront": 1.280400037765503,
+   "steerRatio": 14.800000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4144.36669921875,
+   "tireStiffnessFront": 204751.375,
+   "tireStiffnessRear": 254312.3125,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.20182618498802185,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.506899833679199,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.7417213916778564,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.800000011920929,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "LEXUS_ES_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_ES_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1803.8577880859375,
+   "wheelbase": 2.8701999187469482,
+   "centerToFront": 1.262887954711914,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3485.713623046875,
+   "tireStiffnessFront": 98246.0390625,
+   "tireStiffnessRear": 122026.90625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.10153300315141678,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.0357565879821777,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.999082326889038,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_ES_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1803.8577880859375,
+   "wheelbase": 2.8701999187469482,
+   "centerToFront": 1.262887954711914,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3485.713623046875,
+   "tireStiffnessFront": 98246.0390625,
+   "tireStiffnessRear": 122026.90625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.10153300315141678,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.0357565879821777,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.999082326889038,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_ES_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1803.8577880859375,
+   "wheelbase": 2.8701999187469482,
+   "centerToFront": 1.262887954711914,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3485.713623046875,
+   "tireStiffnessFront": 98246.0390625,
+   "tireStiffnessRear": 122026.90625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.10153300315141678,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.0357565879821777,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.999082326889038,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "LEXUS_NX_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_NX_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1982.119384765625,
+   "wheelbase": 2.6600000858306885,
+   "centerToFront": 1.1704000234603882,
+   "steerRatio": 14.699999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3289.714599609375,
+   "tireStiffnessFront": 107954.953125,
+   "tireStiffnessRear": 134085.90625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_NX_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1982.119384765625,
+   "wheelbase": 2.6600000858306885,
+   "centerToFront": 1.1704000234603882,
+   "steerRatio": 14.699999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3289.714599609375,
+   "tireStiffnessFront": 107954.953125,
+   "tireStiffnessRear": 134085.90625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_NX_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1982.119384765625,
+   "wheelbase": 2.6600000858306885,
+   "centerToFront": 1.1704000234603882,
+   "steerRatio": 14.699999809265137,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3289.714599609375,
+   "tireStiffnessFront": 107954.953125,
+   "tireStiffnessRear": 134085.90625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "LEXUS_LC_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_LC_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2177.1640625,
+   "wheelbase": 2.869999885559082,
+   "centerToFront": 1.2627999782562256,
+   "steerRatio": 13.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4206.49169921875,
+   "tireStiffnessFront": 118577.9453125,
+   "tireStiffnessRear": 147280.234375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_LC_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2177.1640625,
+   "wheelbase": 2.869999885559082,
+   "centerToFront": 1.2627999782562256,
+   "steerRatio": 13.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4206.49169921875,
+   "tireStiffnessFront": 118577.9453125,
+   "tireStiffnessRear": 147280.234375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_LC_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2177.1640625,
+   "wheelbase": 2.869999885559082,
+   "centerToFront": 1.2627999782562256,
+   "steerRatio": 13.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 4206.49169921875,
+   "tireStiffnessFront": 118577.9453125,
+   "tireStiffnessRear": 147280.234375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "LEXUS_RX_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_RX_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2168.5458984375,
+   "wheelbase": 2.7899999618530273,
+   "centerToFront": 1.2275999784469604,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3959.51611328125,
+   "tireStiffnessFront": 147183.484375,
+   "tireStiffnessRear": 182809.875,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.19310620427131653,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.5375561714172363,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.034999966621399,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.343166470527649,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.5533000230789185,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_RX_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2168.5458984375,
+   "wheelbase": 2.7899999618530273,
+   "centerToFront": 1.2275999784469604,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3959.51611328125,
+   "tireStiffnessFront": 147183.484375,
+   "tireStiffnessRear": 182809.875,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.19310620427131653,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.5375561714172363,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.034999966621399,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.343166470527649,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.5533000230789185,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_RX_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 2168.5458984375,
+   "wheelbase": 2.7899999618530273,
+   "centerToFront": 1.2275999784469604,
+   "steerRatio": 16.0,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3959.51611328125,
+   "tireStiffnessFront": 147183.484375,
+   "tireStiffnessRear": 182809.875,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.19310620427131653,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 1.5375561714172363,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.034999966621399,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 1.343166470527649,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.5533000230789185,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "LEXUS_IS_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_IS_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1830.9825439453125,
+   "wheelbase": 2.7990798950195312,
+   "centerToFront": 1.2315951585769653,
+   "steerRatio": 13.300000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3364.9599609375,
+   "tireStiffnessFront": 99723.375,
+   "tireStiffnessRear": 123861.8359375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.10000000149011612,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.0,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.0,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_IS_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1830.9825439453125,
+   "wheelbase": 2.7990798950195312,
+   "centerToFront": 1.2315951585769653,
+   "steerRatio": 13.300000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3364.9599609375,
+   "tireStiffnessFront": 99723.375,
+   "tireStiffnessRear": 123861.8359375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.10000000149011612,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.0,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.0,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_IS_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1830.9825439453125,
+   "wheelbase": 2.7990798950195312,
+   "centerToFront": 1.2315951585769653,
+   "steerRatio": 13.300000190734863,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3364.9599609375,
+   "tireStiffnessFront": 99723.375,
+   "tireStiffnessRear": 123861.8359375,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.10000000149011612,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.0,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.0,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ },
+ "LEXUS_RC_TSS2": {
+  "2AA8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_RC_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1944.0177001953125,
+   "wheelbase": 2.7300000190734863,
+   "centerToFront": 1.201200008392334,
+   "steerRatio": 13.899999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3398.526123046875,
+   "tireStiffnessFront": 105879.765625,
+   "tireStiffnessRear": 131508.40625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 73
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 1048,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": false,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF4": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_RC_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1944.0177001953125,
+   "wheelbase": 2.7300000190734863,
+   "centerToFront": 1.201200008392334,
+   "steerRatio": 13.899999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3398.526123046875,
+   "tireStiffnessFront": 105879.765625,
+   "tireStiffnessRear": 131508.40625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 4169
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 263192,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  },
+  "2FF8": {
+   "brand": "toyota",
+   "carFingerprint": "LEXUS_RC_TSS2",
+   "deprecated": {
+    "enableGasInterceptor": false,
+    "enableCamera": false,
+    "enableDsu": false,
+    "enableApgs": false,
+    "safetyModel": "silent",
+    "safetyParam": 0,
+    "steerLimitAlert": false,
+    "vEgoStopping": 0.0,
+    "directAccelControl": false,
+    "stoppingControl": false,
+    "startAccel": 0.0,
+    "steerRateCost": 0.0,
+    "isPandaBlack": false,
+    "safetyModelPassive": "silent",
+    "radarTimeStep": 0.05000000074505806,
+    "communityFeature": false,
+    "minSpeedCan": 0.0,
+    "stoppingDecelRate": 0.0,
+    "startingAccelRate": 0.0,
+    "maxSteeringAngleDeg": 0.0,
+    "enableBsm": false,
+    "hasStockCamera": false,
+    "vEgoStarting": 0.0,
+    "longitudinalActuatorDelayLowerBound": 0.0,
+    "startingState": false
+   },
+   "pcmCruise": true,
+   "minEnableSpeed": -1.0,
+   "minSteerSpeed": 0.0,
+   "mass": 1944.0177001953125,
+   "wheelbase": 2.7300000190734863,
+   "centerToFront": 1.201200008392334,
+   "steerRatio": 13.899999618530273,
+   "steerRatioRear": 0.0,
+   "rotationalInertia": 3398.526123046875,
+   "tireStiffnessFront": 105879.765625,
+   "tireStiffnessRear": 131508.40625,
+   "longitudinalTuning": {
+    "deprecated": {
+     "kf": 0.0
+    },
+    "kiBP": [
+     0.0
+    ],
+    "kiV": [
+     0.0
+    ]
+   },
+   "lateralTuning": {
+    "torque": {
+     "deprecated": {
+      "useSteeringAngle": false,
+      "kp": 0.0,
+      "ki": 0.0,
+      "kf": 0.0,
+      "kd": 0.0
+     },
+     "friction": 0.1409989893436432,
+     "steeringAngleDeadzoneDeg": 0.0,
+     "latAccelFactor": 2.433199882507324,
+     "latAccelOffset": 0.0
+    }
+   },
+   "steerControlType": "torque",
+   "radarUnavailable": false,
+   "steerActuatorDelay": 0.11999999731779099,
+   "openpilotLongitudinalControl": true,
+   "dashcamOnly": false,
+   "transmissionType": "unknown",
+   "steerLimitTimer": 0.4000000059604645,
+   "fingerprintSource": "can",
+   "networkLocation": "fwdCamera",
+   "fuzzyFingerprint": false,
+   "longitudinalActuatorDelay": 0.15000000596046448,
+   "stopAccel": -2.0,
+   "safetyConfigs": [
+    {
+     "safetyModel": "toyota",
+     "deprecated": {
+      "safetyParam": 0,
+      "safetyParam2": 0
+     },
+     "safetyParam": 32841
+    }
+   ],
+   "wheelSpeedFactor": 1.0,
+   "flags": 9240,
+   "alternativeExperience": 0,
+   "notCar": false,
+   "maxLateralAccel": 2.1045680046081543,
+   "autoResumeSng": true,
+   "alphaLongitudinalAvailable": true,
+   "tireStiffnessFactor": 0.4440000057220459,
+   "passive": false,
+   "radarDelay": 0.0,
+   "secOcRequired": false,
+   "secOcKeyAvailable": false,
+   "steerAtStandstill": true
+  }
+ }
+}

@@ -1,0 +1,2233 @@
+{
+  "capability_skips": {
+    "openpilot/starpilot/galaxy_bluetooth/vendor/ifaddr/test_ifaddr.py::test_netifaces_compatibility": {
+      "basis": "Existing exact capability guard, preserved from8b9338a0; skipped remains unavailable, never passed",
+      "guard": "netifaces",
+      "reason": "Skipped: netifaces not installed",
+      "source_blob": "e0f6abb458d61bfedc6df4aa7d1983e385d941d3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_apk_identity.py::test_real_starport_17_6_xapk": {
+      "basis": "Existing exact capability guard, preserved from8b9338a0; skipped remains unavailable, never passed",
+      "guard": "real_xapk",
+      "reason": "Skipped: the user's own Android Auto XAPK is not in .cache/",
+      "source_blob": "b642d677dcabd4d51f8379dd05d9c72cdcf35f37"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[False-32-18-0-0]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[False-32-18-4-2]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[False-32-20-3-5]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[False-40-18-0-6]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[True-32-18-0-0]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[True-32-18-4-2]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[True-32-20-3-5]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_composed_car_frame_converts_to_the_same_picture[True-40-18-0-6]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_fused_projection_conversion_matches_rgba_composition[False-32-18-0-0]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_fused_projection_conversion_matches_rgba_composition[False-32-18-4-2]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_fused_projection_conversion_matches_rgba_composition[False-32-20-3-5]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_fused_projection_conversion_matches_rgba_composition[True-32-18-0-0]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_fused_projection_conversion_matches_rgba_composition[True-32-18-4-2]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py::test_fused_projection_conversion_matches_rgba_composition[True-32-20-3-5]": {
+      "basis": "Re-audited software EGL setup through ff5342ca; exact GPU environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3"
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_map.py::test_overlay_draws_heading_up_roads_route_and_soft_edges": {
+      "basis": "Re-audited unchanged map GPU test bodies and shared fixture alias; software EGL setup through ff5342ca; exact environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "guard_source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3",
+      "guard_source_path": "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "df1f777daf295f4997e0659ad0dec4e4efcf38ee"
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_map.py::test_overlay_opacity_fades_map_background": {
+      "basis": "Re-audited unchanged map GPU test bodies and shared fixture alias; software EGL setup through ff5342ca; exact environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "guard_source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3",
+      "guard_source_path": "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "df1f777daf295f4997e0659ad0dec4e4efcf38ee"
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_map.py::test_overlay_without_gps_waits_without_drawing_roads": {
+      "basis": "Re-audited unchanged map GPU test bodies and shared fixture alias; software EGL setup through ff5342ca; exact environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "guard_source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3",
+      "guard_source_path": "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "df1f777daf295f4997e0659ad0dec4e4efcf38ee"
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_map.py::test_route_stays_bright_at_minimum_map_opacity": {
+      "basis": "Re-audited unchanged map GPU test bodies and shared fixture alias; software EGL setup through ff5342ca; exact environment guard unchanged; skipped remains unavailable, never passed",
+      "guard": "gpu_env",
+      "guard_source_blob": "6890e34c1e01be80495c1dc1089529c362de68f3",
+      "guard_source_path": "openpilot/starpilot/system/starport/tests/test_gpu_nv12.py",
+      "reason": "Skipped: STARPILOT_AUTO_GL_TEST=1 enables tests requiring a real graphics context",
+      "source_blob": "df1f777daf295f4997e0659ad0dec4e4efcf38ee"
+    }
+  },
+  "independent_functions": {
+    "openpilot/starpilot/car/toyota/tests/test_2aa_forwarded_copy_callers.py": {
+      "basis": "6d hosted shard8: all60 cases completed in259.223682681 phase seconds; Fresh per-case caller/native state and cleanup source-verified; full in-case timeline remains unchanged.",
+      "seconds_per_case": 5.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_advert_filter_callers.py": {
+      "basis": "7d2 hosted shard 2: 272 cases took 800.08457733 seconds; Toyota owner verified fresh per-case Params/native hooks/bridge/peer state and teardown.",
+      "seconds_per_case": 4.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camera_2aa_callers.py": {
+      "basis": "Hosted tests40108387164 custom14 completed40 real callers in138.037160s including setup/teardown. Five seconds is a conservative scheduling estimate, not full-module timing or a changed test deadline.",
+      "seconds_per_case": 5.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camera_pedal_extension_callers.py": {
+      "basis": "d570 hosted custom23: fresh per-case Params/native configuration/controller/cleanup source-reviewed. Completed actual call phases: camera96cases392.49s; EPS8partial137cases283.95s. Five seconds per case is a scheduling estimate, not whole-module timing. Full individual timelines remain intact.",
+      "seconds_per_case": 5.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_eps8_sdsu_callers.py": {
+      "basis": "d570 hosted custom23: fresh per-case Params/native configuration/controller/cleanup source-reviewed. Completed actual call phases: camera96cases392.49s; EPS8partial137cases283.95s. Five seconds per case is a scheduling estimate, not whole-module timing. Full individual timelines remain intact.",
+      "seconds_per_case": 5.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_callers.py": {
+      "basis": "Estimate from incomplete72cases213s; independent parameter cases reviewed",
+      "seconds_per_case": 4.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_sdsu_callers.py": {
+      "basis": "6d hosted shard8: 205/240 cases completed in587.445481209 phase seconds before whole-shard900s cutoff; Fresh per-case caller/native state and cleanup source-verified; full in-case timeline remains unchanged.",
+      "seconds_per_case": 4.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_advert_callers.py": {
+      "basis": "Scheduling estimate4s/case; all132 mirror caller cases actually passed across eight bounded debug/release phases; worst20case phase55.81s. Fresh per-case Params/rawCAN/native configuration/C++ reset and cleanup reviewed; no shared outcomes; full in-case timelines retained.",
+      "seconds_per_case": 4.0
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_sdsu_callers.py": {
+      "basis": "90 actual DEBUG/RELEASE caller cases passed in four bounded phases (186.885s combined wall time including startup). Scheduling estimate 3s/case; fresh per-case Params, raw CAN, native configuration and C++ host reset; no shared outcome dependence.",
+      "seconds_per_case": 3.0
+    },
+    "openpilot/starpilot/tests/test_ford_bluepilot_library_lifecycle.py": {
+      "basis": "736580721a hosted shard7: 248 completed Ford lifecycle cases used573.067107459 phase seconds; slowest case4.394150353s. Round up to5s. Function-scoped library_settings and ford_joined create fresh Params, host/native safety per case and tear down each case; full in-case timelines remain unchanged.",
+      "seconds_per_case": 5.0
+    }
+  },
+  "independent_max_cases": 60,
+  "independent_max_seconds": 240.0,
+  "modules": {
+    "openpilot/starpilot/analytics/tests/test_report.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "bbc00d21d5534d8b13d4742535d197104e1c7770",
+      "cases": 11,
+      "seconds": 0.01570105300004343
+    },
+    "openpilot/starpilot/analytics/tests/test_runtime.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a71636128edb525ef1a3b0f3d1737c7f903aafe0",
+      "cases": 16,
+      "seconds": 0.018713170000069113
+    },
+    "openpilot/starpilot/aol/tests/test_angle_brake_deadline.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "bd8707bbc3ddb9211e2b6b0ed61724c650938cab",
+      "cases": 72,
+      "seconds": 4.696376356000201
+    },
+    "openpilot/starpilot/aol/tests/test_angle_cancel.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "531b0a22f8f946cd0cd3c26f3dc008b62137b6a0",
+      "cases": 204,
+      "seconds": 2.1877240810023295
+    },
+    "openpilot/starpilot/aol/tests/test_angle_cancel_batches.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "89357c9517a304b362cdf1d9ff2b99c4dc09e90f",
+      "cases": 48,
+      "seconds": 1.7485119020011552
+    },
+    "openpilot/starpilot/aol/tests/test_angle_stock_cruise_transition.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "2752226cbb396e52b6d25be70d37a1fbf5db964e",
+      "cases": 48,
+      "seconds": 4.166145991999542
+    },
+    "openpilot/starpilot/aol/tests/test_angle_stop_fault_guards.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c89eac6a36db4ebc264dd2fe9d060f44cd25108f",
+      "cases": 10,
+      "seconds": 0.5556368480000629
+    },
+    "openpilot/starpilot/aol/tests/test_angle_stop_native_feedback.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "36b6f18520fc1105aba370286b280ae24b8d2170",
+      "cases": 48,
+      "seconds": 11.807243329999324
+    },
+    "openpilot/starpilot/aol/tests/test_availability_intent_continuation.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "ba55a335e3a1954b602b5b0be20669a24e35a5c0",
+      "cases": 9,
+      "seconds": 1.3481809210001074
+    },
+    "openpilot/starpilot/aol/tests/test_availability_recovery_pair.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "02e486f58ae1e37ccc544998d6c609d5d22b0a56",
+      "cases": 24,
+      "seconds": 1.0712147810000943
+    },
+    "openpilot/starpilot/aol/tests/test_availability_timer_deferral.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "85f37d780db35f24b4262ddf776b4bdde25ddcdd",
+      "cases": 29,
+      "seconds": 1.9850080119998665
+    },
+    "openpilot/starpilot/aol/tests/test_canfd_location_native_recovery.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 24 nodes passed, 29.103570s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "6bc748accaf305f35bff52566476202fca3d3960",
+      "cases": 24,
+      "seconds": 36.379462
+    },
+    "openpilot/starpilot/aol/tests/test_carstate_queue.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "9d7b6b7a91977e73b70d6354157b005248736b6b",
+      "cases": 19,
+      "seconds": 0.9538941670003851
+    },
+    "openpilot/starpilot/aol/tests/test_classic_cancel_guards.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a8ff703d759b7d46d0e6b11422bae0751447e758",
+      "cases": 43,
+      "seconds": 0.09101203100124167
+    },
+    "openpilot/starpilot/aol/tests/test_classic_family_button_scope.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "0e1c179df9ef42c4aba9f48cf03c6f7fe228544c",
+      "cases": 256,
+      "seconds": 0.19877483400182427
+    },
+    "openpilot/starpilot/aol/tests/test_classic_location_stock_intent.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "453a6db4c6b29620ef83179f124078ec7f004cc8",
+      "cases": 4,
+      "seconds": 10.159973965000063
+    },
+    "openpilot/starpilot/aol/tests/test_classic_long_profiles.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b5a3f88e08d0a92ceee0a2a0fa17957252b6655c",
+      "cases": 125,
+      "seconds": 15.338653122000778
+    },
+    "openpilot/starpilot/aol/tests/test_classic_scc_mapped_buttons.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "7927212aae6c9ad77472ee4ab2425647ddb5377c",
+      "cases": 6,
+      "seconds": 0.003333182999881501
+    },
+    "openpilot/starpilot/aol/tests/test_classic_startup_neutral_replacement.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 72 nodes passed, 102.966801s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "e8e15ae28d68077eb0eae58391786a7e26db3099",
+      "cases": 72,
+      "seconds": 128.781609
+    },
+    "openpilot/starpilot/aol/tests/test_classic_stock_full_engagement.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "f57801b5d0137fd4217965ba27e94dbd08131e99",
+      "cases": 17,
+      "seconds": 0.005143071000020427
+    },
+    "openpilot/starpilot/aol/tests/test_crossmake_native_admission.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "49c66542605a36afb864b346bd26322ac821eaf1",
+      "cases": 433,
+      "seconds": 0.5864361990001044
+    },
+    "openpilot/starpilot/aol/tests/test_distracted_lateral.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c5de09266d2dc79fb4cb7321fbc70054fd87cdcc",
+      "cases": 15,
+      "seconds": 0.8913972130000047
+    },
+    "openpilot/starpilot/aol/tests/test_dm_lazy.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "408c57a0a47160623eeea6d3c4608cf14f6518b8",
+      "cases": 12,
+      "seconds": 0.5704981669998688
+    },
+    "openpilot/starpilot/aol/tests/test_early_source_handoff.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "aafbe349814dfeaf4e395ab31ca1beaefa10da6b",
+      "cases": 28,
+      "seconds": 1.7409567749991766
+    },
+    "openpilot/starpilot/aol/tests/test_elantra_irq_admission.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 84 nodes passed, 2.520846s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "543017bcb515367a474ed9e95d541daa03ed2427",
+      "cases": 84,
+      "seconds": 3.151058
+    },
+    "openpilot/starpilot/aol/tests/test_ev6_source_deadline.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "3056884d4d819dc5b3bf571087eca65a1b7b6cf1",
+      "cases": 39,
+      "seconds": 4.475186652000957
+    },
+    "openpilot/starpilot/aol/tests/test_ev6_stock_parity.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "25a77d3ab3361ff51ff4f9d735cd1435b6b8b53b",
+      "cases": 13,
+      "seconds": 9.546168218000162
+    },
+    "openpilot/starpilot/aol/tests/test_ev9_main_withdrawal_guards.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "7ae5aa30208fb5360b23dd0408e49550ffb92c1b",
+      "cases": 37,
+      "seconds": 0.06747250999956123
+    },
+    "openpilot/starpilot/aol/tests/test_event_input_boundary.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "23371e98f3f7ca195d0e8a1dd42e4ac69d656997",
+      "cases": 16,
+      "seconds": 0.7582186850003154
+    },
+    "openpilot/starpilot/aol/tests/test_event_input_reconciliation.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "771e1320818f446400ce123f431738834e79530c",
+      "cases": 35,
+      "seconds": 2.2763796870003716
+    },
+    "openpilot/starpilot/aol/tests/test_expired_axis_zero_request.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "1c1eaa731198aadddac7b37e220915c521476cca",
+      "cases": 168,
+      "seconds": 0.2653669170000512
+    },
+    "openpilot/starpilot/aol/tests/test_final_source_handoff.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "255a3747d3a75a8363c5bdfdefe77d3c30041e2d",
+      "cases": 79,
+      "seconds": 6.026702479999585
+    },
+    "openpilot/starpilot/aol/tests/test_fresh_axis_engagement.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "80066741a3af77dce33239ed4b8b552af11f1f40",
+      "cases": 39,
+      "seconds": 3.0711735680001766
+    },
+    "openpilot/starpilot/aol/tests/test_fresh_inactive_transport.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c4b17547e8e44f40c80e748bcfe33a62a379a861",
+      "cases": 110,
+      "seconds": 0.40340294599991466
+    },
+    "openpilot/starpilot/aol/tests/test_fresh_lag_card_joins.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "03a53d6878c324d525aa05241b398c774055e355",
+      "cases": 17,
+      "seconds": 1.141698840999993
+    },
+    "openpilot/starpilot/aol/tests/test_fresh_lag_continuity.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "f0a73f7a595eb4fd03161e2677b338eb55d15d80",
+      "cases": 19,
+      "seconds": 4.4917773239995995
+    },
+    "openpilot/starpilot/aol/tests/test_fresh_lag_renewal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "e578971cab7171b943a137c1f48ab73884426027",
+      "cases": 8,
+      "seconds": 0.41426587900025424
+    },
+    "openpilot/starpilot/aol/tests/test_full_engagement.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "ca3eadc58beb632ee2b5d03de87fa73dba8fb550",
+      "cases": 31,
+      "seconds": 0.012207841000076769
+    },
+    "openpilot/starpilot/aol/tests/test_global_source_pause.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "68a2392b91993d804a88b7a74cb3e910c865533b",
+      "cases": 775,
+      "seconds": 2.7322104579998836
+    },
+    "openpilot/starpilot/aol/tests/test_gm_ascm_receive_order.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "2571ecd4b365ad5ed8b0a1eb4f4b498ae9d6ea80",
+      "cases": 340,
+      "seconds": 8.693320227998868
+    },
+    "openpilot/starpilot/aol/tests/test_gm_ascm_stock_low_speed.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b883bb70bafe914dc03c246597b201529d375598",
+      "cases": 4,
+      "seconds": 0.18662649299994882
+    },
+    "openpilot/starpilot/aol/tests/test_gm_axis_selection_refresh.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 52 nodes passed, 0.766296s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "985032154f15930422247393307a441a0d8d65fe",
+      "cases": 52,
+      "seconds": 0.95787
+    },
+    "openpilot/starpilot/aol/tests/test_gm_cancel_remap.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "91eb62b6a2ca08b25fb2dfb746043dda61142d6a",
+      "cases": 77,
+      "seconds": 26.224995480999155
+    },
+    "openpilot/starpilot/aol/tests/test_gm_cc_lateral_minimum.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "975b3942abf8b926cc8b73a9fceae870addafe01",
+      "cases": 34,
+      "seconds": 4.086111377999828
+    },
+    "openpilot/starpilot/aol/tests/test_gm_diagnostic_fast_path.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "768f2c56053142efe575280d08e4253f7f7a4b9f",
+      "cases": 94,
+      "seconds": 2.142265815999849
+    },
+    "openpilot/starpilot/aol/tests/test_gm_diagnostic_faults.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "58fb6c01030dc61df277ac24f986260cd5b00436",
+      "cases": 73,
+      "seconds": 0.09446410099997138
+    },
+    "openpilot/starpilot/aol/tests/test_gm_held_brake_successor.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 42 nodes passed, 148.444224s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "9eda6d81d788579577ac6c929fa7c496b69a4fbd",
+      "cases": 42,
+      "seconds": 185.55528
+    },
+    "openpilot/starpilot/aol/tests/test_gm_held_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 141 nodes passed, 3.374620s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "b32f705f972ecc6276c81f2246460909c1e1d490",
+      "cases": 141,
+      "seconds": 4.218275
+    },
+    "openpilot/starpilot/aol/tests/test_gm_lag_episode_recovery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "743dac21874e519b53f1f68d2fd3c0eb52284d40",
+      "cases": 10,
+      "seconds": 1.750253536999935
+    },
+    "openpilot/starpilot/aol/tests/test_gm_main_level_contract.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "e9f43c06cee32bf863272b97b4b498c76816c833",
+      "cases": 226,
+      "seconds": 26.214346899999555
+    },
+    "openpilot/starpilot/aol/tests/test_gm_main_response.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "04e8ac2028683b6a12a5bd3375cc7eaa0931c157",
+      "cases": 502,
+      "seconds": 4.635161425998035
+    },
+    "openpilot/starpilot/aol/tests/test_gm_native_long_withdrawal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "3377908ca76eaadbcbb09664b4966ea6dadb6e9e",
+      "cases": 16,
+      "seconds": 2.378323437998688
+    },
+    "openpilot/starpilot/aol/tests/test_gm_ordinary_warning.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "4f533b1fdc964f0fe0a94bfae5e6a356d682fa7b",
+      "cases": 24,
+      "seconds": 0.4101906449998296
+    },
+    "openpilot/starpilot/aol/tests/test_gm_parked_startup.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 16 nodes passed, 35.525218s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "1095af5a3d3087e01bf9b84b9be50916ced2e7c8",
+      "cases": 16,
+      "seconds": 44.406523
+    },
+    "openpilot/starpilot/aol/tests/test_gm_parked_startup_guards.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "0e9b5f48ae9153036a2e4625b509c85864f5bc3e",
+      "cases": 51,
+      "seconds": 0.05308719599793221
+    },
+    "openpilot/starpilot/aol/tests/test_gm_pedal_order.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 34 nodes passed, 0.458293s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "4c2ed9e2ec5f48867f802912ab29a7123e98a973",
+      "cases": 34,
+      "seconds": 0.572866
+    },
+    "openpilot/starpilot/aol/tests/test_gm_qualification_cache.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "d9009b8820e6badbf367f610d5968cd64d256d32",
+      "cases": 24,
+      "seconds": 0.07107740700030263
+    },
+    "openpilot/starpilot/aol/tests/test_gm_receipt_clock.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "aaa9d3571263667d1e847339fb281c1a9a9a31ac",
+      "cases": 30,
+      "seconds": 0.4403899619994718
+    },
+    "openpilot/starpilot/aol/tests/test_gm_receipt_clock_ipc.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a969ffd163aa34260ac1dfc09e47231cf7a896de",
+      "cases": 4,
+      "seconds": 0.08923392199972113
+    },
+    "openpilot/starpilot/aol/tests/test_gm_route18e_recovery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "39f0b5cae6c29d52f4ad97d7ba0cf449c9f837a0",
+      "cases": 20,
+      "seconds": 0.96458438900072
+    },
+    "openpilot/starpilot/aol/tests/test_gm_route1c_receive_order.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c7e122294fe6e931d0a916d514277c6583babcde",
+      "cases": 54,
+      "seconds": 1.2040031370024735
+    },
+    "openpilot/starpilot/aol/tests/test_gm_source_deadline.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "5ec2f4180786d781149eb9a7032f969c726ccbbf",
+      "cases": 96,
+      "seconds": 4.565723292001849
+    },
+    "openpilot/starpilot/aol/tests/test_gm_startup_main.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "b446d994ec87d4b5bcd4caaf9a0a47df1fd05203",
+      "cases": 67,
+      "seconds": 11.427552797000033
+    },
+    "openpilot/starpilot/aol/tests/test_gm_steering_receive_order.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "373f959893a71dfefb9269c0dd06057aa32c4030",
+      "cases": 45,
+      "seconds": 0.9887229489997935
+    },
+    "openpilot/starpilot/aol/tests/test_gm_successful_rearm.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "be45cef65df949a39f7a107faa8a618e11f4538c",
+      "cases": 16,
+      "seconds": 0.49868501099967943
+    },
+    "openpilot/starpilot/aol/tests/test_gm_volt_f1_admission.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "bf30297b79ad469c1bf4cb66674c9df6e2dad3a7",
+      "cases": 69,
+      "seconds": 4.8613181069995335
+    },
+    "openpilot/starpilot/aol/tests/test_gm_volt_f1_lifecycle.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "bdc9bf3a78e4fd80c3976b797b6ec89fc8866fea",
+      "cases": 6,
+      "seconds": 21.712717287000487
+    },
+    "openpilot/starpilot/aol/tests/test_held_override_renewal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "74519102608c73038b4afc09ca2f7c017786f847",
+      "cases": 28,
+      "seconds": 2.1453604770008496
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_cancel_caller.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "815dc9a1ebdb7ffc49a24d992310ef39d2fc583f",
+      "cases": 180,
+      "seconds": 0.13312947200120107
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_cancel_joined.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "74ca4d6161fa0bb1bcbd0a03ab0e1e2842b0ba10",
+      "cases": 15,
+      "seconds": 10.425348328999462
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_deadline_admission_cache.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "141dd397d089867df079ae8527b53d681c8a415b",
+      "cases": 45,
+      "seconds": 0.10402148299942837
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_held_brake_source_deadline.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 35 nodes passed, 2.557607s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "95bf635de98f0bbef2bbb37867816392aa786521",
+      "cases": 35,
+      "seconds": 3.197009
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_independent_cancel_contract.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "60f0b91dfc3067a7ff15090e6ca192475536be75",
+      "cases": 38,
+      "seconds": 0.0246681020005326
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_native_admission.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "946a366c1a0ba4317ef6dbc2d102ba584f4cc769",
+      "cases": 91,
+      "seconds": 0.1807229110006574
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_paired_cruise_buttons.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "edab544e5d92289eecca7d1b7c5d6b57c38e68f2",
+      "cases": 16,
+      "seconds": 0.20186797999917871
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_shared_cancel_guard.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "27d0704373708c0772b0562cb3d8cb3ebb5567f0",
+      "cases": 35,
+      "seconds": 0.07043804600039039
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_source_policy_cache.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "d15486009452fadb8a5b2f6f3e2e81e1c44432e8",
+      "cases": 54,
+      "seconds": 0.12772218899959853
+    },
+    "openpilot/starpilot/aol/tests/test_honda_brake_intent_health.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "afdf10ec5242ccefa7502ced82b5c2017a2d2387",
+      "cases": 55,
+      "seconds": 0.03712579200032451
+    },
+    "openpilot/starpilot/aol/tests/test_honda_panda_faults.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "9c3be454c247fac6fcac8a148c3bdc1e24fe2f5c",
+      "cases": 135,
+      "seconds": 0.06450449499948263
+    },
+    "openpilot/starpilot/aol/tests/test_honda_published_hud.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a65621632288bb18bcd9467eddc42ce99bac86b8",
+      "cases": 1,
+      "seconds": 0.08897456799991232
+    },
+    "openpilot/starpilot/aol/tests/test_honda_reverse_join.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "71aa4598e2f10b0a5f05188983410ae9421a7f25",
+      "cases": 342,
+      "seconds": 0.5564633279993814
+    },
+    "openpilot/starpilot/aol/tests/test_host_source_lag.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "20c9c51987c259c5fbc37036dd683c0bb98105ca",
+      "cases": 10,
+      "seconds": 0.9829136180003388
+    },
+    "openpilot/starpilot/aol/tests/test_host_source_lag_axes.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "3be83f9a6bd509f98c492f6db2b212577ecb265d",
+      "cases": 6,
+      "seconds": 0.3131175190005706
+    },
+    "openpilot/starpilot/aol/tests/test_host_source_lag_history.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b2300685b09303b09d0c72b898cd56cda8494eee",
+      "cases": 23,
+      "seconds": 3.8427703780007505
+    },
+    "openpilot/starpilot/aol/tests/test_host_source_lag_recovery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "98f3c0215d4d7c5af0766d61eb686bab0ac986a2",
+      "cases": 3,
+      "seconds": 0.16929447699976663
+    },
+    "openpilot/starpilot/aol/tests/test_host_source_lag_vetoes.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "f019a665fe2ef7cafd36259dafd9462d5eef175f",
+      "cases": 18,
+      "seconds": 1.547271879000391
+    },
+    "openpilot/starpilot/aol/tests/test_inactive_source_pause.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "448b1a2cc6d48fa681551a1b83d54b80b809aabc",
+      "cases": 38,
+      "seconds": 0.8090611210005818
+    },
+    "openpilot/starpilot/aol/tests/test_independent_lateral_soft_takeover.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b4c26a6bb7d5c8ce4f703acb5acc34517869b118",
+      "cases": 4,
+      "seconds": 0.42748875999996017
+    },
+    "openpilot/starpilot/aol/tests/test_input_deadline_continuity.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "e37879142c8a626fcbebe8a0a68f435ea963372a",
+      "cases": 24,
+      "seconds": 2.546252389000074
+    },
+    "openpilot/starpilot/aol/tests/test_input_wait_clock.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "6e324008156f355209c2b8e7cd36cdbce7c69cca",
+      "cases": 21,
+      "seconds": 1.0255810019991713
+    },
+    "openpilot/starpilot/aol/tests/test_intent_carstate_reconciliation.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "5a7557a0f13038ff2416d33491cb7a08a9b7b27b",
+      "cases": 75,
+      "seconds": 5.005243934999044
+    },
+    "openpilot/starpilot/aol/tests/test_intent_drain_budget.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "0dc6bf754e8cab0c53eefa06398baa4e941ae32a",
+      "cases": 17,
+      "seconds": 0.018439479999415198
+    },
+    "openpilot/starpilot/aol/tests/test_intent_projection.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "931fb3da4cef1e1210db48e077221dd78c1dd663",
+      "cases": 34,
+      "seconds": 1.1918240979991879
+    },
+    "openpilot/starpilot/aol/tests/test_intent_publication.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 68 nodes passed, 0.155344s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "0258440922c4583bd78ea1156474fbff7e68c071",
+      "cases": 68,
+      "seconds": 0.19418
+    },
+    "openpilot/starpilot/aol/tests/test_ioniq6_stock_repair.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "31dc5759907aeb7f95b80dbfeb45292302b2944e",
+      "cases": 5,
+      "seconds": 0.0826883969998562
+    },
+    "openpilot/starpilot/aol/tests/test_lag_takeover_alert.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "ba5f367f0ae0e80e05963a8bf225966a4bb072b3",
+      "cases": 22,
+      "seconds": 0.7384297040002821
+    },
+    "openpilot/starpilot/aol/tests/test_late_lateral_inputs.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "ec9913da3fb8c6cb57ffb0dae4841a65ce310ab1",
+      "cases": 42,
+      "seconds": 2.761263056001553
+    },
+    "openpilot/starpilot/aol/tests/test_location_input_intent.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c264d8ed06c991314ed9bceadef5d94bfa9cf5a3",
+      "cases": 92,
+      "seconds": 8.268085852003423
+    },
+    "openpilot/starpilot/aol/tests/test_long_only_input_wait.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 31 nodes passed, 1.719276s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "7ebc98e29523410802dcc3a6aef7f61cb4a8da47",
+      "cases": 31,
+      "seconds": 2.149095
+    },
+    "openpilot/starpilot/aol/tests/test_meb_actual_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "df93b6302bd67982eb979425514f0f8af62de2d2",
+      "cases": 20,
+      "seconds": 18.60317318799912
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_actual_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "f81e8aee26307bc3e53741cbc583805826c64571",
+      "cases": 8,
+      "seconds": 5.915249016999496
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_direct_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "75b64914940a2de4f05d212d703676feed2767a7",
+      "cases": 16,
+      "seconds": 13.081402123999396
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_topology_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "223cd2f9e589d33789a5f97078d0eee52ea7b882",
+      "cases": 24,
+      "seconds": 17.933131918998924
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_topology_contract.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "6bc140401de639cf1c7a3d78608645b549f4f25c",
+      "cases": 277,
+      "seconds": 0.15566354300153762
+    },
+    "openpilot/starpilot/aol/tests/test_native_inventory_control_cadence.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "de1d9cc81c88bdcc79e579dabb3dfc7a5831ff49",
+      "cases": 85,
+      "seconds": 0.2197536180010502
+    },
+    "openpilot/starpilot/aol/tests/test_native_long_withdrawal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "51e5fd0b04dceea871ecb2cfeed276c1b8636f6a",
+      "cases": 7,
+      "seconds": 1.2938219959996786
+    },
+    "openpilot/starpilot/aol/tests/test_native_long_withdrawal_guards.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "2d48314c4a9d5b345e2234fbea7ec24b8a09fe66",
+      "cases": 57,
+      "seconds": 7.566266889000019
+    },
+    "openpilot/starpilot/aol/tests/test_native_observation_admission.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "8191e7ce9b0e993d432a0d643263df86904e40eb",
+      "cases": 50,
+      "seconds": 0.046322571999894535
+    },
+    "openpilot/starpilot/aol/tests/test_native_observation_reuse.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "00da11ebfb6f1ab2307e7162f5c7d0eb24d9b65d",
+      "cases": 51,
+      "seconds": 0.048841543999515125
+    },
+    "openpilot/starpilot/aol/tests/test_new_expired_combined_feedback.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "2a09b22a8f5c4cdd86e047f874fd177954b98706",
+      "cases": 54,
+      "seconds": 3.5224649109991333
+    },
+    "openpilot/starpilot/aol/tests/test_nexo_stock_aol.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "9eff44df7be1a2e4ddda04f0ce3aeccbcbadd60f",
+      "cases": 6,
+      "seconds": 1.8618471709999085
+    },
+    "openpilot/starpilot/aol/tests/test_ordinary_source_availability.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "8a12742e3f35ca4ce8d775ed9a3e70cbf433c0f0",
+      "cases": 27,
+      "seconds": 5.010743771999614
+    },
+    "openpilot/starpilot/aol/tests/test_panda_inventory.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b65648b766871c643b2d01ebf180b2587c77eaa7",
+      "cases": 58,
+      "seconds": 1.8637142869988566
+    },
+    "openpilot/starpilot/aol/tests/test_panda_siren.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "4bdf9543d0d782a6d7e9c6f6823c00d08dedf387",
+      "cases": 124,
+      "seconds": 4.202911927999139
+    },
+    "openpilot/starpilot/aol/tests/test_pe_combined_profile_contract.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b644afb3b670a9e4cd507cbca5d02cadc184a520",
+      "cases": 31,
+      "seconds": 0.027042498999662712
+    },
+    "openpilot/starpilot/aol/tests/test_post_deadline_input_reconciliation.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "19f5437d1f0ec630eb4742e11ce28d08c28c4cf6",
+      "cases": 72,
+      "seconds": 4.646644738998248
+    },
+    "openpilot/starpilot/aol/tests/test_post_drain_source_cutoff.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "5a9ae2e3e7587c1da17f55730afe478123ff77ce",
+      "cases": 20,
+      "seconds": 1.5153750820002188
+    },
+    "openpilot/starpilot/aol/tests/test_recorded_temporary_intent.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 33 nodes passed, 11.233878s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "6ce16ca9b2d6d0b8db5768cb248f8a5d67c1a97f",
+      "cases": 33,
+      "seconds": 14.042347
+    },
+    "openpilot/starpilot/aol/tests/test_resume_lateral.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a89041ec3bad0484b0738f9dd100746a5d0278fa",
+      "cases": 20,
+      "seconds": 6.926444755999228
+    },
+    "openpilot/starpilot/aol/tests/test_reverse_source_gap.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "23432dd72b59b01a48e58e00893367e7ec20c20f",
+      "cases": 37,
+      "seconds": 0.5327044699998851
+    },
+    "openpilot/starpilot/aol/tests/test_seatbelt_cold_start.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "0579fe5ae802d8ed07185c880a18515c3a587399",
+      "cases": 29,
+      "seconds": 2.045757378000644
+    },
+    "openpilot/starpilot/aol/tests/test_seatbelt_lateral.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "2e40805d513de28523044b61f7e7c3c049a3103f",
+      "cases": 50,
+      "seconds": 9.221335891998933
+    },
+    "openpilot/starpilot/aol/tests/test_shared_source_availability.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "02701ee9dda135b39cbdab27ce23279ed328ec51",
+      "cases": 6,
+      "seconds": 0.20850461499981066
+    },
+    "openpilot/starpilot/aol/tests/test_single_input_wait.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "d7572c43a9477b982ba30986bc24c5699f3b4efe",
+      "cases": 6,
+      "seconds": 0.18110381500059702
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_cruise_only_withdrawal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "9470e1b7b707d7b0f09add96559286a629add838",
+      "cases": 4,
+      "seconds": 5.220821042999887
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_hybrid_cancel_scope.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "254a3fba092367386d1fc77506940403f698a518",
+      "cases": 40,
+      "seconds": 0.032421490000388076
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_irq_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "2f1b6cc4b61fddfef9ff96d32af319d82698b1b7",
+      "cases": 8,
+      "seconds": 12.252140282000255
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_irq_policy.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "55150bcaff43a1636812bf8127c250a7f1ec0bd9",
+      "cases": 39,
+      "seconds": 0.016377474000137227
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_mapped_button_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "1e2d5a981c619c8502fe6da376f4a001a0405c3b",
+      "cases": 4,
+      "seconds": 6.003875502000028
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_stock_transition.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "7ea222ad14d35e4bcd8604d7cbcedc3ea69aa015",
+      "cases": 4,
+      "seconds": 5.7069376249999095
+    },
+    "openpilot/starpilot/aol/tests/test_sonata_temporary_withdrawals.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a581abfcdc76df49ee9da8fec13ec95f23feddbc",
+      "cases": 12,
+      "seconds": 27.36669733299982
+    },
+    "openpilot/starpilot/aol/tests/test_source_pause_backlog_ageout.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "606c072265077417fe30690c52910c7feda20b5e",
+      "cases": 2,
+      "seconds": 0.36891262199992525
+    },
+    "openpilot/starpilot/aol/tests/test_source_pause_driver_monitoring.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "9ae9a94133f450fd137814c0c631bef72c1fe49e",
+      "cases": 2,
+      "seconds": 0.1477047380001295
+    },
+    "openpilot/starpilot/aol/tests/test_source_pause_intent_bursts.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "afe31f78b1c6bb5efab9c2b22839e7d89b8a5361",
+      "cases": 7,
+      "seconds": 0.864470963000258
+    },
+    "openpilot/starpilot/aol/tests/test_source_pause_native_regrant.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "e1d2f108c394c4eb0a5033bb9456f153708bc544",
+      "cases": 3,
+      "seconds": 0.15551505100029317
+    },
+    "openpilot/starpilot/aol/tests/test_stock_angle_pedals.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "79a3c0221ba4fab52ba4535aa81f39851b92ee71",
+      "cases": 36,
+      "seconds": 6.7943038529990645
+    },
+    "openpilot/starpilot/aol/tests/test_stock_angle_physical_recovery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c4e4ed8a8347370046fe5cf7864c8d5786dde249",
+      "cases": 43,
+      "seconds": 9.202019890000429
+    },
+    "openpilot/starpilot/aol/tests/test_stock_eps_recovery.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "bd41637eaad8903dfccfa3b248994e4b32c03e45",
+      "cases": 145,
+      "seconds": 0.4464098430007084
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_family.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "70f35bcdab7fe801e7518e47e085c02ea8f382d3",
+      "cases": 16,
+      "seconds": 1.375165628999639
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_fault_provenance.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "3970d1be11e7c24dfe1be4639f9d63e1e9100bb5",
+      "cases": 21,
+      "seconds": 1.0761112740003682
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_gap_delivery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a0ff4523726707ffc357b7bac20e4478fae3af36",
+      "cases": 12,
+      "seconds": 0.5945382560005328
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_hkg.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "35823ae9b379a9f3108c253597f1c52b0a355fe3",
+      "cases": 16,
+      "seconds": 0.6161071760000141
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_honda.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "21d57a569a9f8c6b2404c06d81dd8cf2d06270f1",
+      "cases": 9,
+      "seconds": 0.3575195220007572
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_honda_vetoes.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "e07c3ed9b3045713f81cb369e0a9d2d8c886f8e8",
+      "cases": 9,
+      "seconds": 0.40931337699930737
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_lag_gap_sequence.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "1b745a05ad78b4d5eada1c7c3e1e6bf7c4991605",
+      "cases": 4,
+      "seconds": 0.28225010499977543
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_pcm.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 33 nodes passed, 3.303386s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "aa0389acf6c01b36b9d637b09fec382bff7bc13c",
+      "cases": 33,
+      "seconds": 4.129233
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_pending_refusals.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "92074a88724dffbc654ec837ddda8ca794f6e637",
+      "cases": 9,
+      "seconds": 0.4949968290000015
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_receipt_refusals.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "115ecba4e337a40e5cc3f19fde440248fd1a3709",
+      "cases": 12,
+      "seconds": 1.2602012689985713
+    },
+    "openpilot/starpilot/aol/tests/test_stock_location_family_intent.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "0c8d853a6692b67980ff89a0852f4113e411195b",
+      "cases": 125,
+      "seconds": 10.222362870998722
+    },
+    "openpilot/starpilot/aol/tests/test_stock_location_recovery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "29a9e98a170c7e3bb9cd8583cbe861f5f3be9060",
+      "cases": 140,
+      "seconds": 0.2624793409981976
+    },
+    "openpilot/starpilot/aol/tests/test_temporary_lag_intent.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "bd28a2f1f7cdf913aaf56709888b5650b4644bda",
+      "cases": 41,
+      "seconds": 4.47272300899931
+    },
+    "openpilot/starpilot/aol/tests/test_temporary_steering_retention.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "283920b9c09f2162a8aa285f4d7571e00b3ae22b",
+      "cases": 5,
+      "seconds": 2.45121389899964
+    },
+    "openpilot/starpilot/aol/tests/test_temporary_steering_sequence.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 43 nodes passed, 30.577112s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "8421f2897935723e5834bd328d42e2e3faea4efd",
+      "cases": 43,
+      "seconds": 38.22139
+    },
+    "openpilot/starpilot/aol/tests/test_torque_stock_brake_guards.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c563c27f50e73c9c73cb9de90f761bc37bcdc50d",
+      "cases": 115,
+      "seconds": 7.248188423999409
+    },
+    "openpilot/starpilot/aol/tests/test_torque_stock_cruise_transition.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "445c9f29298160172f6bd09ce2549d647006b5cf",
+      "cases": 12,
+      "seconds": 0.8534802440003659
+    },
+    "openpilot/starpilot/aol/tests/test_toyota_native_long_withdrawal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "d4dca4df61385a4c8759113f296258f0fd153d11",
+      "cases": 11,
+      "seconds": 1.4291361090004102
+    },
+    "openpilot/starpilot/aol/tests/test_toyota_parking_brake_deadline.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "f0e4cd563c562e7a48a5c8ea46e7706de7c99cc8",
+      "cases": 17,
+      "seconds": 2.0830971540010523
+    },
+    "openpilot/starpilot/aol/tests/test_toyota_secoc.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 80 nodes passed, 0.698193s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "269d1ce44ddefb8642bad1d4c10d121a19d7ab8a",
+      "cases": 80,
+      "seconds": 0.872741
+    },
+    "openpilot/starpilot/aol/tests/test_toyota_secoc_joined.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "f28b340d2b670888e4be3743fd10d8de9ff36c47",
+      "cases": 10,
+      "seconds": 7.131905708999966
+    },
+    "openpilot/starpilot/aol/tests/test_vehicle_policy_cache.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "09f13ca27dbbba08419cc52e5d0ec562f772d1fe",
+      "cases": 30,
+      "seconds": 0.02487205699844708
+    },
+    "openpilot/starpilot/aol/tests/test_volkswagen.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "3578fd02305a9775cf9526615a0ff15bcbf4f79c",
+      "cases": 96,
+      "seconds": 0.13271008700030507
+    },
+    "openpilot/starpilot/aol/tests/test_volkswagen_main_boot.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "89a76d7e0b53ae9d45934664fe50ebc30e2b283e",
+      "cases": 12,
+      "seconds": 0.030175071999337888
+    },
+    "openpilot/starpilot/aol/tests/test_volkswagen_saved_intent.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "6572f91b62654d5173ab0a054ab2c38bf89caf05",
+      "cases": 10,
+      "seconds": 0.00974568899937367
+    },
+    "openpilot/starpilot/aol/tests/test_volt_lag_pedal_intent.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "ccde2f25dd95faca8b2846ddee0bf23f5e0ed668",
+      "cases": 81,
+      "seconds": 7.6747092149998934
+    },
+    "openpilot/starpilot/aol/tests/test_zero_brake_pause.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a8af56594d74be445a14283e2d8c0277b88f93ad",
+      "cases": 12,
+      "seconds": 0.003759734998766362
+    },
+    "openpilot/starpilot/audio/tests/test_axis_alerts.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a3ba8c8fdcb6cc5daf800c9cced6d965da6355d2",
+      "cases": 26,
+      "seconds": 0.05584578899970438
+    },
+    "openpilot/starpilot/audio/tests/test_builtin_sounds.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b215c70f9fad9e291e0434c9edda13452cba8242",
+      "cases": 11,
+      "seconds": 0.14225007299978643
+    },
+    "openpilot/starpilot/audio/tests/test_complete_alert_assets.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "ae9cb58fe5f40206c91dd209e319c83cf73a71f8",
+      "cases": 4,
+      "seconds": 0.015294718999939505
+    },
+    "openpilot/starpilot/audio/tests/test_soundd_loop_dismissal.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "9fef3d0bab262a06a08515f72c276524e185555c",
+      "cases": 12,
+      "seconds": 0.0055887870003061835
+    },
+    "openpilot/starpilot/audio/tests/test_soundd_output.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "e213cdf781dc8e16e7163100eaf7aa83337258bb",
+      "cases": 14,
+      "seconds": 0.17394949000072302
+    },
+    "openpilot/starpilot/audio/tests/test_stock_event_parity.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "aa40f19480d54cb9efb7b3557277775ac7edf183",
+      "cases": 8,
+      "seconds": 0.017907940999521088
+    },
+    "openpilot/starpilot/audio/tests/test_stream_diagnostics.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a3a6b6906e5d93c4c105c4c799ef9ed89020f521",
+      "cases": 6,
+      "seconds": 0.004547201999685058
+    },
+    "openpilot/starpilot/bluetooth/tests/test_native_owner.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "94c2b2b8d9d8d1fd84bc5e9d272869acf09ec311",
+      "cases": 12,
+      "seconds": 0.00834470499944473
+    },
+    "openpilot/starpilot/bluetooth/tests/test_onroad_management.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "6c12df826a66d29a462de4fee4cf01dd86abf26e",
+      "cases": 1,
+      "seconds": 0.001093809999701989
+    },
+    "openpilot/starpilot/bluetooth/tests/test_startup_admission.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b7cb93ece0b0fc5caba0eccaa29c891dce2edda7",
+      "cases": 2,
+      "seconds": 0.8956470970001646
+    },
+    "openpilot/starpilot/car/chrysler/tests/test_location_intent.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "2bcbfb7e385235716f017dea67f40521e17f19e7",
+      "cases": 48,
+      "seconds": 6.704717517999825
+    },
+    "openpilot/starpilot/car/gm/tests/test_gear_events.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "09b852c14a71d07d21cbc04feaec0d2aa429498a",
+      "cases": 86,
+      "seconds": 0.05770317200131103
+    },
+    "openpilot/starpilot/car/gm/tests/test_radar_recovery.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "21605746e8b483dd5e24af126138c864e6b1786f",
+      "cases": 34,
+      "seconds": 0.035843196997802806
+    },
+    "openpilot/starpilot/car/honda/tests/test_radar_pipeline.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "16a249ded94e0639d75ab987b89735c23dc6d84d",
+      "cases": 4,
+      "seconds": 0.01250701900016793
+    },
+    "openpilot/starpilot/car/hyundai/tests/test_button_migration.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "6ecc45e30faae67d5a6d921040a3a45c70db73fb",
+      "cases": 3,
+      "seconds": 0.0008924179999212356
+    },
+    "openpilot/starpilot/car/mazda/tests/test_cancel_lateral.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "11ee4ebdf24f38ae28fb8b7f41d91480a5e46a8d",
+      "cases": 37,
+      "seconds": 0.014431757999773254
+    },
+    "openpilot/starpilot/car/mazda/tests/test_main_startup.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "ea3302881f26b8105f10078f5f98abde32595e85",
+      "cases": 25,
+      "seconds": 0.028806589999476273
+    },
+    "openpilot/starpilot/car/mazda/tests/test_reverse_join.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "69520d7ee589514e9b0859fd317b84e104fa7ef9",
+      "cases": 118,
+      "seconds": 0.11664806899830182
+    },
+    "openpilot/starpilot/car/nissan/tests/test_aol.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "5d3ac402c5a727b4e575fefaeec079f6b989901d",
+      "cases": 55,
+      "seconds": 2.547297542000024
+    },
+    "openpilot/starpilot/car/nissan/tests/test_joined.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "a37ead422ce3cf8056047e88880ca3a6377d207f",
+      "cases": 5,
+      "seconds": 3.863408480999624
+    },
+    "openpilot/starpilot/car/rivian/tests/test_aol_lifecycle.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "580632ad5917316082f1a452f4f893302555dd3c",
+      "cases": 2,
+      "seconds": 3.350176654000734
+    },
+    "openpilot/starpilot/car/rivian/tests/test_aol_native.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "c972d55c696c2179228f030649b6c6f3eed5619a",
+      "cases": 14,
+      "seconds": 0.064205106999907
+    },
+    "openpilot/starpilot/car/rivian/tests/test_aol_policy.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "47110f05017c16a51063d47425c1668ac8fa9de7",
+      "cases": 26,
+      "seconds": 0.00923967999983688
+    },
+    "openpilot/starpilot/car/subaru/tests/test_angle_tune.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b7e3f8abb2a2ab0a1ccf3c0f8e126ce49317d695",
+      "cases": 4,
+      "seconds": 12.103728422999438
+    },
+    "openpilot/starpilot/car/subaru/tests/test_avh.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "8bc5ddcebcb64b4c7c00b7fe273c486a1b0ae36f",
+      "cases": 4,
+      "seconds": 0.12005528000031518
+    },
+    "openpilot/starpilot/car/subaru/tests/test_avh_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 11 nodes passed, 82.744015s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "6ac7ece5423b05bebe795933021ead3a6fdf6bae",
+      "cases": 11,
+      "seconds": 103.430018
+    },
+    "openpilot/starpilot/car/subaru/tests/test_forester_angle_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 4 nodes passed, 23.011040s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "74fe799b8b296cb539d0a4ea94101ac531ee04ea",
+      "cases": 4,
+      "seconds": 36.300367
+    },
+    "openpilot/starpilot/car/subaru/tests/test_outback_angle_callers.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "2f10a6fb2a8b2d7c1bf4a945f7a81fb40337f6b6",
+      "cases": 4,
+      "seconds": 24.017425771000035
+    },
+    "openpilot/starpilot/car/subaru/tests/test_outback_startup_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 8 nodes passed, 23.672984s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "96a4e790193c6a2e9d3e630ab07fbcf78b118b4a",
+      "cases": 8,
+      "seconds": 30.039832
+    },
+    "openpilot/starpilot/car/subaru/tests/test_reverse_join.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "7f85698805fea556d241fe345a8d83f1126c8d0c",
+      "cases": 228,
+      "seconds": 1.1123749099972429
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "511c4ff7d97ed614f60fd3b69f63174bae0d19dd",
+      "cases": 33,
+      "seconds": 0.0886940450009206
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing_factory.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "b018b04909205f6518e896e18bde26ed354d4b76",
+      "cases": 48,
+      "seconds": 3.83445302599921
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing_model_join.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "48f84ff25978cf9fdb655d5df43e1f6114bd40b0",
+      "cases": 6,
+      "seconds": 0.1519034060006561
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing_settings.py": {
+      "basis": "Complete pytest phase timings in 6eb push run39923284827",
+      "blob": "4bd31df430f9e3653dcc804b2292fd8d47687512",
+      "cases": 7,
+      "seconds": 0.04106036899997889
+    },
+    "openpilot/starpilot/car/subaru/tests/test_sng.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 32 nodes passed, 0.039902s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "5a84bd3ce9e21c40675e39a3254dbca80a585af1",
+      "cases": 32,
+      "seconds": 0.05
+    },
+    "openpilot/starpilot/car/subaru/tests/test_sng_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 10 nodes passed, 31.148636s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "9b35ece0fa5377f4d25b7ea6ad34f21abbc6641a",
+      "cases": 10,
+      "seconds": 38.935795
+    },
+    "openpilot/starpilot/car/subaru/tests/test_software_cruise.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "53915fc1208cb1e8eaae593f3aa11c3b1016fadd",
+      "cases": 26,
+      "seconds": 0.0727703799993833
+    },
+    "openpilot/starpilot/car/subaru/tests/test_software_cruise_callers.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "abe65b7992fbb50b8756506b25004a8fb8e93b36",
+      "cases": 2,
+      "seconds": 12.736984069999835
+    },
+    "openpilot/starpilot/car/subaru/tests/test_stock_aol_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 13 nodes passed, 54.014115s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "0c1c7f170d2381fb032857887bbbe86adc9875fd",
+      "cases": 13,
+      "seconds": 67.517644
+    },
+    "openpilot/starpilot/car/subaru/tests/test_stop_start.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "474c4d5e3224404485400734349d50df2fe1b427",
+      "cases": 5,
+      "seconds": 0.07591541000010693
+    },
+    "openpilot/starpilot/car/subaru/tests/test_stop_start_callers.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "e0c70db67552c565e53c37da5f47cb6491dfda51",
+      "cases": 11,
+      "seconds": 26.80400199300027
+    },
+    "openpilot/starpilot/car/tesla/tests/test_pedal_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 72 nodes passed, 197.295091s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "2f1bf19c1b5115d359a9f8b1562d078cf09e5795",
+      "cases": 72,
+      "seconds": 246.618863
+    },
+    "openpilot/starpilot/car/tesla/tests/test_screen_recovery_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 64 nodes passed, 92.046298s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "6a023175acd00b7b666e58cf31d39bc6c4e18ea5",
+      "cases": 64,
+      "seconds": 115.057872
+    },
+    "openpilot/starpilot/car/toyota/tests/test_2aa_forwarded_copy.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "90f015af308d1cc1f263bb97da6a5ddefc250478",
+      "cases": 50,
+      "seconds": 0.029626459001406147
+    },
+    "openpilot/starpilot/car/toyota/tests/test_advert_filter.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "985e87edcfaad73bf71845c3911ad4dfddf274d4",
+      "cases": 273,
+      "seconds": 0.12193144500059816
+    },
+    "openpilot/starpilot/car/toyota/tests/test_angle_aol_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 24 nodes passed, 107.822159s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "58470683aac712dbb176a397e43854216e7c0792",
+      "cases": 24,
+      "seconds": 134.777699
+    },
+    "openpilot/starpilot/car/toyota/tests/test_avalon_sdsu_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 24 nodes passed, 93.676623s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "1b7b28d7a5c9e967116093ae240f8bd2385c58e0",
+      "cases": 24,
+      "seconds": 117.095779
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camera_2aa_filter.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "2cc8182aec6e25beb57d713f7ef895c5dde422cb",
+      "cases": 238,
+      "seconds": 0.1614836200000127
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camera_2aa_native.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "828bfb88b4b3a9379417f8588e70fa2e7ea53a19",
+      "cases": 48,
+      "seconds": 6.411265361000346
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camry_chr_filter_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 36 nodes passed, 119.332514s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "b86de9cf8f380df5c796e97a04bbb789b04310cd",
+      "cases": 36,
+      "seconds": 149.791982
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camry_cluster_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 12 nodes passed, 44.842338s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "118e02f052e87b32714d818882f914320cb223ce",
+      "cases": 12,
+      "seconds": 56.052923
+    },
+    "openpilot/starpilot/car/toyota/tests/test_dsu_bypass.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 141 nodes passed, 0.316747s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "7c401b583f75dd5b27946e8d353ad2eef4667bf4",
+      "cases": 141,
+      "seconds": 0.395934
+    },
+    "openpilot/starpilot/car/toyota/tests/test_dsu_bypass_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 132 nodes passed, 285.146882s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "f949c3e298e9c6ed54a2a6877c12b0813c412fca",
+      "cases": 132,
+      "seconds": 356.433603
+    },
+    "openpilot/starpilot/car/toyota/tests/test_eps8_sdsu.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "068e094f38fa8a5c0a420706eae5c632667f46d0",
+      "cases": 235,
+      "seconds": 0.17927439499874254
+    },
+    "openpilot/starpilot/car/toyota/tests/test_hardware_rx_identity.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 40 nodes passed, 0.018228s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "1c0d2c095480bd9e45a00e4b0d583c8695197968",
+      "cases": 40,
+      "seconds": 0.05
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_filter.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "a6a1cf979b120d161ad72548da36b266915ad427",
+      "cases": 195,
+      "seconds": 0.15366050199895653
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_lateral.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "fccb9876418b2a6c7f14583575923d7660c49d9b",
+      "cases": 78,
+      "seconds": 0.0679267290001917
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_native.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "88c7294efccc57a55a65906eb7f43c1dfed196de",
+      "cases": 48,
+      "seconds": 6.749222234999706
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_eps5_sdsu_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 84 nodes passed, 347.366325s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "75e5f761feca78918ec2c6537bee3a898e79653a",
+      "cases": 84,
+      "seconds": 434.207906
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_sdsu.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "a9a97d602ffd4ef18ccf731fc0ee27fc3a922f61",
+      "cases": 164,
+      "seconds": 0.180069009003887
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_stop_timer.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "14b84fe7df86965d60834fb0cb41c3ad8cca1c83",
+      "cases": 2,
+      "seconds": 0.04418585500013705
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_stop_timer_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 38 nodes passed, 76.586258s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "8b5ce754e6a88fdb09e5abb6638d0e6f81e3f266",
+      "cases": 38,
+      "seconds": 95.732822
+    },
+    "openpilot/starpilot/car/toyota/tests/test_lexus_is_caller_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 12 nodes passed, 32.143689s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "f85cce9c35e46610769bfcb3bac6427a22eab1a3",
+      "cases": 12,
+      "seconds": 42.312249
+    },
+    "openpilot/starpilot/car/toyota/tests/test_matrix_filter_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 16 nodes passed, 57.569513s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "1faeb736ec0982c647a32df7cda2ccec4c28a51b",
+      "cases": 16,
+      "seconds": 71.961891
+    },
+    "openpilot/starpilot/car/toyota/tests/test_matrix_stock_caller_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 24 nodes passed, 94.805386s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "79bc467dda7c717ac268f2a86100d13c9f28223f",
+      "cases": 24,
+      "seconds": 118.506733
+    },
+    "openpilot/starpilot/car/toyota/tests/test_pedal_caller_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 40 nodes passed, 127.214591s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "e4e969a30a572846c3da3bbe5ec07eda07d4861d",
+      "cases": 40,
+      "seconds": 159.018239
+    },
+    "openpilot/starpilot/car/toyota/tests/test_pedal_main_freshness.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 24 nodes passed, 88.463051s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "0bf03ccf9b534ff4394413fc02008253d75ad9df",
+      "cases": 24,
+      "seconds": 142.024974
+    },
+    "openpilot/starpilot/car/toyota/tests/test_pedal_parent_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 92 nodes passed, 326.751423s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "27dfb68afa17141aed168b8de15df856f53561f5",
+      "cases": 92,
+      "seconds": 408.439278
+    },
+    "openpilot/starpilot/car/toyota/tests/test_pedal_parent_configurations.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 591 nodes passed, 1.332558s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "3f24e025e2a1d12a5302d64093e464ce113ace28",
+      "cases": 591,
+      "seconds": 1.665697
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_retrofit_advert_factory.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "2468d9581780cde6f1325e6f623073f37876578e",
+      "cases": 84,
+      "seconds": 0.05991441000071518
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_retrofit_advert_refusals.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 12 nodes passed, 46.424566s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "e508064549b71d055e4e15d39fbc6eba44f5fd50",
+      "cases": 12,
+      "seconds": 58.030707
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_retrofit_stock.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 30 nodes passed, 0.010640s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "ae4fd898efe8724a99bde8cd67bd610925f1899b",
+      "cases": 30,
+      "seconds": 0.05
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_retrofit_stock_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 8 nodes passed, 32.859955s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "d1de7533828e68bd7189cd4d2a3cf7dc0b3e82fd",
+      "cases": 8,
+      "seconds": 41.074943
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_sdsu_filter.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 44 nodes passed, 0.135879s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "cbda7bcff23fcaac66bb36f0b0bc4e3cb6d2acf5",
+      "cases": 44,
+      "seconds": 0.169849
+    },
+    "openpilot/starpilot/car/toyota/tests/test_radar_filter_variant_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 48 nodes passed, 157.909398s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "c54a2f6be83b36f3c0f2f1e112d4ddffe980329d",
+      "cases": 48,
+      "seconds": 222.952169
+    },
+    "openpilot/starpilot/car/toyota/tests/test_radar_filter_variants.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "8ff7c535d6507604de31b55129c3ba6a1ad57d72",
+      "cases": 59,
+      "seconds": 0.029732309000792156
+    },
+    "openpilot/starpilot/car/toyota/tests/test_radar_lta_pedal.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "8b10167a820440ba9fc7bc31339d60e345eb30c9",
+      "cases": 45,
+      "seconds": 0.034094355999627624
+    },
+    "openpilot/starpilot/car/toyota/tests/test_radar_lta_pedal_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 12 nodes passed, 35.088187s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "17c101c3319020d02f0e12f4f73187aaa62cf736",
+      "cases": 12,
+      "seconds": 54.74622
+    },
+    "openpilot/starpilot/car/toyota/tests/test_rav4_2022_filter_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 20 nodes passed, 95.002002s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "179608a4cae520bd08b959b8951f6b8e5ee03973",
+      "cases": 20,
+      "seconds": 118.752503
+    },
+    "openpilot/starpilot/car/toyota/tests/test_rav4_2025_filter_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 20 nodes passed, 67.220413s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "15c4502a67ddccffba449a2085101b8b03a7eae7",
+      "cases": 20,
+      "seconds": 86.43522
+    },
+    "openpilot/starpilot/car/toyota/tests/test_rav4_angle_filter_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 10 nodes passed, 41.522783s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "f8cba1a5eb95b61cdbdd38b3b807a84199fb4348",
+      "cases": 10,
+      "seconds": 51.903479
+    },
+    "openpilot/starpilot/car/toyota/tests/test_rav4h_caller_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 24 nodes passed, 116.156122s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "520c194a60432ca38b9b31e47f5354d2f8d7e08d",
+      "cases": 24,
+      "seconds": 145.195152
+    },
+    "openpilot/starpilot/car/toyota/tests/test_rav4h_pedal_composite_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 16 nodes passed, 72.941713s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "b6dd1261072cc181d1d790818139ca8279b5eaea",
+      "cases": 16,
+      "seconds": 91.177141
+    },
+    "openpilot/starpilot/car/toyota/tests/test_sdsu_forwarded_copy.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "55518e1231bf4345f81d705388bd34f153057e92",
+      "cases": 243,
+      "seconds": 0.13819222799929776
+    },
+    "openpilot/starpilot/car/toyota/tests/test_sdsu_forwarded_copy_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 248 nodes passed, 354.914783s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "fefe98af3481903981f1e379bafd08009a24317d",
+      "cases": 248,
+      "seconds": 443.643479
+    },
+    "openpilot/starpilot/car/toyota/tests/test_sdsu_priority.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "2a2ed12c705ee754aed16368972ba44a1946b543",
+      "cases": 318,
+      "seconds": 0.34330281799987006
+    },
+    "openpilot/starpilot/car/toyota/tests/test_sdsu_priority_callers.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 204 nodes passed, 613.397419s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "3f8196b546f7de4ec09af452552b34b71b692371",
+      "cases": 204,
+      "seconds": 766.746773
+    },
+    "openpilot/starpilot/car/toyota/tests/test_stock_aol.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 334 nodes passed, 3.656242s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "d31c8cd49306d65d851b4cf04ba60d7bc9daf56f",
+      "cases": 334,
+      "seconds": 4.570303
+    },
+    "openpilot/starpilot/car/toyota/tests/test_wheel_actions.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "c149f67f3e8f8fadd795826e1503aa94a4a86ed0",
+      "cases": 31,
+      "seconds": 0.20979100699776154
+    },
+    "openpilot/starpilot/conditional_mode/tests/test_card_frame_derivations.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "4f6702883be304407ff120f9c204088133614e3a",
+      "cases": 57,
+      "seconds": 0.19366396100053862
+    },
+    "openpilot/starpilot/flm/tests/test_calibration_lifecycle.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "5df58cc45a159d685fdd73df821a41af456cf169",
+      "cases": 40,
+      "seconds": 0.6588108730007889
+    },
+    "openpilot/starpilot/flm/tests/test_canonical_bounds.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "e780a1cb4de0c57e433110205f84023eafee9904",
+      "cases": 37,
+      "seconds": 0.016357500999561125
+    },
+    "openpilot/starpilot/flm/tests/test_control_wire_fields.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 49 nodes passed, 0.036151s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "ebae22258ce120623daa2dfb87565f950dfcdfaf",
+      "cases": 49,
+      "seconds": 0.05
+    },
+    "openpilot/starpilot/flm/tests/test_event_controller_prefix.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "e41604fe189ccb9d8963a2090177cb18d1d6fe3b",
+      "cases": 44,
+      "seconds": 10.310949073000529
+    },
+    "openpilot/starpilot/flm/tests/test_event_subset_prefix.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 30 nodes passed, 14.019509s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "bbad144a0f6d404661cf214c2767596ef7013603",
+      "cases": 30,
+      "seconds": 17.524387
+    },
+    "openpilot/starpilot/flm/tests/test_feedback_serialization.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "586071850c2731f6522cafaab99f85e1d3a8886b",
+      "cases": 69,
+      "seconds": 0.05439314400018702
+    },
+    "openpilot/starpilot/flm/tests/test_full_surface_profile.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "9160f9802fe02300471919a25514b4137f68ec7a",
+      "cases": 31,
+      "seconds": 0.06832267700042394
+    },
+    "openpilot/starpilot/flm/tests/test_global_event_capture_floor.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "8d4801c0e1509ad3bd52a97e892f2711f11a928b",
+      "cases": 121,
+      "seconds": 0.21832795699901908
+    },
+    "openpilot/starpilot/flm/tests/test_lateral_gas_evidence.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 32 nodes passed, 4.283890s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "d1e6d669354a38f258769cb264261caa2e507286",
+      "cases": 32,
+      "seconds": 5.354862
+    },
+    "openpilot/starpilot/flm/tests/test_live_tracking.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 60 nodes passed, 0.532481s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "22b4a105d3381841be7fcbac87e01602028f9bfe",
+      "cases": 60,
+      "seconds": 0.665601
+    },
+    "openpilot/starpilot/flm/tests/test_live_tracking_episodes.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 62 nodes passed, 0.159231s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "e60655d16ad0558db6fa9ad7f11c1885e445cfae",
+      "cases": 62,
+      "seconds": 0.199039
+    },
+    "openpilot/starpilot/flm/tests/test_live_tracking_probe_process.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "e5d4e4c86288aaa60006fa6569a3d11bb8612ab5",
+      "cases": 34,
+      "seconds": 0.45024849000071754
+    },
+    "openpilot/starpilot/flm/tests/test_live_tracking_requalification.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "1f95eb2d6ec64b187e5dcadfaf84cca57d28e649",
+      "cases": 50,
+      "seconds": 0.07777088399916465
+    },
+    "openpilot/starpilot/flm/tests/test_paired_evidence_drain.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 56 nodes passed, 0.113342s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "8d36ab434981d960e86bcda0b2248f38d5d9617d",
+      "cases": 56,
+      "seconds": 0.141678
+    },
+    "openpilot/starpilot/flm/tests/test_physical_formatting.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "bff4f1aa3da5d6cc84baf8135fa29d7914109cae",
+      "cases": 58,
+      "seconds": 0.3405876900005751
+    },
+    "openpilot/starpilot/flm/tests/test_physical_input_observation.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 56 nodes passed, 98.701761s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "558e57fc4671a6e9bbf307ee66ff8da22cf1522b",
+      "cases": 56,
+      "seconds": 123.377202
+    },
+    "openpilot/starpilot/flm/tests/test_physical_target_gravity.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "38af4d33c70bb3a928b8180858d52be4deec3ff8",
+      "cases": 44,
+      "seconds": 8.659069419000275
+    },
+    "openpilot/starpilot/flm/tests/test_pid_stage_core.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "de86152919dd3cf62f0fca27dfa33d1cb5dfcad5",
+      "cases": 55,
+      "seconds": 0.49176996500114
+    },
+    "openpilot/starpilot/flm/tests/test_registered_accepted_profile.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 9 nodes passed, 84.997252s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "d9e2a8eec3671a5a4dbf8879eb12878e95da360a",
+      "cases": 9,
+      "seconds": 106.246565
+    },
+    "openpilot/starpilot/flm/tests/test_registered_controls_global.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 4 nodes passed, 45.113322s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "16537495e5cc478b6c94830539ce4187f6b242ed",
+      "cases": 4,
+      "seconds": 56.391653
+    },
+    "openpilot/starpilot/flm/tests/test_snapshot_scalar_fastpath.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "68624047c8edb7c0e8c533841d3253ac5af5c4b4",
+      "cases": 67,
+      "seconds": 0.6277545459993235
+    },
+    "openpilot/starpilot/flm/tests/test_steering_projection.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "f9d0464de43c4d7007df7185452ca2a90f599807",
+      "cases": 114,
+      "seconds": 6.462500410001439
+    },
+    "openpilot/starpilot/flm/tests/test_tracking_source_context.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 76 nodes passed, 0.169334s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "2cb26a8c1856c42591c93beddb7576cc748a4043",
+      "cases": 76,
+      "seconds": 0.211668
+    },
+    "openpilot/starpilot/flm/tests/test_tracking_study_recovery.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "d5a774465e0c6ede7a53aca8dd7f061fb057597f",
+      "cases": 46,
+      "seconds": 0.13803778700071234
+    },
+    "openpilot/starpilot/galaxy/test_starport_http.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 39 nodes passed, 3.334134s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "94be2511e9f71babb5ee3398cf9ec3603f6be1b4",
+      "cases": 39,
+      "seconds": 4.167668
+    },
+    "openpilot/starpilot/galaxy/tests/test_ford_release_alpha.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "9a24ee5b8b8a9595f27861d2a5dd471bfae4026f",
+      "cases": 66,
+      "seconds": 0.26110413200092353
+    },
+    "openpilot/starpilot/galaxy/tests/test_hotspot.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "aca69afc4c47467d80c44d88549f350c050b8cd0",
+      "cases": 56,
+      "seconds": 0.0373155419986233
+    },
+    "openpilot/starpilot/gps/tests/test_phone_gps.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 35 nodes passed, 0.027223s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "8d16d41813fe45b1ce808f3c164c4ff6802e00a5",
+      "cases": 35,
+      "seconds": 0.05
+    },
+    "openpilot/starpilot/lateral/tests/test_genesis_g70_policy.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "bcae05b2ac81cb887119ed7858bde2acf8ce1c7a",
+      "cases": 34,
+      "seconds": 0.33387686799972016
+    },
+    "openpilot/starpilot/lateral/tests/test_hkg_vehicle_policy.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "0b7fc32b04a825bb0d282781d99ec3ecccf6cb6e",
+      "cases": 70,
+      "seconds": 0.10357977899934667
+    },
+    "openpilot/starpilot/lateral/tests/test_unwind_direction.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "56d1c3a3ec7f3b25604f00f243d9afd433dca75c",
+      "cases": 36,
+      "seconds": 0.13179554900034418
+    },
+    "openpilot/starpilot/longitudinal/tests/test_encouragement.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 61 nodes passed, 2.492378s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "f84993f97314460c19f05daace552845973fcc2f",
+      "cases": 61,
+      "seconds": 3.115473
+    },
+    "openpilot/starpilot/longitudinal/tests/test_follow_floor.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "0aecbcfea34b48f8bdc3bfbd988e09912782a49f",
+      "cases": 39,
+      "seconds": 6.683791032000954
+    },
+    "openpilot/starpilot/longitudinal/tests/test_lead_takeoff.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "17c6628aa74a8318f06e68b3dfa9c5cbc2379ccc",
+      "cases": 44,
+      "seconds": 0.49826109900038773
+    },
+    "openpilot/starpilot/longitudinal/tests/test_mpc_terminal_constraints.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "89480641ce0a289adaffa21e5d4f7c2799c40f8d",
+      "cases": 33,
+      "seconds": 1.2074830620000512
+    },
+    "openpilot/starpilot/longitudinal/tests/test_volt_mode_transition.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "c4fd0b22dec68978f8ac77d2e68d2bbe3596461c",
+      "cases": 66,
+      "seconds": 0.11916299399990748
+    },
+    "openpilot/starpilot/models/tests/test_jetlink_adapter.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 30 nodes passed, 2.220031s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "68e85e7893b10710b0ba71b0a08972ad4bbc6f63",
+      "cases": 30,
+      "seconds": 2.775039
+    },
+    "openpilot/starpilot/models/tests/test_modeld_startup_fallback.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 32 nodes passed, 0.215214s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "95ab6e2071711355f6e76650c57292467da3b592",
+      "cases": 32,
+      "seconds": 0.269017
+    },
+    "openpilot/starpilot/navigation/tests/test_route_preferences.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "21b2730f8a69366116b6af399b8c2d46d513cd6e",
+      "cases": 33,
+      "seconds": 0.08975363199976982
+    },
+    "openpilot/starpilot/navigation/tests/test_search_proximity.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "83982e80b3478c597c439c7d282a5350f74d9cfa",
+      "cases": 33,
+      "seconds": 0.02690103600036764
+    },
+    "openpilot/starpilot/navigation/tests/test_signal_guidance.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "38bd12fa3766c05f3f6e782f5ec8d310fba71f36",
+      "cases": 47,
+      "seconds": 0.10525561599956745
+    },
+    "openpilot/starpilot/replay/tests/test_owner.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "b54fb2c8ed27e6c45d6c4b55144b952890c16a95",
+      "cases": 50,
+      "seconds": 3.651309674000913
+    },
+    "openpilot/starpilot/replay/tests/test_render.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "6992c6786eb1a45371aa70b935e57cba9510e013",
+      "cases": 112,
+      "seconds": 0.14959199499912756
+    },
+    "openpilot/starpilot/soloist/tests/test_runtime.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "441eed8ae015bf949ebd94b41f80b450b907ba91",
+      "cases": 31,
+      "seconds": 0.6908758740008807
+    },
+    "openpilot/starpilot/speed_limits/tests/test_physical_actions.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "68b922f7cb6684761746c79c4b71e9a8b7171c1c",
+      "cases": 32,
+      "seconds": 0.014215565999506907
+    },
+    "openpilot/starpilot/speed_limits/tests/test_set_speed.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 91 nodes passed, 0.213100s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "90c1bb7ffe8764f7bcb4c8fb40c2ba3c0a95ebee",
+      "cases": 91,
+      "seconds": 0.266375
+    },
+    "openpilot/starpilot/speed_limits/tests/test_toyota_execution.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 936 nodes passed, 1.392606s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "a629ca2ee943c7ee94481f94c2c262ffb0566af7",
+      "cases": 936,
+      "seconds": 1.740757
+    },
+    "openpilot/starpilot/system/starport/tests/test_bugsink_report.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 33 nodes passed, 0.737380s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "b759b5e8dc1c52623809ff957bc282ca31c7e539",
+      "cases": 33,
+      "seconds": 0.921725
+    },
+    "openpilot/starpilot/system/starport/tests/test_nav_status.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "b89014e81c9632bc657b0230f4420f6645e195f1",
+      "cases": 53,
+      "seconds": 0.07452517499984879
+    },
+    "openpilot/starpilot/system/starport/tests/test_projection_favorites.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 30 nodes passed, 0.129013s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "f764ed41b38f0316097995fa73640981f3942240",
+      "cases": 30,
+      "seconds": 0.161266
+    },
+    "openpilot/starpilot/system/starport/tests/test_starport.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 72 nodes passed, 22.037476s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "c4c3d21bea7d749438afeb20886652bca06208bb",
+      "cases": 72,
+      "seconds": 27.546846
+    },
+    "openpilot/starpilot/tests/test_captured_adrv_diagnostic_startup.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 64 nodes passed, 12.454431s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "7849a690cd1ac2f3064f60d72622ea7150015cb8",
+      "cases": 64,
+      "seconds": 15.568039
+    },
+    "openpilot/starpilot/tests/test_ford_ci_registration.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "8065ac29f007fc2d14ce32fe81e8e5ff456ddd6a",
+      "cases": 2,
+      "seconds": 0.007034268999973392
+    },
+    "openpilot/starpilot/tests/test_ford_configuration_admission.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "6cb2072d0cbfba6f852af87a5c4d9b5b26e42599",
+      "cases": 57,
+      "seconds": 0.058055562000333794
+    },
+    "openpilot/starpilot/tests/test_ford_configuration_parity.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 148 nodes passed, 263.706553s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "b69d6419963b14a3e502edceff5643eb8c79426b",
+      "cases": 148,
+      "seconds": 329.633191
+    },
+    "openpilot/starpilot/tests/test_ford_initial_epoch.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "583fba0e66aebaec6bef3ff75fa4c215d8334a69",
+      "cases": 48,
+      "seconds": 0.09987150900019515
+    },
+    "openpilot/starpilot/tests/test_ford_location_intent.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "f257a07636d90ae5382055cac5a867c12b727728",
+      "cases": 100,
+      "seconds": 0.2575772739984359
+    },
+    "openpilot/starpilot/tests/test_ford_main_pulse.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "e873f92f14bbe3c67cc8083174ad908bf167d41c",
+      "cases": 72,
+      "seconds": 0.1164109490005103
+    },
+    "openpilot/starpilot/tests/test_ford_physical_pause_intent.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 151 nodes passed, 0.251284s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "ead46e9778b4c535509dff4c7783d43598cb0da3",
+      "cases": 151,
+      "seconds": 0.314105
+    },
+    "openpilot/starpilot/tests/test_ford_recorded_lifecycle.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 10 nodes passed, 24.759280s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "010f3f5b83b4c455159cbc076e5b6ab4075114c8",
+      "cases": 10,
+      "seconds": 31.794074
+    },
+    "openpilot/starpilot/tests/test_ford_release_long_preferences.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 88 nodes passed, 0.072541s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "2891bf62cf369a7ec3280575b72ea04faf5aee20",
+      "cases": 88,
+      "seconds": 0.090677
+    },
+    "openpilot/starpilot/tests/test_ford_reverse_intent.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "b7f4334b767b245a924b53b4e8085489114cbf17",
+      "cases": 66,
+      "seconds": 0.12838788999943063
+    },
+    "openpilot/starpilot/tests/test_ford_shared_stop_isolation.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "a5c3af46b09c31fe4a5fbc0477006f10c825cb2b",
+      "cases": 112,
+      "seconds": 0.1124289850013156
+    },
+    "openpilot/starpilot/tests/test_ford_temporary_eps_intent.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "66f0e8c0ee914d5609b73ef528f8f705eb27f796",
+      "cases": 108,
+      "seconds": 0.3479463360012005
+    },
+    "openpilot/starpilot/ui/tests/test_camera_color.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "dd70468893d8c7c24497894f6508b0ced5789562",
+      "cases": 35,
+      "seconds": 0.02060500199957005
+    },
+    "openpilot/starpilot/ui/tests/test_chestnut_display.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 112 nodes passed, 0.066104s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "2f9e7d8051e944b026bbc84737b19fb1c2b7d3e0",
+      "cases": 112,
+      "seconds": 0.08263
+    },
+    "openpilot/starpilot/ui/tests/test_compact_sign_height.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 61 nodes passed, 0.064909s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "649f11921fa58fe81fa4ccc1c4b1431361363b0e",
+      "cases": 61,
+      "seconds": 0.081136
+    },
+    "openpilot/starpilot/ui/tests/test_covered_camera.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "355592ed8e9253db46ff86442527d87d74de03cf",
+      "cases": 32,
+      "seconds": 0.23591232699970988
+    },
+    "openpilot/starpilot/ui/tests/test_ford_release_alpha.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "1fb3170598e2363330aee0575c2d30d206a5c50a",
+      "cases": 118,
+      "seconds": 1.2838008099988656
+    },
+    "openpilot/starpilot/ui/tests/test_meb_preferences.py": {
+      "basis": "Separate complete AOL reference from same6eb source; not custom wall-time measurement",
+      "blob": "58eaefa7a396f875ddf7df6aca712dfdcf4a476c",
+      "cases": 18,
+      "seconds": 0.02584481600001709
+    },
+    "openpilot/starpilot/ui/tests/test_navigation_favorites.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "18a6a3938c16d6b652c2c7f8f24653d085576687",
+      "cases": 55,
+      "seconds": 0.07181532400079504
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_alerts.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "252af05102355df55a729f4895823c4ec705cc57",
+      "cases": 32,
+      "seconds": 0.7146788270008528
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_cem_gauge.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 61 nodes passed, 0.071844s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "c9f8cac196d59486e35c3f819972e27532a70d34",
+      "cases": 61,
+      "seconds": 0.089804
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_customization.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 106 nodes passed, 0.170754s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "18320ef61b96eb8db13e99f60835320c8837825d",
+      "cases": 106,
+      "seconds": 0.213443
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_map.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "e0098c87f63d8f56ebdfa84faa6e49d7811e6e51",
+      "cases": 51,
+      "seconds": 0.37655604900089656
+    },
+    "openpilot/starpilot/ui/tests/test_onroad_navigation.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 30 nodes passed, 0.012625s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "b3874264f42cb41d597b4061a9287b35c490a4b3",
+      "cases": 30,
+      "seconds": 0.05
+    },
+    "openpilot/starpilot/ui/tests/test_pip_sidecam.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "9e479fab99fd310e9e3ed23f1b09cac31f8e8926",
+      "cases": 50,
+      "seconds": 0.5140061449994846
+    },
+    "openpilot/starpilot/ui/tests/test_replay_settings.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "aea0ceb2d0423464e18ca0583541154823f32d0e",
+      "cases": 131,
+      "seconds": 0.4050017720018104
+    },
+    "openpilot/starpilot/ui/tests/test_runtime_panel_actions.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 35 nodes passed, 0.497876s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "9e4d9b7464b54acfeaa183ba0b66737f05013b9b",
+      "cases": 35,
+      "seconds": 0.622345
+    },
+    "openpilot/starpilot/ui/tests/test_runtime_snapshot.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 58 nodes passed, 0.135693s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "11df3dcf3fe1efc33388d1902458f0bc2b1c6fc5",
+      "cases": 58,
+      "seconds": 0.169617
+    },
+    "openpilot/starpilot/ui/tests/test_shared_render_hot_paths.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "637f293c0ccd3fe065db5079f85832cc920dc35e",
+      "cases": 33,
+      "seconds": 0.02732832900039739
+    },
+    "openpilot/starpilot/ui/tests/test_slc_retention.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 51 nodes passed, 0.561035s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "1b0496e35a8ee8509a9afc5b3ae9e38a6e5491e0",
+      "cases": 51,
+      "seconds": 0.701294
+    },
+    "openpilot/starpilot/ui/tests/test_spacepilot_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 38 nodes passed, 0.069300s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "376bdef83b4afb7c4563887b64e2bc7155659d42",
+      "cases": 38,
+      "seconds": 0.086625
+    },
+    "openpilot/starpilot/ui/tests/test_spacepilot_session.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 78 nodes passed, 0.594136s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "74fc028c5438a0078ddb55cdc02e2e37bdc5b177",
+      "cases": 78,
+      "seconds": 0.74267
+    },
+    "openpilot/starpilot/ui/tests/test_spacepilot_state.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 83 nodes passed, 0.125647s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "3706fd8e4283942843b0dea9349d6bf03276e02e",
+      "cases": 83,
+      "seconds": 0.157059
+    },
+    "openpilot/starpilot/ui/tests/test_ui_started_authority.py": {
+      "basis": "max per-case complete phase seconds across hosted runs40231700807 and40235133424",
+      "blob": "96572376fca9e59ba7132121e628b69f6754675b",
+      "cases": 42,
+      "seconds": 0.06673488400019778
+    },
+    "openpilot/starpilot/ui/tests/test_unified_speed_native.py": {
+      "basis": "Exact 65660a4 hosted main40623875380: all 190 nodes passed, 0.170447s setup/call/teardown; 25% estimate margin, retaining any higher same-source prior estimate. Scheduling only; no test deadline change.",
+      "blob": "6485cd4066bcc7f41fb39704f4f16b950424191d",
+      "cases": 190,
+      "seconds": 0.213059
+    }
+  },
+  "reference_sha": "6eb9df96425a661afcbf1edfa27894d6e49b3706",
+  "unknown_seconds_per_case": 1.0,
+  "version": 1
+}

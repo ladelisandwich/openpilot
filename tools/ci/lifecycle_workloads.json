@@ -1,0 +1,826 @@
+{
+  "function_groups": {
+    "openpilot/starpilot/car/toyota/tests/test_camera_2aa_callers.py": {
+      "basis": "Owner-reported164cases274s; optional future module, never adds cases to catalog",
+      "estimated_seconds_per_case": 2.0,
+      "independent_parameters": true
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_callers.py": {
+      "basis": "Scheduling estimate: observed72cases213s in6ebshard3; incomplete module, not a full measured runtime",
+      "estimated_seconds_per_case": 4.0,
+      "independent_parameters": true
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_advert_callers.py": {
+      "basis": "Scheduling estimate4s/case; all132 mirror caller cases actually passed across eight bounded debug/release phases; worst20case phase55.81s. Fresh per-case Params/rawCAN/native configuration/C++ reset and cleanup reviewed; no shared outcomes; full in-case timelines retained.",
+      "estimated_seconds_per_case": 4.0,
+      "independent_parameters": true
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_sdsu_callers.py": {
+      "basis": "90 actual DEBUG/RELEASE caller cases passed in four bounded phases (186.885s combined wall time including startup). Scheduling estimate 3s/case; fresh per-case Params, raw CAN, native configuration and C++ host reset; no shared outcome dependence.",
+      "estimated_seconds_per_case": 3.0,
+      "independent_parameters": true
+    },
+    "openpilot/starpilot/tests/test_ford_configuration_parity.py": {
+      "basis": "Scheduling estimate3s/case, not a full measured current module: current188 shard3 first144 pytest cases (21HKG +112Ford +11discovery) take305.579s; historical112Ford measured217.392s. Function-scoped fixture creates fresh Params/native/factory/parser session and tears down each case; source-reviewed full in-case timelines retained.",
+      "estimated_seconds_per_case": 3.0,
+      "independent_parameters": true
+    },
+    "openpilot/starpilot/aol/tests/test_stock_location_recovery.py": {
+      "basis": "Scheduling estimate2s/case: actual188 shard3 ordinal577..648 (all inside140case stock-location module) took91.261s; incomplete module timing, not a full measurement. Fresh function-scoped fixture creates CP/state/feedback and private Params per case; no shared outcome dependence; full in-case timelines retained.",
+      "estimated_seconds_per_case": 2.0,
+      "independent_parameters": true
+    },
+    "openpilot/starpilot/tests/test_ford_bluepilot_library_lifecycle.py": {
+      "basis": "736580721a hosted shard7: 248 completed Ford lifecycle cases used573.067107459 phase seconds; slowest case4.394150353s. Round up to5s. Function-scoped library_settings and ford_joined create fresh Params, host/native safety per case and tear down each case; full in-case timelines remain unchanged.",
+      "estimated_seconds_per_case": 5.0,
+      "independent_parameters": true
+    }
+  },
+  "independent_function_max_cases": 60,
+  "independent_function_max_seconds": 240.0,
+  "modules": {
+    "opendbc_repo/opendbc/car/honda/tests/test_classic_alpha_aol_parity.py": {
+      "cases": 33,
+      "seconds": 1.4594704400000182,
+      "source_sha256": "2f907a1ba0e43f5c310748678a0b233b9c656a21043094e1329a6491458c4386"
+    },
+    "opendbc_repo/opendbc/car/honda/tests/test_manual_honda_port_aol.py": {
+      "cases": 8,
+      "seconds": 0.10920116499994492,
+      "source_sha256": "8634678921c2f2919d01945e9f71b01ca025861e56bbdcfa7b5b0b35899cc6ab"
+    },
+    "opendbc_repo/opendbc/car/mazda/tests/test_dashboard_stop_sign.py": {
+      "cases": 52,
+      "seconds": 1.887951329999737,
+      "source_sha256": "ae178c63d9cdc55845036f8d062ddc16d323a518ae1f91b5a3e11417a432ceda"
+    },
+    "opendbc_repo/opendbc/car/volkswagen/tests/test_meb_discovery.py": {
+      "cases": 8,
+      "seconds": 0.38340116199981367,
+      "source_sha256": "0183f94bc70f7d73769540f75147656445671b699ce797af2fb88de5532875a9"
+    },
+    "opendbc_repo/opendbc/car/volkswagen/tests/test_meb_preferences.py": {
+      "cases": 171,
+      "seconds": 0.15481268699954853,
+      "source_sha256": "7bb06ba1f1e307719a53cf24af29c2cd3141dda35daa417cb535fd8d4f771040"
+    },
+    "opendbc_repo/opendbc/car/volkswagen/tests/test_mqb_aol_discovery.py": {
+      "cases": 6,
+      "seconds": 0.09152089899998828,
+      "source_sha256": "246e9c0c5962bd6a9c2f1f31459f9e06a5709bd4dc8791883909edff6c03b638"
+    },
+    "opendbc_repo/opendbc/car/volkswagen/tests/test_mqb_topology_discovery.py": {
+      "cases": 18,
+      "seconds": 0.3450054979991819,
+      "source_sha256": "29734b924f186ba545a568273c0dfd27aa75627f5166d31e078da4b84a5b9505"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_ford_configuration_parity.py": {
+      "cases": 85,
+      "seconds": 1.544425660000229,
+      "source_sha256": "278d3f825224427ebddde99373b0811d136456c7caec54842f0bea8b02ad67dc"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_ford_full_engagement.py": {
+      "cases": 169,
+      "seconds": 0.906622817999164,
+      "source_sha256": "f7fd6b4cbdbae72797277b5a039928b4d7406451ca14839142118e27f3e2473a"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_hkg_mode_parity.py": {
+      "cases": 75,
+      "seconds": 3.885427439000523,
+      "source_sha256": "97711068cdc3ebab22165b2ddab417f0eab13134da452c189dc1af7da1deb521"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_hyundai_angle_tx_recovery.py": {
+      "cases": 9,
+      "seconds": 0.1236018710000053,
+      "source_sha256": "3e3559792d8daef5fc09c017f742060f93c737d76904ae1822c0b12d4c7b0a91"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_mazda_stock_aol.py": {
+      "cases": 13,
+      "seconds": 0.11437289899998859,
+      "source_sha256": "16eeb9c2fcf0f945eb1196b99651bdfad7407ef4de2b0cf00dd22def471dbd22"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_meb_aol.py": {
+      "cases": 63,
+      "seconds": 0.615215202000627,
+      "source_sha256": "06d099bdaea9462d9038f9f2f06f48b3ce3c5a18ede4d174fc55ffddf97f2b7a"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_pe_combined_callers.py": {
+      "cases": 2,
+      "seconds": 14.210113755999998,
+      "source_sha256": "bb8f4ae38158db387f9e1f39ff7acd4f505cf6bdf44e79a1fd45f80a88a229ae"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_pe_set_release_callers.py": {
+      "cases": 1,
+      "seconds": 12.633191937000106,
+      "source_sha256": "0db205adee85085ceb5af97a7195844484072083ade34ab5453e036ad21c7734"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_avh_startup.py": {
+      "cases": 25,
+      "seconds": 6.096936095999467,
+      "source_sha256": "eb3a1c05e0d90f6b30e58c53a1cffb0bf490ec1e57a3311cb68ea3e7e7487e1e"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_outback_angle.py": {
+      "cases": 8,
+      "seconds": 0.056717837000007876,
+      "source_sha256": "d8bdce43be7b9e62b0e71dfadf4d18b629b5f6eed0e257f57a897145fdb091a4"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_sng.py": {
+      "cases": 6,
+      "seconds": 0.04316678000003549,
+      "source_sha256": "3bd08c34e9db4a056ae99a72b321aa72a0d619ea178b0b88e047b75f55c719ec"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_software_cruise.py": {
+      "cases": 4,
+      "seconds": 0.016735610000068846,
+      "source_sha256": "a66efee40870deea1e4d5620b93b0c9fcde9676cb4d80ab23a9cef37f725b343"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_stock_aol.py": {
+      "cases": 10,
+      "seconds": 0.024661658000070474,
+      "source_sha256": "f59adcbd502ec880148dcc0b8fd7c1a21b3207b31bc1e3db23909973d87a21a3"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_stop_start.py": {
+      "cases": 5,
+      "seconds": 0.059471873000063624,
+      "source_sha256": "6ea85a318bb77f3a808c38dc9017629d6391c09ac2845536dbf381a2c829e912"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_volkswagen_direct_aol.py": {
+      "cases": 22,
+      "seconds": 0.08436309100022754,
+      "source_sha256": "ce7e6e3ffc1d448261d820784b6257c49810a7c83dc578ab09ea30af0240b77d"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_volkswagen_engagement_arm.py": {
+      "cases": 2,
+      "seconds": 0.0048654299999952855,
+      "source_sha256": "f1430a7891ef36c4058b9c3c592e20f542b278129fdec000d17a0772a744ff8e"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_volkswagen_stock_aol.py": {
+      "cases": 6,
+      "seconds": 0.2346097189999341,
+      "source_sha256": "15a1f6ba1c55022bf93a13180629a5685e7f119f9203ae5e4d02e916e4fdea78"
+    },
+    "openpilot/selfdrive/car/tests/test_registered_ford_discovery.py": {
+      "cases": 27,
+      "seconds": 1.3744605619999106,
+      "source_sha256": "94cc207f618e17d41d5bcba27374b4e21a14597829535520a8a2acb78a5492dd"
+    },
+    "openpilot/starpilot/aol/tests/test_chrysler.py": {
+      "cases": 14,
+      "seconds": 0.16286588500008747,
+      "source_sha256": "85ecac582401263d06ed6aa43e6cf9348513db9086c8b17d91968e2cefcde7f4"
+    },
+    "openpilot/starpilot/aol/tests/test_ev6_source_deadline.py": {
+      "cases": 39,
+      "seconds": 4.9182063199999675,
+      "source_sha256": "be85a97dac7787acd813b406969120ef833927c9f36b7493e9577ad102e755db"
+    },
+    "openpilot/starpilot/aol/tests/test_ev9_main_withdrawal_guards.py": {
+      "cases": 37,
+      "seconds": 0.09053499000106058,
+      "source_sha256": "94d19de8f8a786f6a6ca3fe24f6509f8304b8ed8952cb87dd06e3365fc2f7559"
+    },
+    "openpilot/starpilot/aol/tests/test_gm.py": {
+      "cases": 29,
+      "seconds": 16.811332782999727,
+      "source_sha256": "dec162ff70628d3c924780d6beaae2f5da999a557a675970f58d7adc9166f354"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_ascm_receive_order.py": {
+      "cases": 340,
+      "seconds": 5.08538050100077,
+      "source_sha256": "77a2183fbdc3fecb8e8072246d750138f3a9340a33629cb5dbd36309500393cf"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_cancel_remap.py": {
+      "cases": 48,
+      "seconds": 3.110054212000307,
+      "source_sha256": "63580c71e8716520e8156ff1b8031edfad898e37d332378f2d7d40acd9b1d639"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_held_brake_successor.py": {
+      "cases": 42,
+      "seconds": 134.0834650550006,
+      "source_sha256": "750bfc0681699792f2964db7d4410e83a2ae2c994d0056ab9e6a3ce848e3bc5c"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_held_native.py": {
+      "cases": 140,
+      "seconds": 2.0473895770002173,
+      "source_sha256": "d32a0d27f69c016a626c58bcfd09d68bb25ffdff52b33ceab1e57b3f48fdae5b"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_ordinary_warning.py": {
+      "cases": 24,
+      "seconds": 0.3240043169999467,
+      "source_sha256": "ea11350b3d2ddbb3a950ac11fa3ba2aa511567fa8d6a2a70960b446a39840ddf"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_pedal_order.py": {
+      "cases": 34,
+      "seconds": 0.6016417539997292,
+      "source_sha256": "a3aa9eda612888f1d3631097d2341080e6282b4ca96fb35d33577cbf91477a78"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_route1c_receive_order.py": {
+      "cases": 54,
+      "seconds": 1.547176897000213,
+      "source_sha256": "279ac2d8dc2defcf6c14b30ba9e0efedf2d56163ad279e814457b5438560ded9"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_startup_main.py": {
+      "cases": 67,
+      "seconds": 8.541517943999565,
+      "source_sha256": "0686d37199979cd48c92694e771ce0b0d3b47372bc3dfed587fb075ea1bf3d0d"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_steering_receive_order.py": {
+      "cases": 45,
+      "seconds": 1.4872099720000165,
+      "source_sha256": "0264749678d62a9e83dde063ee8e66291c13801bd61b899db5e7f438d87aed10"
+    },
+    "openpilot/starpilot/aol/tests/test_honda_alt_radar_lifecycle.py": {
+      "cases": 14,
+      "seconds": 11.222040502000027,
+      "source_sha256": "be3bd9bcb84542e191743968312987288197f028bfc19f8cad11a1adff9a469a"
+    },
+    "openpilot/starpilot/aol/tests/test_honda_classic_alpha_lifecycle.py": {
+      "cases": 8,
+      "seconds": 11.246956308000051,
+      "source_sha256": "a41940cdd820382dc247c4d002bdd239d2a542f3751fd8d5463d230c8415c442"
+    },
+    "openpilot/starpilot/aol/tests/test_honda_pedal_lifecycle.py": {
+      "cases": 8,
+      "seconds": 10.953607092000084,
+      "source_sha256": "482ef127e7c3eb91c97dab3645ecc6125b1d0fd28b283f6e4a19ae010965dda6"
+    },
+    "openpilot/starpilot/aol/tests/test_honda_recovery_lifecycle.py": {
+      "cases": 5,
+      "seconds": 7.382482789999983,
+      "source_sha256": "b645f18383c37ed393a40b9db88d9680d8e3eb2d4ef384b25ade5b50bf135e1d"
+    },
+    "openpilot/starpilot/aol/tests/test_honda_reverse_join.py": {
+      "cases": 342,
+      "seconds": 0.43530514799999764,
+      "source_sha256": "46a9ddd6f5b48e5571ae1df5dfb5e392dc78ea1a8889086485f488f886940ae7"
+    },
+    "openpilot/starpilot/aol/tests/test_independent_lateral_soft_takeover.py": {
+      "cases": 4,
+      "seconds": 0.5930434210001181,
+      "source_sha256": "ca04ccb1aa702c299151fb0f4a76a22afb5923411c6655a768c6576cd2817d8b"
+    },
+    "openpilot/starpilot/aol/tests/test_meb_actual_callers.py": {
+      "cases": 20,
+      "seconds": 22.582757826999455,
+      "source_sha256": "60f046511494ddfbbe905c4adaf80389aa75d1cc67a8298a32648830c4d8ab0b"
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_topology_callers.py": {
+      "cases": 24,
+      "seconds": 22.19348840599946,
+      "source_sha256": "8300c3eef7ee075ed11a40d99726d3de9e3757d34856b3921191da675106170c"
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_topology_contract.py": {
+      "cases": 277,
+      "seconds": 0.17173611599935157,
+      "source_sha256": "6af1c00cb307c79fb4b024ba8bde72da98eaa16a0f9ba94c9bd46dace44c97b0"
+    },
+    "openpilot/starpilot/aol/tests/test_native_inventory_control_cadence.py": {
+      "cases": 85,
+      "seconds": 0.3006482349990165,
+      "source_sha256": "5f9e0f4d8a07efbf8c7313f06c1d6ffa270bd781ccfb6119981c627058e7ed75"
+    },
+    "openpilot/starpilot/aol/tests/test_pe_combined_profile_contract.py": {
+      "cases": 31,
+      "seconds": 0.041313134000290574,
+      "source_sha256": "9dc11b2ee02f9a609cc1fcf4f1546dc15694d0ef9557f291beedfbf567481d8c"
+    },
+    "openpilot/starpilot/aol/tests/test_stock_angle_physical_recovery.py": {
+      "cases": 43,
+      "seconds": 7.094085648000259,
+      "source_sha256": "c1e1f05ee6ce661dcf364a33069a5ba029a1bf113c31b0f07646148dd101842a"
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_lag_gap_sequence.py": {
+      "cases": 4,
+      "seconds": 0.38841984099985893,
+      "source_sha256": "c9d26307eb74153898f2ad241f3ce36d3940e19d02aaa456a9111224d021e922"
+    },
+    "openpilot/starpilot/aol/tests/test_toyota.py": {
+      "cases": 9,
+      "seconds": 4.046119932999773,
+      "source_sha256": "92b92b46c457c30c7d95949ef2f24f92cf79043b2b5ece635e10c9923a4eea93"
+    },
+    "openpilot/starpilot/aol/tests/test_volkswagen.py": {
+      "cases": 96,
+      "seconds": 0.17290022300085184,
+      "source_sha256": "f0662719d00fc77e664176cf9c087eb3ce321772de456c585ecb406d7bd7031c"
+    },
+    "openpilot/starpilot/aol/tests/test_volkswagen_main_boot.py": {
+      "cases": 12,
+      "seconds": 0.025134647000186305,
+      "source_sha256": "fed6af0445f73970bea2d07313f4117c55650c7b525a07e567c800577ee5a114"
+    },
+    "openpilot/starpilot/aol/tests/test_volkswagen_saved_intent.py": {
+      "cases": 10,
+      "seconds": 0.013726118000136012,
+      "source_sha256": "f627232c0ed786c316bfbebd4852e4c9c10d41847fbae14957d737e4babf39df"
+    },
+    "openpilot/starpilot/car/nissan/tests/test_aol.py": {
+      "cases": 55,
+      "seconds": 1.344453853001255,
+      "source_sha256": "4303ab761aa4df46f7a959634c9b7355e76a324dafae97fd95d64fb1ec527a3e"
+    },
+    "openpilot/starpilot/car/rivian/tests/test_aol_lifecycle.py": {
+      "cases": 2,
+      "seconds": 4.3052127769999515,
+      "source_sha256": "7bd28d138aeabebe49afd89a4d20c3fcb7a6f8665d04d510a30f7cfb735cedc0"
+    },
+    "openpilot/starpilot/car/rivian/tests/test_aol_native.py": {
+      "cases": 14,
+      "seconds": 0.06504544300014459,
+      "source_sha256": "563b4c3d4681a31efcd617345a418417cbe37beb5993bbbfdb7779890bbbd43c"
+    },
+    "openpilot/starpilot/car/rivian/tests/test_aol_policy.py": {
+      "cases": 26,
+      "seconds": 0.011665178999692216,
+      "source_sha256": "d2e97250674ed5377bc82ebc27fb4b74228a49a2fc3bc4ca0b1932f846525ff6"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_avh.py": {
+      "cases": 4,
+      "seconds": 0.05436277400019662,
+      "source_sha256": "7825da497c3baadde9ced2fbaffccfb4fac49e5f3bde3649bc003ca207bf6baf"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_avh_callers.py": {
+      "cases": 11,
+      "seconds": 111.97431766899979,
+      "source_sha256": "e571b425c49b1b639a1937669e2541bccf49b96eb01aec96ca34dd825ed7b662"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_forester_angle_callers.py": {
+      "cases": 4,
+      "seconds": 19.728826494999907,
+      "source_sha256": "e79313e7858606218b2fc4e0ddc065512e6be190e250587e91570d5f5a9bba6c"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_outback_angle_callers.py": {
+      "cases": 4,
+      "seconds": 12.443772750999642,
+      "source_sha256": "5e5e750b7f44bb75f0e278ef394a77499338a11a64079804bee8bbfc43aa7fca"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_outback_startup_callers.py": {
+      "cases": 8,
+      "seconds": 22.805874098000004,
+      "source_sha256": "769da5685e87cd3203f0575fb38c89e33d979829aa50e149c5b4980e27d986d5"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing.py": {
+      "cases": 33,
+      "seconds": 0.04851020599971889,
+      "source_sha256": "8be1d4efb6b2aa0da3ac1654e91451a8587fcda21ede55bedb3b5cc180dc0689"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing_factory.py": {
+      "cases": 48,
+      "seconds": 1.2982151019998582,
+      "source_sha256": "261c026576da773c8eaad7afab05e8ac5753ab7af1e82640823f17531ffd56b6"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing_settings.py": {
+      "cases": 7,
+      "seconds": 0.05549087500003225,
+      "source_sha256": "9cace4ea79dfc3ca3bbd5b43698a1fcbfa656e28666460f54285790615a8524f"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_sng_callers.py": {
+      "cases": 10,
+      "seconds": 17.658710733000248,
+      "source_sha256": "5f7c462a9861cd0e2934eb17caef340f45372efb975c4a782fb2652a3078ce4c"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_software_cruise.py": {
+      "cases": 26,
+      "seconds": 0.067410737000273,
+      "source_sha256": "a76e993baec5a8fa9007649c65fda5767df6fe0e8d7da696a595f031e3329f9c"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_software_cruise_callers.py": {
+      "cases": 2,
+      "seconds": 12.057403707000049,
+      "source_sha256": "25fb3caade53ed424333daf4883fe4bdbf7b44d36286c2839d95473ca3937d48"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_stock_aol_callers.py": {
+      "cases": 5,
+      "seconds": 14.857802873000082,
+      "source_sha256": "1ed4f9d45907b2c41a6cd8344e1623f9e1c74825f6e2395ef2459589f1a7ca9e"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_stop_start.py": {
+      "cases": 5,
+      "seconds": 0.048861957000326584,
+      "source_sha256": "bf1e420f7387e99da55c667ed40a3d0c2d6535469bd91d6d94be196d2fdddf83"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_stop_start_callers.py": {
+      "cases": 11,
+      "seconds": 26.80400199300027,
+      "source_sha256": "42c394bd27c29917cc0876606560bb55ad96c97d5b2b5ad0b34a3876c3a9c1ec"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_filter.py": {
+      "cases": 182,
+      "seconds": 0.06276366700024028,
+      "source_sha256": "84002911a55b0381b23369c9d84cad93fced558cb451076e9eb8902830166606"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_lateral.py": {
+      "cases": 78,
+      "seconds": 0.0679267290001917,
+      "source_sha256": "b91f61aacb0fc2cfafae115d36a50cc1c46f7952a2ee27c71c93292b65f5dc24"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_advert_native.py": {
+      "cases": 48,
+      "seconds": 4.4415939019992265,
+      "source_sha256": "242f2d1670fe5e25224fa25c24983dc609479871ff16dfcc274aebac7d42d611"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_stop_timer.py": {
+      "cases": 2,
+      "seconds": 0.04418585500013705,
+      "source_sha256": "d642a6c2c139295e1a4a79985af4525e6850a9073fbb4a6de06eb004840f442c"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_legacy_stop_timer_callers.py": {
+      "cases": 38,
+      "seconds": 85.24435488099948,
+      "source_sha256": "bcd8f46d4e0520181d43c19975c6b9b454199f944bcb4db034ace3a7cf7b18e0",
+      "reference": {
+        "revision": "1320712ab4de8a531714d3a8c2e4cd7d284a868d",
+        "run_id": 40444892065,
+        "artifact_id": 12709085395,
+        "shard": 8,
+        "results_sha256": "a14538044b22704179bab89d0f9ded3a4f90480c14d4ea9c76047f933d2e48c5"
+      }
+    },
+    "openpilot/starpilot/car/toyota/tests/test_lexus_is_caller_native.py": {
+      "cases": 12,
+      "seconds": 32.89568382900012,
+      "source_sha256": "dd8fb8e2e6a7d45739fe956d7f9d6d162c3d84e75c8cca25b26819ea3ba0ace5"
+    },
+    "openpilot/starpilot/longitudinal/tests/test_volt_mode_transition.py": {
+      "cases": 66,
+      "seconds": 0.11550927299981595,
+      "source_sha256": "c4ffd66c53f5d92f57d6b743245ecaa137e9c144d687bbf6f26da8a2148d18ea"
+    },
+    "openpilot/starpilot/tests/test_ford_ci_registration.py": {
+      "cases": 2,
+      "seconds": 0.004078164000077322,
+      "source_sha256": "23c6a6ff06985565d25af9745758cf5c20541aaf767fd736047f84aec4299a17"
+    },
+    "openpilot/starpilot/tests/test_ford_configuration_admission.py": {
+      "cases": 57,
+      "seconds": 0.029699647000256846,
+      "source_sha256": "1d3bd128236cf789b37a6162018dfb719e3e82a0955882f2109a3e23663825f3"
+    },
+    "openpilot/starpilot/tests/test_ford_configuration_parity.py": {
+      "cases": 112,
+      "seconds": 217.39153231700044,
+      "source_sha256": "95b173ace6c7d4f3a258618b688936414145f4e6d253e8eb5fdbe1e4cd0a28ba"
+    },
+    "openpilot/starpilot/ui/tests/test_meb_preferences.py": {
+      "cases": 18,
+      "seconds": 0.02393621000027224,
+      "source_sha256": "e05af87c2c0707d126ca1eb1e6209b656a34854b619d095cd33436ce89ae922c"
+    },
+    "openpilot/starpilot/longitudinal/tests/test_gv70_stopping_parity.py": {
+      "cases": 7,
+      "seconds": 0.021942254999999022,
+      "source_sha256": "a6be378a3f55cc6c2565bcb9ae4a1df7263c7e147f647b245fffad795dce3171"
+    },
+    "openpilot/starpilot/aol/tests/test_honda_canfd_lifecycle.py": {
+      "cases": 12,
+      "seconds": 12.852451053000152,
+      "source_sha256": "b718f232e124cdfcbeb47d9661c3928ca03a2e340ec5a61bf102b509efe31776"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_aol.py": {
+      "cases": 3,
+      "seconds": 0.037499245000049086,
+      "source_sha256": "fc098762756beb8b0cff6b648effc836a76e1c5951d5d3935bfda7cc8d53b258"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_subaru_forester_angle.py": {
+      "cases": 8,
+      "seconds": 0.05543316599994341,
+      "source_sha256": "65ad26851e9e115e8b3c9d6a57ccb72295619fa16d22a2e32261bae6e434ea77"
+    },
+    "openpilot/starpilot/aol/tests/test_gv70_two_panda_long.py": {
+      "cases": 22,
+      "seconds": 0.013164143999915723,
+      "source_sha256": "78b1a06812c740d9ab7a02e4d8313803d2013cf4b0b62312bb383bef7e085ec8"
+    },
+    "openpilot/starpilot/tests/test_ford_release_long_preferences.py": {
+      "cases": 67,
+      "seconds": 0.10186220600087381,
+      "source_sha256": "99d27ec094cd5003799806da982ca9901b03fbf25c17b6bfaaf5c0b7548fe74f"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_ford_alpha_aol.py": {
+      "cases": 46,
+      "seconds": 0.09488149900005283,
+      "source_sha256": "941c03cfb619e334e3b470b7abddf170ebfd3d5c5a8d42503e2041635d78e13f"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_pe_stopped_callers.py": {
+      "cases": 4,
+      "seconds": 17.542022324000015,
+      "source_sha256": "66ba205a8e87c8a7452fd8807f52a13209ed7817ebf358d143d466f63adedc78"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_palisade_stock_aol_status.py": {
+      "cases": 4,
+      "seconds": 0.0009238060001166559,
+      "source_sha256": "c9781d5bf42c0bde80b9015ffc703f28842c36b035f7ec95f7cc56a53ecaa47e"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_ev9_set_release_callers.py": {
+      "cases": 1,
+      "seconds": 8.955638690000058,
+      "source_sha256": "37795651054066269192f7a1eb918edc6af7c7d61cc08cac080c2453f62a7a06"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_ev9_combined_callers.py": {
+      "cases": 1,
+      "seconds": 12.91448001599997,
+      "source_sha256": "9255aa8c89ef0eef827ecc1198904bff9d52001926d830536bcde39fbd24e279"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_card_source_gap.py": {
+      "cases": 12,
+      "seconds": 5.106941121999796,
+      "source_sha256": "04dd92d9eac2af388994def8a41c1902da0175b3d8186c6e65b6cd572f4a275b"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_sdgm_source_wait.py": {
+      "cases": 28,
+      "seconds": 9.418316335999748,
+      "source_sha256": "997135547376bee07c4b922a3df81a1b320991dc72f43c79b45debc454b5f8d3"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_main_response.py": {
+      "cases": 26,
+      "seconds": 1.1187773620002872,
+      "source_sha256": "4347832c9b28f6a414ec1d974f19b86f20cbc0fb6b0f8899c9bd38b6b78b5372"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_lag_episode_recovery.py": {
+      "cases": 10,
+      "seconds": 2.0243810929995334,
+      "source_sha256": "913cd96b410de1d52d64cefbb4c03f224c68e9aaab74bdd5dc8c68615eb2a685"
+    },
+    "openpilot/starpilot/aol/tests/test_volt_lag_pedal_intent.py": {
+      "cases": 81,
+      "seconds": 7.416710469999202,
+      "source_sha256": "869f3bd544abe67ac026d626c8dbda7ddef39ec372e9c5469f796ec846cdcdbf"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_route18e_recovery.py": {
+      "cases": 20,
+      "seconds": 0.34608942799997067,
+      "source_sha256": "9e67f7c510159756b6aeb6e1311ad6067e8d741c2f04f8d2156fa40872f82365"
+    },
+    "openpilot/starpilot/aol/tests/test_stock_lateral_honda.py": {
+      "cases": 9,
+      "seconds": 0.4487161550001133,
+      "source_sha256": "068bd4d1d053eefa87323dde6313056a909d9434000838b69e226124115fb418"
+    },
+    "opendbc_repo/opendbc/car/honda/tests/test_selected_honda_topology.py": {
+      "cases": 56,
+      "seconds": 0.6355390169999282,
+      "source_sha256": "42b2aefb3853d19653f8c028374c882068e0eb5aca2a1c097582c340483b875c"
+    },
+    "openpilot/starpilot/car/mazda/tests/test_main_startup.py": {
+      "cases": 25,
+      "seconds": 0.019083822999846234,
+      "source_sha256": "478b08a1401b8b44ea44e64e3862514d1ab54afbdac7d0ad867db7df0084c01f"
+    },
+    "openpilot/starpilot/aol/tests/test_temporary_lag_intent.py": {
+      "cases": 41,
+      "seconds": 5.953707195999925,
+      "source_sha256": "ae49bea96b7dc76ddef232351b4929f1434008dcfcff4bc2c059c050136ab015"
+    },
+    "openpilot/starpilot/aol/tests/test_stock_eps_recovery.py": {
+      "cases": 145,
+      "seconds": 0.28686481599953595,
+      "source_sha256": "8e79addeb1930769eafaa797e99f8010f26c0be292ec8c59415005d393e56f73"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camera_2aa_filter.py": {
+      "cases": 238,
+      "seconds": 0.07185444499936011,
+      "source_sha256": "4e1e304303dc08d8411a0700820ab819a541af1c20a9454aa574d7cdda332285"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_camera_2aa_native.py": {
+      "cases": 48,
+      "seconds": 5.4976594839998825,
+      "source_sha256": "0f1ae20b1052678cb4058acf4b7fa5a838340eecaec5bdeb4481b8e0c58ef2e5"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_sdsu_filter.py": {
+      "cases": 44,
+      "seconds": 0.12508134699942275,
+      "source_sha256": "230a40493c10428c43b38ade8c1bae8495bdf4fdea850de4504915d0f07f6ac0"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_toyota_prius_sdsu.py": {
+      "cases": 136,
+      "seconds": 3.862234332999776,
+      "source_sha256": "fbc8fdad694b9a8f9eb0509babb1a41021ea1e2e5af3c10f8f91731aae64ee17"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_advert_filter.py": {
+      "cases": 22,
+      "seconds": 0.011246188000427537,
+      "source_sha256": "736ceaa77a96090e6b517051116174a52a54e52e41d876c8fccff41e1fff23c0"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_toyota_prius_advert.py": {
+      "cases": 128,
+      "seconds": 4.112745887999722,
+      "source_sha256": "00c37286159ac42e4e6de0c2027e3feb9043505ada81872ab098520b5ce27ad3"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_advert_ci.py": {
+      "cases": 2,
+      "seconds": 0.009027580000065427,
+      "source_sha256": "4913c7ff75306f576258d25082fd6036e71f2ffb5d4685f20ccee12fae456c61"
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_actual_callers.py": {
+      "cases": 8,
+      "seconds": 5.072349360999738,
+      "source_sha256": "1d7a44e338b7e2edab6fa02ecca967e0ab57577e4a33f649eca28b282792923e"
+    },
+    "opendbc_repo/opendbc/car/volkswagen/tests/test_meb_stock_modes.py": {
+      "cases": 36,
+      "seconds": 0.5067630200004487,
+      "source_sha256": "3198ecaacbb7da41e9015954aa9c4a7b93316feedfd59f0d247ef74e11a27775"
+    },
+    "openpilot/starpilot/aol/tests/test_mqb_direct_callers.py": {
+      "cases": 16,
+      "seconds": 8.637811187000352,
+      "source_sha256": "4668b9af601cfde3eee222a97d5450e8c6869e0bb33d4b41cf8da1ed3dfc1ac1"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_volkswagen_long_aol.py": {
+      "cases": 11,
+      "seconds": 0.039578646999871125,
+      "source_sha256": "af7a30669802f9c1fba208d72a1edaad0548553dd57ea64cf36f6d008b8c891f"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_reverse_join.py": {
+      "cases": 228,
+      "seconds": 0.3847715569997945,
+      "source_sha256": "55038999efacfef6c9ddfb035da76ad7d1b4aadb33a7451feaf0aab788fe0278"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_sng.py": {
+      "cases": 32,
+      "seconds": 0.05535468799973842,
+      "source_sha256": "8fdde2843122a2dd3d37d5fc979f4742d10388920a6aa0ca0e77b26bc98dc0a7"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_angle_tune.py": {
+      "cases": 4,
+      "seconds": 8.876573702000087,
+      "source_sha256": "2973f559269f2fd161e027d449e0af3d76934a3523e93eb6f00a985d91c4a1c7"
+    },
+    "openpilot/starpilot/car/subaru/tests/test_smoothing_model_join.py": {
+      "cases": 6,
+      "seconds": 0.0625152799997295,
+      "source_sha256": "e800b212776ebd9fcd85c893f6c4ca39924e210dcb28c6f318d63b2d8eaba46f"
+    },
+    "opendbc_repo/opendbc/car/mazda/tests/test_native_engagement_callers.py": {
+      "cases": 48,
+      "reference": {
+        "artifact_id": 12520491388,
+        "results_sha256": "04083573cc6db3fb5c100b940054bfc8af95193a980156ca0e913a9d0c38b321",
+        "revision": "01a31c1f2fe9ba04c7b2b4246f6962a617eae9cd",
+        "run_id": 39995003180,
+        "shard": 0
+      },
+      "seconds": 97.41501304299936,
+      "source_sha256": "41af76aaa5ad7b6c2e59e37605254aec6b8f36764ad99bf4b7ec1a0a26b297ff"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_radar_lta_pedal.py": {
+      "cases": 45,
+      "seconds": 0.02273932300022352,
+      "source_sha256": "b0057da7bced6268c9bb5ccc8a574a740817fa95375097e5a9443651754d50d5"
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_native_admission.py": {
+      "cases": 91,
+      "seconds": 0.15434600700058354,
+      "source_sha256": "a266ae55df0fc1bf750268f41e7ad967109d49582bd27f490a63840859e92f9f"
+    },
+    "opendbc_repo/opendbc/car/toyota/tests/test_matrix_filter.py": {
+      "cases": 36,
+      "seconds": 0.022069088000023385,
+      "source_sha256": "ef8c62adac2cb38a91df7b79505fd4870aa8554557d43b4795f29777a5b20550"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_retrofit_advert_refusals.py": {
+      "cases": 12,
+      "seconds": 39.6354798669999,
+      "source_sha256": "4647f7ffe0aba34520b38bd4d6e21899abb5fd88eab4247d9a2c28db91b1dbc4"
+    },
+    "openpilot/starpilot/aol/tests/test_fresh_inactive_transport.py": {
+      "cases": 110,
+      "seconds": 0.5750122920010199,
+      "source_sha256": "0bdfd48fe5232a6ff0afbc41433f44bf230febc0b6b72cfe09eb49075d32d011"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_toyota_matrix_stock_aol.py": {
+      "cases": 66,
+      "seconds": 5.071934157999635,
+      "source_sha256": "17f8ed5ffc89dcf15e03deefef9b1ff0e98b86a38517ef40fa79ca1053c90d95"
+    },
+    "openpilot/starpilot/aol/tests/test_crossmake_native_admission.py": {
+      "cases": 397,
+      "seconds": 0.3552008159979323,
+      "source_sha256": "16f762aaf9b1166867577da45a1bd51bcfb104c39d13eaf42076b61dd1c755e4"
+    },
+    "openpilot/starpilot/aol/tests/test_native_observation_admission.py": {
+      "cases": 50,
+      "seconds": 0.06862796200022103,
+      "source_sha256": "94338865c28b4c6367102716150c94711de138c244edd46b431b13fdf59908e4"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_sdgm_cold_main.py": {
+      "cases": 22,
+      "seconds": 0.9709331520006117,
+      "source_sha256": "7fccdffb9a48dc0376e20b0c44380da3ddf09486e6af858ded1977b02b030110"
+    },
+    "openpilot/starpilot/aol/tests/test_gm_main_level_contract.py": {
+      "cases": 224,
+      "seconds": 21.709039396999856,
+      "source_sha256": "0a2785ece6af459893e570358e832396eeaf7d9589d16e48d825b0b8cdb8ac92"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_matrix_stock_caller_native.py": {
+      "cases": 24,
+      "seconds": 72.52401226500012,
+      "source_sha256": "679f77e2ec280e19c6fc51a248815e6a45a14955454eaf7173cc5634646d7cf8"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_prius_retrofit_stock.py": {
+      "cases": 30,
+      "seconds": 0.008651430999861986,
+      "source_sha256": "efddf16b521c316ae39d94354e1f1e728019455cef47f2e1a7fb02fa17aac073"
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_source_policy_cache.py": {
+      "cases": 54,
+      "seconds": 0.30647037500028773,
+      "source_sha256": "878576114a8a302dab13bdd1409d851a33181ba7e3125fdf613d158d77fcde1b"
+    },
+    "openpilot/starpilot/aol/tests/test_hkg_deadline_admission_cache.py": {
+      "cases": 39,
+      "seconds": 0.03289037699966002,
+      "source_sha256": "2de7ce2bbf39b39d6fcb01687f0fb1ea1bfe269b079693836b4514a649f14f15"
+    },
+    "opendbc_repo/opendbc/safety/tests/test_toyota_prius_retrofit_advert.py": {
+      "cases": 128,
+      "seconds": 5.208667722000996,
+      "source_sha256": "e5edc7933ea1a186c1b874deedbd2104a976c1d454241c58251a963b2b5953c0"
+    },
+    "openpilot/starpilot/car/toyota/tests/test_pedal_parent_callers.py": {
+      "cases": 92,
+      "seconds": 272.3922869809985,
+      "source_sha256": "ae85b8e373d4d12c302e59baad88ee88dda4221e3e1d255b294e2dbca9889acf",
+      "reference": {
+        "revision": "d43477ec413a31c445f264a65dbcc805117ef168",
+        "run_id": 40128755737,
+        "artifact_id": 12574163616,
+        "shard": 12,
+        "results_sha256": "3484585f40bb30a502adf638949ca5b251252365917d6f0d0c90db962f9ee3d5"
+      }
+    },
+    "openpilot/starpilot/car/toyota/tests/test_dsu_bypass_callers.py": {
+      "cases": 132,
+      "seconds": 291.0783922190003,
+      "source_sha256": "40d47442009fcdbc29e9b4d0b35d771e8f74b02db117d246779cc83d15df5c6c",
+      "reference": {
+        "revision": "1320712ab4de8a531714d3a8c2e4cd7d284a868d",
+        "run_id": 40444892065,
+        "artifact_id": 12709085395,
+        "shard": 8,
+        "results_sha256": "a14538044b22704179bab89d0f9ded3a4f90480c14d4ea9c76047f933d2e48c5"
+      }
+    },
+    "openpilot/starpilot/car/toyota/tests/test_matrix_filter_callers.py": {
+      "cases": 16,
+      "seconds": 63.53352316399997,
+      "source_sha256": "f374bbdb0a1e2a853b58d16b375d611661963ee63dcd62917419e2473d926e74",
+      "reference": {
+        "revision": "1320712ab4de8a531714d3a8c2e4cd7d284a868d",
+        "run_id": 40444892065,
+        "artifact_id": 12709085395,
+        "shard": 8,
+        "results_sha256": "a14538044b22704179bab89d0f9ded3a4f90480c14d4ea9c76047f933d2e48c5"
+      }
+    },
+    "openpilot/starpilot/tests/test_ford_bluepilot_library_lifecycle.py": {
+      "cases": 169,
+      "seconds": 379.154066635998,
+      "source_sha256": "f4d7638b7e900833b02b2823fdc5c7a28ac00c11b5776e372b39f56afa4d0a8d",
+      "reference": {
+        "revision": "195b7000aab3a8ae7045fcb834c288b487d3ffd1",
+        "run_id": 41276755327,
+        "artifact_id": 13071624813,
+        "shard": 6,
+        "results_sha256": "bd83c3f6bb9d0b837eb7da6dcf61e29da226c3a3a6e546489b0b6310a60b0280"
+      }
+    }
+  },
+  "reference": {
+    "revision": "1887a45a68cf5c3d3ddc5a4d3c2c000b2212750a",
+    "run_id": 40004376866,
+    "artifacts": {
+      "shard-0": {
+        "duration_seconds": 155.36564514100002,
+        "results_sha256": "ea369ad20d8a3f1460d33cfa964118fe35e213a2a554489d989bf948c8f006eb"
+      },
+      "shard-1": {
+        "duration_seconds": 285.185951167,
+        "results_sha256": "67ff4cc3848ef6af2df743690e7f924a8b35e3785b01c4499c8308010af00e68"
+      },
+      "shard-2": {
+        "duration_seconds": 413.66328901800006,
+        "results_sha256": "2fac07a52cfbbbbe5bcd6984414be46c097afde4ee897b2b56e7c620a27baf91"
+      },
+      "shard-4": {
+        "duration_seconds": 536.413535891,
+        "results_sha256": "46fbec1307dd7a5c017a4ba12b3489ed13aa7ade17150e6284011737e9aef750"
+      },
+      "shard-5": {
+        "duration_seconds": 283.757410287,
+        "results_sha256": "b7deadcd02451eef34e51816547577fd08b3bfafc8b127546215534add5a73b0"
+      },
+      "shard-6": {
+        "duration_seconds": 372.01252850699996,
+        "results_sha256": "882029ac6425021d6fd7a5b1097e262ac714b8ed0e732bd1df04a2913bfcfa02"
+      },
+      "shard-7": {
+        "duration_seconds": 224.43834632099998,
+        "results_sha256": "61cd924fb1be53d412e0b7ef51ee12839eb9faba9e47bdfddce4f5408c62abe9"
+      }
+    }
+  },
+  "unknown_seconds_per_case": 1.0,
+  "version": 1
+}

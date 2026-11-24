@@ -1,0 +1,190 @@
+{
+  "mode": "offline-preview",
+  "tools": [
+    {
+      "name": "Bluetooth",
+      "path": "/bluetooth",
+      "icon": "bi-bluetooth",
+      "description": "Adapter power, saved devices and connections",
+      "availability": "local-only"
+    },
+    {
+      "name": "Cameras & Monitoring",
+      "path": "/cameras",
+      "icon": "bi-camera-video",
+      "description": "Live cabin previews, Side Camera, Sentry motion, and V-ASM settings",
+      "availability": "local-only",
+      "children": [
+        {
+          "name": "Blind Spot Camera and Preview",
+          "path": "/cameras/pip",
+          "icon": "bi-camera-video",
+          "description": "Adjust the camera crop with a live cabin preview.",
+          "availability": "local-only"
+        },
+        {
+          "name": "Sentry",
+          "path": "/cameras/events",
+          "icon": "bi-shield",
+          "description": "View motion events, configure saved motion settings, and manage notifications.",
+          "availability": "local-only"
+        },
+        {
+          "name": "V-ASM",
+          "path": "/cameras/vasm",
+          "icon": "bi-eye",
+          "description": "Preview the cabin camera, draw window regions, and adjust visual spot-monitoring choices.",
+          "availability": "local-only"
+        }
+      ]
+    },
+    {
+      "name": "Galaxy Access & Install",
+      "path": "/galaxy",
+      "icon": "bi-globe2",
+      "description": "Pair for remote access, install Galaxy, or set up a Wi-Fi hotspot",
+      "availability": "local-only"
+    },
+    {
+      "name": "Logs & Diagnostics",
+      "path": "/logs",
+      "icon": "bi-exclamation-triangle",
+      "description": "Logs, diagnostics, drive state, and help",
+      "availability": "partial-preview",
+      "children": [
+        {
+          "name": "System Monitor",
+          "path": "/logs/monitor",
+          "icon": "bi-cpu",
+          "description": "Inspect local system activity",
+          "sampleDescription": "Inspect a synthetic activity sample",
+          "availability": "always"
+        },
+        {
+          "name": "Crash Reports",
+          "path": "/logs/crashes",
+          "icon": "bi-file-text",
+          "description": "Read local reports",
+          "availability": "local-only"
+        },
+        {
+          "name": "StarPort Logs",
+          "path": "/logs/starport",
+          "icon": "bi-phone",
+          "description": "Session logs and a download for bug reports",
+          "availability": "local-only"
+        },
+        {
+          "name": "tmux Live View",
+          "path": "/logs/tmux",
+          "icon": "bi-terminal",
+          "description": "Read the launcher console tail",
+          "availability": "always"
+        },
+        {
+          "name": "Troubleshoot",
+          "path": "/logs/troubleshoot",
+          "icon": "bi-wrench",
+          "description": "Read device and vehicle diagnostics",
+          "availability": "always"
+        },
+        {
+          "name": "Force Drive State",
+          "path": "/device-preferences",
+          "icon": "bi-car-front",
+          "description": "Select a temporary drive state for this device",
+          "availability": "local-only"
+        },
+        {
+          "name": "Help & Community",
+          "path": "/logs/help",
+          "icon": "bi-life-preserver",
+          "description": "Guides and community help",
+          "availability": "always"
+        }
+      ]
+    },
+    {
+      "name": "Models",
+      "path": "/manage_models",
+      "icon": "bi-cpu",
+      "description": "Models, downloads, Jetlink, and Model Laboratory",
+      "availability": "local-only"
+    },
+    {
+      "name": "Navigation & Maps",
+      "path": "/navigation",
+      "icon": "bi-map",
+      "description": "Destinations, directions, saved places and offline maps",
+      "availability": "local-only",
+      "children": [
+        {
+          "name": "Destination",
+          "path": "/navigation",
+          "tab": "route",
+          "description": "Search destinations and plan a route",
+          "icon": "bi-geo-alt"
+        },
+        {
+          "name": "Offline Maps",
+          "path": "/navigation/maps",
+          "tab": "maps",
+          "description": "Download and manage offline maps",
+          "icon": "bi-map"
+        },
+        {
+          "name": "Setup",
+          "path": "/navigation/setup",
+          "tab": "setup",
+          "description": "Keys, map and route sources, and GPS",
+          "icon": "bi-gear"
+        }
+      ]
+    },
+    {
+      "name": "Networks",
+      "path": "/networks",
+      "icon": "bi-wifi",
+      "description": "Preferred Wi-Fi, cellular data and the Galaxy hotspot",
+      "availability": "local-only"
+    },
+    {
+      "name": "System Tools",
+      "path": "/system",
+      "icon": "bi-arrow-repeat",
+      "description": "Branch updates, automatic downloads and version history",
+      "availability": "local-only"
+    },
+    {
+      "name": "Colors & Layout",
+      "path": "/theme_maker",
+      "icon": "bi-palette-fill",
+      "description": "Widgets, colors, road and display options for Big and Small layouts",
+      "availability": "local-only"
+    },
+    {
+      "name": "Tuning and Analysis",
+      "path": "/tuning",
+      "icon": "bi-sliders2",
+      "description": "Automatic steering tuning, measured corrections and live plots",
+      "availability": "local-only"
+    },
+    {
+      "name": "StarPort",
+      "path": "/starport",
+      "icon": "bi-phone",
+      "description": "Connect StarPilot directly to your car screen, customize its layout, save offline maps, and set up Spotify or phone audio",
+      "availability": "local-only",
+      "visibility": "authenticated",
+      "children": [
+        {
+          "name": "Spotify and Phone Audio",
+          "path": "/starport/audio",
+          "icon": "bi-spotify",
+          "description": "Play Spotify or forward phone music through your comma to your car",
+          "availability": "local-only"
+        }
+      ]
+    }
+  ]
+}

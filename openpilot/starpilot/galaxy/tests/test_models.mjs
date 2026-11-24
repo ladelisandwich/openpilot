@@ -1,0 +1,520 @@
+import assert from "node:assert/strict"
+import { ModelStatusFeed, ModelManagerFeed, ModelsPage, modelActionAllowed, fitsModelProfile, formatRate, formatEta, describeProgress } from "../web/js/models.js"
+
+const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve() }
+function fixture() {
+  const requests = [], states = [], timers = new Map()
+  let now = 0, nextTimer = 0, unauthorized = 0
+  const feed = new ModelStatusFeed({ publish: (state) => states.push(state), unauthorized: () => { unauthorized++ },
+    fetcher: (url, options) => new Promise((resolve) => requests.push({ url, signal: options.signal, resolve })),
+    later: (fn, ms) => { timers.set(++nextTimer, { fn, due: now + ms }); return nextTimer },
+    cancel: (id) => timers.delete(id) })
+  const reply = async (index, body, status = 200) => {
+    requests[index].resolve({ ok: status === 200, status, json: async () => body })
+    await flush()
+  }
+  const advance = (ms) => {
+    const end = now + ms
+    while (true) {
+      const due = [...timers.entries()].filter(([, timer]) => timer.due <= end).sort((a, b) => a[1].due - b[1].due)[0]
+      if (!due) break
+      now = due[1].due
+      timers.delete(due[0])
+      due[1].fn()
+    }
+    now = end
+  }
+  return { feed, requests, states, timers, reply, advance, get unauthorized() { return unauthorized } }
+}
+
+const payload = { schemaVersion: 1, catalog: [{ id: "bundled-current", name: "Bundled driving model", selectable: true }],
+  requestedId: "bundled-current", loadedId: "bundled-current", variant: "small", health: "active",
+  artifactSha256: "a".repeat(64), fallbackReason: null, pendingNextStart: false }
+
+const normal = fixture()
+normal.feed.start()
+assert.equal(normal.requests[0].url, "./api/models/status")
+await normal.reply(0, payload)
+assert.equal(normal.states.at(-1).data.health, "active")
+normal.advance(1000)
+assert.equal(normal.requests.length, 2)
+assert.equal(normal.states.at(-1).data.health, "active")
+normal.advance(500) // stalled next request cannot preserve old active status
+assert.equal(normal.states.at(-1).status, "stale")
+assert.equal(normal.states.at(-1).data, null)
+assert.equal(normal.states.at(-1).error, "")
+normal.feed.stop()
+await normal.reply(1, payload)
+assert.equal(normal.states.at(-1).status, "idle")
+assert.equal(normal.timers.size, 0)
+
+const late = fixture()
+late.feed.start()
+late.feed.stop()
+late.feed.start()
+await late.reply(0, {}, 401)
+assert.equal(late.unauthorized, 0)
+await late.reply(1, payload)
+assert.equal(late.states.at(-1).data.health, "active")
+
+const body = fixture()
+body.feed.start()
+let finishBody
+body.requests[0].resolve({ ok: true, status: 200, json: () => new Promise((resolve) => { finishBody = resolve }) })
+await flush()
+body.feed.stop()
+body.feed.start()
+finishBody(payload)
+await flush()
+assert.equal(body.states.at(-1).data, null)
+await body.reply(1, { ...payload, loadedId: null, variant: null, artifactSha256: null, health: "identity-unavailable" })
+assert.equal(body.states.at(-1).data.health, "identity-unavailable")
+
+const malformed = fixture()
+malformed.feed.start()
+await malformed.reply(0, { ...payload, loadedId: null })
+assert.equal(malformed.states.at(-1).status, "unavailable")
+assert.equal(malformed.states.at(-1).data, null)
+
+const priorDocument = globalThis.document
+const listeners = new Map()
+globalThis.document = { hidden: false,
+  addEventListener: (name, fn) => listeners.set(name, fn),
+  removeEventListener: (name, fn) => { if (listeners.get(name) === fn) listeners.delete(name) } }
+const page = { mode: "local", finishDialog() {}, manager: { start() {}, stop() {} }, laboratory: { starts: 0, stops: 0, start() { this.starts++ }, stop() { this.stops++ } }, feed: { starts: 0, stops: 0, start() { this.starts++ }, stop() { this.stops++ } } }
+ModelsPage.mounted.call(page)
+assert.equal(page.feed.starts, 1)
+document.hidden = true
+listeners.get("visibilitychange")()
+assert.equal(page.feed.stops, 1)
+document.hidden = false
+listeners.get("visibilitychange")()
+assert.equal(page.feed.starts, 2)
+ModelsPage.beforeUnmount.call(page)
+assert.equal(page.feed.stops, 2)
+assert.deepEqual([page.laboratory.starts, page.laboratory.stops], [2, 2])
+assert.equal(listeners.size, 0)
+globalThis.document = priorDocument
+
+assert.match(ModelsPage.template, /offline preview/)
+assert.match(ModelsPage.template, /Active Small/)
+assert.match(ModelsPage.template, /\{\{ bigNoneLabel \}\}/)
+// the manager words no Active Big; under Jetlink, the Jetlink app's choice
+const noneLabel = (status) => ModelsPage.computed.bigNoneLabel.call({ status })
+assert.equal(noneLabel({}), "None — always use Active Small")
+assert.equal(noneLabel({ bigNoneLabel: "Jetlink app's choice" }), "Jetlink app's choice")
+console.log("Model status client lifecycle checks passed")
+
+const expanded = fixture()
+expanded.feed.start()
+await expanded.reply(0, { ...payload, catalog: [...payload.catalog, { id: "rdf43", name: "RDF V4", selectable: true }],
+  requestedId: "rdf43", pendingNextStart: true, fallbackReason: "selected-load-failed" })
+assert.equal(expanded.states.at(-1).status, "ready")
+expanded.feed.load()
+await expanded.reply(1, { ...payload, loadedId: "unknown" })
+assert.equal(expanded.states.at(-1).status, "unavailable")
+expanded.feed.stop()
+
+const stalledRuntime = fixture()
+stalledRuntime.feed.start()
+await stalledRuntime.reply(0, { ...payload, fallbackReason: "chestnut-run-stalled" })
+assert.equal(stalledRuntime.states.at(-1).status, "ready")
+assert.equal(stalledRuntime.states.at(-1).data.fallbackReason, "chestnut-run-stalled")
+stalledRuntime.feed.load()
+await stalledRuntime.reply(1, { ...payload, fallbackReason: "invented-reason" })
+assert.equal(stalledRuntime.states.at(-1).status, "unavailable")
+stalledRuntime.feed.stop()
+
+const small = { value: "small", label: "Small", requiresGpu: false, installed: true, selectable: true, userFavorite: false }
+const big = { value: "big", label: "Big", requiresGpu: true, installed: true, selectable: true, userFavorite: true }
+const pending = { value: "pending", label: "Pending rebuild", requiresGpu: false, installed: false, selectable: false, downloadAvailable: false }
+const missing = { value: "missing", label: "Missing", requiresGpu: true, installed: false, selectable: false, downloadAvailable: true }
+const managerPayload = { schemaVersion: 1, models: [small, big, pending, missing], isOnroad: false,
+  currentModel: "small", activeSmallModel: "small", activeBigModel: "big", downloading: false,
+  capabilities: { select: true, favorites: true, download: true, downloadAll: true, cancel: true, delete: true, refresh: true } }
+assert.equal(modelActionAllowed(managerPayload, "select-small", small), true)
+assert.equal(modelActionAllowed(managerPayload, "select-big", small), false)
+assert.equal(modelActionAllowed(managerPayload, "select-small", { ...small, selectable: false }), false)
+assert.equal(modelActionAllowed(managerPayload, "select-big"), true)
+// what the manager marks selectable, downloaded or not: under Jetlink, a big model with an ONNX
+assert.equal(modelActionAllowed(managerPayload, "select-big", { ...missing, selectable: true }), true)
+assert.equal(modelActionAllowed(managerPayload, "select-big", { ...big, selectable: false }), false)
+assert.equal(modelActionAllowed(managerPayload, "download", pending), false)
+assert.equal(modelActionAllowed(managerPayload, "download", missing), true)
+assert.equal(modelActionAllowed(managerPayload, "delete", big), false)
+assert.equal(modelActionAllowed({ ...managerPayload, activeBigModel: "" }, "delete", big), true)
+assert.equal(modelActionAllowed({ ...managerPayload, isOnroad: true }, "favorite", small), true)
+assert.equal(modelActionAllowed({ ...managerPayload, isOnroad: true }, "select-small", small), true)
+assert.equal(modelActionAllowed({ ...managerPayload, isOnroad: true }, "select-big", big), true)
+assert.equal(modelActionAllowed({ ...managerPayload, isOnroad: true, jetlinkBig: true }, "select-big", big), false)
+assert.equal(modelActionAllowed({ ...managerPayload, isOnroad: true }, "download", missing), false)
+assert.equal(modelActionAllowed({ ...managerPayload, isOnroad: true, downloading: true }, "cancel"), true)
+assert.equal(modelActionAllowed({ ...managerPayload, capabilities: {} }, "favorite", small), false)
+assert.equal(fitsModelProfile({ ...small, profiles: ["small", "big"] }, "big"), true)
+
+function managerFixture() {
+  const requests = [], updates = [], timers = new Map()
+  let timer = 0, unauthorized = 0
+  const manager = new ModelManagerFeed({ publish: update => updates.push(update), unauthorized: () => unauthorized++,
+    fetcher: (url, options) => new Promise(resolve => requests.push({ url, options, resolve })),
+    later: (fn, ms) => { timers.set(++timer, { fn, ms }); return timer }, cancel: id => timers.delete(id) })
+  const reply = async (i, body, status = 200) => { requests[i].resolve({ ok: status === 200, status, json: async () => body }); await flush() }
+  return { manager, requests, updates, timers, reply, get unauthorized() { return unauthorized } }
+}
+const management = managerFixture()
+management.manager.start()
+await management.reply(0, managerPayload)
+assert.equal(management.requests[0].url, "./api/models/manager")
+management.manager.load()
+const beforeSelectionUpdates = management.updates.length
+const selection = management.manager.action("select-big")
+assert.equal(management.manager.data, managerPayload)
+assert.equal(management.manager.saving, true)
+assert.equal(management.requests[1].options.signal.aborted, true)
+assert.deepEqual(JSON.parse(management.requests[2].options.body), { profile: "big", model: "" })
+assert.equal(management.requests[2].options.method, "POST")
+assert.equal(management.requests[2].url, "./api/models/active")
+await management.reply(1, { ...managerPayload, activeBigModel: "old" })
+assert.notEqual(management.manager.data?.activeBigModel, "old")
+await management.reply(2, { message: "Selected" })
+assert.equal(management.manager.data, managerPayload)
+assert.equal(management.updates.slice(beforeSelectionUpdates).some(update => update.loading || !update.data), false)
+await management.reply(3, { ...managerPayload, activeBigModel: "" })
+await selection
+assert.equal(management.manager.data.activeBigModel, "")
+assert.equal(management.updates.slice(beforeSelectionUpdates).some(update => update.loading || !update.data), false)
+const favorite = management.manager.action("favorite", small)
+assert.deepEqual(JSON.parse(management.requests[4].options.body), { userFavorites: ["big", "small"] })
+await management.reply(4, { error: "Favorites were not saved" }, 409)
+await management.reply(5, managerPayload)
+await favorite
+assert.equal(management.updates.at(-1).error, "Favorites were not saved")
+management.manager.data = { ...managerPayload, models: managerPayload.models.map(m => m.value === "missing" ? { ...m, downloadAvailable: false } : m) }
+assert.equal(await management.manager.action("download", missing), null)
+assert.equal(management.requests.length, 6)
+management.manager.data = managerPayload
+const download = management.manager.action("download", missing, { allowGpuWithoutGpu: true })
+assert.deepEqual(JSON.parse(management.requests[6].options.body), { model: "missing", allowGpuWithoutGpu: true })
+management.manager.stop()
+await management.reply(6, {}, 401)
+await download
+assert.equal(management.unauthorized, 0)
+assert.equal(management.timers.size, 0)
+
+const access = managerFixture()
+access.manager.start()
+await access.reply(0, { code: "access_unavailable" }, 503)
+assert.equal(access.unauthorized, 1)
+assert.equal(access.timers.size, 0)
+
+const expiry = managerFixture()
+expiry.manager.start()
+await expiry.reply(0, managerPayload)
+const timedAction = expiry.manager.action("select-small", small)
+;[...expiry.timers.values()].find(t => t.ms === 10000).fn()
+assert.equal(expiry.manager.data, null)
+assert.match(expiry.updates.at(-1).error, /result is unknown/)
+await expiry.reply(1, { message: "late success" })
+await flush()
+if (expiry.requests[2]) await expiry.reply(2, managerPayload)
+await timedAction
+expiry.manager.stop()
+console.log("Model manager guarded actions and source retirement checks passed")
+
+const randomPayload = { ...managerPayload, randomizer: true, blacklistedModels: ['big'],
+  capabilities: { ...managerPayload.capabilities, randomizer: true, exclusions: true } }
+assert.equal(modelActionAllowed(randomPayload, 'select-small', small), false)
+assert.equal(modelActionAllowed(randomPayload, 'select-big'), false)
+assert.equal(modelActionAllowed(randomPayload, 'disable-randomizer'), true)
+assert.equal(modelActionAllowed({ ...randomPayload, isOnroad: true }, 'exclude', small), true)
+assert.equal(modelActionAllowed({ ...randomPayload, isOnroad: true }, 'enable-randomizer'), true)
+assert.equal(modelActionAllowed({ ...randomPayload, isOnroad: true }, 'favorite', small), true)
+assert.equal(modelActionAllowed(randomPayload, 'exclude', pending), true)
+assert.match(ModelsPage.template, /Model Randomizer/)
+assert.match(ModelsPage.template, /Include in Randomizer/)
+assert.match(ModelsPage.computed.gpuNote.call({ status: { gpuAvailable: false }, setup: '' }), /An external GPU is not detected/)
+const randomManagement = managerFixture()
+randomManagement.manager.start()
+await randomManagement.reply(0, randomPayload)
+const excluded = randomManagement.manager.action('exclude', small)
+assert.equal(randomManagement.requests[1].url, './api/models/preferences')
+assert.deepEqual(JSON.parse(randomManagement.requests[1].options.body), { blacklistedModels: ['big', 'small'] })
+await randomManagement.reply(1, { message: 'Saved' })
+await randomManagement.reply(2, { ...randomPayload, blacklistedModels: ['big', 'small'] })
+await excluded
+const disabledRandomizer = randomManagement.manager.action('disable-randomizer')
+assert.deepEqual(JSON.parse(randomManagement.requests[3].options.body), { randomizer: false })
+await randomManagement.reply(3, { message: 'Saved' })
+await randomManagement.reply(4, { ...randomPayload, randomizer: false })
+await disabledRandomizer
+randomManagement.manager.stop()
+console.log('Randomizer and exclusion interactions passed')
+
+assert.match(ModelsPage.template, /Selections apply next onroad cycle/)
+assert.doesNotMatch(ModelsPage.template, /Onroad: switching/)
+// Active Small, Active Big summary items, and the Laboratory pair's lateral and longitudinal pickers
+assert.equal((ModelsPage.template.match(/class="gx-model-control[\s"]/g) || []).length, 4)
+// the library tab is only a view: every model is one tap away, and a sleeping GPU never hides anything
+assert.equal(ModelsPage.data().tab, 'both')
+assert.equal(ModelsPage.computed.libraryTab.call({ tab: 'gpu' }), 'gpu')
+assert.equal(ModelsPage.computed.libraryTab.call({ tab: 'bogus' }), 'both')
+const tabsFor = models => ModelsPage.computed.tabs.call({ models }).map(tab => [tab.id, tab.count])
+assert.deepEqual(tabsFor([{ requiresGpu: false }, { requiresGpu: false }, { requiresGpu: true }]), [['comma', 2], ['gpu', 1], ['both', 3]])
+assert.deepEqual(tabsFor([]), [['comma', 0], ['gpu', 0], ['both', 0]])
+const view = { models: [{ value: 'a', label: 'A', requiresGpu: false }, { value: 'b', label: 'B', requiresGpu: true }], libraryTab: 'gpu', userFilter: 'all', communityFilter: 'all', sortMode: 'alphabetical' }
+assert.deepEqual(ModelsPage.computed.sorted.call(view).map(m => m.value), ['b'])
+assert.deepEqual(ModelsPage.computed.sorted.call({ ...view, libraryTab: 'comma' }).map(m => m.value), ['a'])
+assert.deepEqual(ModelsPage.computed.sorted.call({ ...view, libraryTab: 'both' }).map(m => m.value), ['a', 'b'])
+assert.equal(modelActionAllowed(managerPayload, 'setup'), false)
+
+// download progress: bytes when the backend sends them, the old text line otherwise
+assert.equal(formatRate(6.4e6), '6.4 MB/s')
+assert.equal(formatRate(12e6), '12 MB/s')
+assert.equal(formatRate(0), '')
+assert.equal(formatEta(20), 'less than a minute left')
+assert.equal(formatEta(125), 'about 2 min left')
+assert.equal(formatEta(3900), 'about 1 hr 5 min left')
+assert.equal(formatEta(NaN), '')
+assert.deepEqual([formatEta(20, true), formatEta(125, true), formatEta(3900, true)], ['under 1 min', '~2 min', '~1 hr 5 min'])
+const GB = 1e9
+const labels = [{ value: 'big', label: 'Big model' }, { value: 'small', label: 'Small model' }]
+const running = describeProgress({ downloading: true, modelToDownload: 'big', downloadProgress: { phase: 'downloading', model: 'big',
+  received: 0.5 * GB, total: 1.4 * GB, rate: 6.4e6, index: 1, count: 1 } }, labels)
+assert.deepEqual([running.name, running.percent, running.amount, running.rate, running.eta, running.queue, running.indeterminate],
+  ['Big model', 35, '500.0 MB of 1.40 GB', '6.4 MB/s', 'about 2 min left', '', false])
+const queued = describeProgress({ downloadProgress: { phase: 'downloading', model: 'small', received: 90e6, total: 210e6, rate: 8e6, index: 2, count: 4 } }, labels)
+assert.deepEqual([queued.queue, queued.percent], ['Model 2 of 4', 42])
+assert.equal(describeProgress({ downloadProgress: { phase: 'downloading', model: 'big', received: 1, total: 100, rate: 0 } }, labels).eta, '')
+const verifying = describeProgress({ downloadProgress: { phase: 'verifying', model: 'big', received: GB, total: GB } }, labels)
+assert.deepEqual([verifying.indeterminate, verifying.title, verifying.rate], [true, 'Verifying download', ''])
+const failed = describeProgress({ downloadProgress: { phase: 'failed', model: 'big', received: 5e8, total: 1.4e9, error: 'Not enough storage.' } }, labels)
+assert.deepEqual([failed.failed, failed.error, failed.percent], [true, 'Not enough storage.', 35])
+const legacy = describeProgress({ progress: 'Big model: 38%', modelToDownload: 'big' }, labels)
+assert.deepEqual([legacy.percent, legacy.indeterminate, legacy.name], [38, false, 'Big model'])
+assert.equal(describeProgress({ progress: 'Refreshing catalog' }, labels).indeterminate, true)
+const panel = (status, dismissed = false) => ModelsPage.computed.progressInfo.call({ status, models: labels, failureDismissed: dismissed })
+assert.equal(panel({ downloading: false }), null)
+assert.equal(panel({ downloading: false, downloadProgress: { phase: 'failed', model: 'big' } }).failed, true)
+assert.equal(panel({ downloading: false, downloadProgress: { phase: 'failed', model: 'big' } }, true), null)
+assert.equal(panel({ downloading: true, refreshing: true, progress: 'Refreshing catalog' }).indeterminate, true)
+const labelFor = info => ModelsPage.computed.cardProgressLabel.call({ progressInfo: info })
+assert.equal(labelFor(null), '')
+assert.equal(labelFor(running), 'Downloading 35% · 6.4 MB/s · ~2 min')
+assert.equal(labelFor(describeProgress({ downloadProgress: { phase: 'downloading', model: 'big', received: 1, total: 100, rate: 0 } }, labels)), 'Downloading 1%')
+assert.equal(labelFor(verifying), 'Verifying download')
+assert.equal(ModelsPage.computed.cancelLabel.call({ progressInfo: queued }), 'Cancel · 2 of 4')
+assert.equal(ModelsPage.computed.cancelLabel.call({ progressInfo: running }), 'Cancel download')
+assert.equal(ModelsPage.computed.cancelLabel.call({ progressInfo: null }), 'Cancel download')
+assert.equal(ModelsPage.computed.progressTitle.call({ progressInfo: failed }), 'Couldn’t download Big model')
+assert.doesNotMatch(ModelsPage.template, /gx-model-progress/)
+const randomSwitch = { target: { checked: true } }
+let randomAction = ''
+ModelsPage.methods.toggleRandomizer.call({ status: { randomizer: false }, runAction(action) { randomAction = action } }, randomSwitch)
+assert.equal(randomAction, 'enable-randomizer')
+assert.equal(randomSwitch.target.checked, false)
+const chargeSwitch = { target: { checked: true } }
+let chargeChoice
+ModelsPage.methods.toggleJetlinkCharge.call({ status: { jetlink: { mode: 'ios', chargePhone: false } },
+  configureJetlink(mode, enabled) { chargeChoice = [mode, enabled] } }, chargeSwitch)
+assert.deepEqual(chargeChoice, ['ios', true])
+assert.equal(chargeSwitch.target.checked, false)
+
+
+const feedbackPage = { ...ModelsPage.data(), unauthorized() {}, canAction() { return true } }
+ModelsPage.created.call(feedbackPage)
+const publishManager = feedbackPage.manager.publish
+feedbackPage.manager.action = async () => {
+  publishManager({ loading: false, error: '', data: { ...managerPayload, downloading: true, progress: 'Downloading 20%' } })
+  return { message: 'Starting download' }
+}
+await ModelsPage.methods.runAction.call(feedbackPage, 'download', { ...missing, requiresGpu: false })
+assert.equal(feedbackPage.message, 'Downloading 20%')
+assert.equal(feedbackPage.trackingProgress, true)
+publishManager({ loading: false, error: '', data: { ...managerPayload, downloading: false, progress: 'Downloaded!',
+  summary: { installed: 2, missing: 98, total: 100 } } })
+assert.equal(feedbackPage.message, 'Downloaded!')
+assert.equal(feedbackPage.trackingProgress, false)
+assert.equal(feedbackPage.summary.installed, 2)
+console.log('Narrow model controls and completed operation feedback checks passed')
+
+// Connection settings share the parked/authenticated action path, not catalog selection.
+const jetlinkView = { isOnroad: false, capabilities: { jetlink: true }, jetlink: { mode: "off" } }
+assert.equal(modelActionAllowed(jetlinkView, "jetlink"), true)
+assert.equal(modelActionAllowed({ ...jetlinkView, isOnroad: true }, "jetlink"), false)
+assert.equal(modelActionAllowed({ ...jetlinkView, capabilities: {} }, "jetlink"), false)
+assert.match(ModelsPage.template, /Prepared means the remote model is built, not active/)
+const linkManagement = managerFixture()
+linkManagement.manager.start()
+await linkManagement.reply(0, { ...managerPayload, ...jetlinkView })
+const linkSelection = linkManagement.manager.action("jetlink", null, { mode: "ios", chargePhone: false })
+assert.equal(linkManagement.requests[1].url, "./api/models/jetlink")
+assert.deepEqual(JSON.parse(linkManagement.requests[1].options.body), { mode: "ios", chargePhone: false })
+await linkManagement.reply(1, { message: "Saved" })
+await linkManagement.reply(2, { ...managerPayload, ...jetlinkView, jetlink: { mode: "ios" } })
+await linkSelection
+assert.equal(linkManagement.manager.data.jetlink.mode, "ios")
+linkManagement.manager.stop()
+const liveLink = managerFixture()
+liveLink.manager.start()
+await liveLink.reply(0, { ...managerPayload, ...jetlinkView, jetlink: { mode: "usb", active: true, state: "active" } })
+const executionExpiry = [...liveLink.timers.values()].find(timer => timer.ms === 1500)
+assert.ok(executionExpiry)
+executionExpiry.fn()
+assert.equal(liveLink.manager.data.jetlink.active, false)
+assert.equal(liveLink.manager.data.jetlink.state, "checking execution")
+liveLink.manager.stop()
+
+assert.ok(ModelsPage.template.includes('href="https://github.com/StarPilotHQ/StarPilot/blob/Dom/openpilot/starpilot/models/JETLINK.md"'), "Jetlink setup guide points at Dom")
+
+const refreshingCatalog = { ...managerPayload, downloading: true, refreshing: true }
+assert.equal(modelActionAllowed(refreshingCatalog, "select-small", small), true)
+assert.equal(modelActionAllowed(refreshingCatalog, "select-big", big), true)
+assert.equal(modelActionAllowed(refreshingCatalog, "select-big", missing), false)
+assert.equal(modelActionAllowed({ ...refreshingCatalog, isOnroad: true }, "select-big", big), true)
+assert.equal(modelActionAllowed({ ...refreshingCatalog, randomizer: true }, "select-big", big), false)
+assert.equal(modelActionAllowed({ ...refreshingCatalog, refreshing: false }, "select-big", big), false)
+assert.equal(modelActionAllowed(refreshingCatalog, "delete", small), false)
+
+for (const series of ["Polaris", "Polaris Series", "  POLARIS SERIES  "]) {
+  for (const value of ["spz_polaris_r3a", "future-model", undefined]) assert.equal(ModelsPage.methods.isPolaris({value, series}), true)
+}
+for (const series of ["OP Series", "SP Series", "Polaris Experimental", "", undefined, null, 123]) {
+  assert.equal(ModelsPage.methods.isPolaris({value: "unrelated", label: "Polaris", series}), false)
+}
+for (const value of ["spz_polaris_r3a", "spz_polaris_r3b"]) assert.equal(ModelsPage.methods.isPolaris({value}), true)
+assert.equal(ModelsPage.methods.isPolaris({value: "spz_polaris_r3a_copy"}), false)
+assert.equal(ModelsPage.methods.isPolaris(null), false)
+assert.match(ModelsPage.template, /gx-model-card--polaris.*isPolaris\(m\)/)
+assert.match(ModelsPage.template, /v-if="isPolaris\(m\)" class="gx-chip gx-polaris-badge"/)
+assert.match(ModelsPage.template, /aria-label="About Polaris models"/)
+
+for (const label of ["Polaris R3 A ⚠️🧪", "Polaris R3 B ⚠️🧪", "Polaris R3 A", "Polaris R3 B 🚀"]) {
+  const [text, emojis] = ModelsPage.methods.polarisTitleParts({label})
+  assert.equal(text + emojis, label)
+  assert.equal(/\p{Extended_Pictographic}/u.test(text), false)
+}
+assert.deepEqual(ModelsPage.methods.polarisTitleParts({value: "spz_polaris_r3a"}), ["spz_polaris_r3a", ""])
+
+// Laboratory overrides normal selections until the next model start.
+const pairData = { catalog: [{ id: 'small', name: 'Small model' }, { id: 'big', name: 'Big model' }],
+  laboratory: { active: true, lateralModel: 'small', longitudinalModel: 'big' } }
+const pairPage = { selectionUncertain: false, status: {}, runtime: { status: 'ready', data: pairData } }
+assert.equal(ModelsPage.computed.runningModelLabel.call(pairPage), 'Small model/Big model')
+assert.equal(ModelsPage.computed.runningModelLabel.call({ ...pairPage, runtime: { status: 'stale', data: pairData } }), 'Status unavailable')
+assert.equal(ModelsPage.computed.runningModelLabel.call({ ...pairPage, runtime: { status: 'ready', data: { ...pairData, laboratory: { ...pairData.laboratory, active: false } } } }), 'Laboratory output unavailable')
+assert.match(ModelsPage.template, /fallback choices/)
+const pendingStart = data => ModelsPage.computed.pendingNextStart.call({ runtime: { status: 'ready', data } })
+assert.equal(pendingStart({ ...pairData, pendingNextStart: false }), false)
+assert.equal(pendingStart({ ...pairData, pendingNextStart: true }), true)
+assert.equal(pendingStart({ ...pairData, laboratory: { ...pairData.laboratory, pendingNextStart: true } }), true)
+assert.equal(ModelsPage.computed.pendingNextStart.call({ runtime: { status: 'stale', data: { pendingNextStart: true } } }), false)
+assert.equal(ModelsPage.template.match(/v-if="pendingNextStart"> · saved changes pending next start/g).length, 2)
+
+// Merged page: search, row list, Single model / Model pair mode switcher, and pair saving.
+{
+  const { matchesSearch, laboratoryActionAllowed, hardwareTag } = await import("../web/js/models.js")
+  const row = { value: 'tr16223', label: 'TR16 👀📡', series: 'TR Series', version: 'v8', released: '2025-07-21' }
+  assert.equal(matchesSearch(row, ''), true)
+  assert.equal(matchesSearch(row, 'tr16'), true)
+  assert.equal(matchesSearch(row, 'TR16223'), true)
+  assert.equal(matchesSearch(row, 'tr series v8'), true)
+  assert.equal(matchesSearch(row, 'v9'), false)
+
+  assert.match(ModelsPage.template, /<ul v-else class="gx-model-list" aria-label="Models">/)
+  assert.match(ModelsPage.template, /placeholder="Search models…"/)
+  assert.deepEqual([true, false, undefined].map(requiresGpu => hardwareTag({ requiresGpu }).tone), ["egpu", "small", "unknown"])
+
+  const page = { ...ModelsPage.data(), activeSmallModel: 'a', activeBigModel: 'b', currentModel: 'a',
+    lab: { configuration: { enabled: false, lateralModel: 'a', longitudinalModel: 'c' } } }
+  assert.deepEqual(ModelsPage.methods.activeRoles.call(page, { value: 'a' }), ['Active Small'])
+  assert.deepEqual(ModelsPage.methods.activeRoles.call(page, { value: 'b' }), ['Active Big'])
+  assert.deepEqual(ModelsPage.methods.activeRoles.call(page, { value: 'c' }), [])
+  assert.deepEqual(ModelsPage.methods.pairRoles.call(page, { value: 'a' }), ['Pair · lateral'])
+  assert.deepEqual(ModelsPage.methods.pairRoles.call(page, { value: 'c' }), ['Pair · longitudinal'])
+
+  const listed = (extra) => ModelsPage.computed.sorted.call({ ...ModelsPage.data(), libraryTab: 'both', isPairable: m => m.pairable === true,
+    models: [{ value: 'x1', label: 'Alpha', requiresGpu: false, pairable: true }, { value: 'x2', label: 'Beta', requiresGpu: false, pairable: false }], ...extra }).map(m => m.value)
+  assert.deepEqual(listed({ pairableFilter: true }), ['x1'])
+  assert.deepEqual(listed({ search: 'bet' }), ['x2'])
+
+  const lab = { schemaVersion: 1, isOnroad: false, chestnutReady: false, runtimeSupported: false,
+    configuration: { enabled: false, lateralModel: '', longitudinalModel: '' }, download: { downloading: false },
+    capabilities: { configure: true }, models: ['a', 'b'].map(value => ({ value, label: value, small: true, modelLabEligible: true, modelLabArtifactAvailable: true, modelLabArtifactInstalled: true })) }
+  assert.equal(laboratoryActionAllowed(lab, 'save', null, { lateralModel: 'a', longitudinalModel: 'b' }), true)
+  assert.equal(laboratoryActionAllowed(lab, 'save', null, { lateralModel: 'a', longitudinalModel: 'a' }), false)
+  assert.equal(laboratoryActionAllowed(lab, 'save', null, { lateralModel: 'a', longitudinalModel: 'missing' }), false)
+  assert.equal(laboratoryActionAllowed({ ...lab, isOnroad: true }, 'save', null, { lateralModel: 'a', longitudinalModel: 'b' }), true)
+  assert.equal(laboratoryActionAllowed({ ...lab, configuration: { enabled: true, lateralModel: 'a', longitudinalModel: 'b' } }, 'save', null, { lateralModel: 'b', longitudinalModel: 'a' }), false)
+  assert.equal(ModelsPage.computed.labChoiceProblem.call({ labSelectionError: 'Pair inference is not available in this build yet.' }), false)
+  assert.equal(ModelsPage.computed.labChoiceProblem.call({ labSelectionError: 'Choose two different models' }), true)
+  console.log('Merged page search, row list, and pair saving passed')
+}
+
+// Retrying a failed pair artifact must retain its variant and keep errors visible on failure.
+{
+  const model = { value: 'small', installed: true }
+  const row = { value: 'small', small: true, modelLabChestnut: true }
+  const context = { busy: '', models: [model], status: { downloadVariant: 'amd', downloadProgress: { model: 'small', count: 1 } },
+    labRow: () => row, labActionAvailable: () => true, actionAvailable: () => false }
+  const request = ModelsPage.computed.retryDownloadRequest.call(context)
+  assert.deepEqual(request, { laboratory: true, action: 'download', model: row })
+  assert.equal(ModelsPage.computed.retryDownloadRequest.call({ ...context, labActionAvailable: () => false }), null)
+  assert.equal(ModelsPage.computed.retryDownloadRequest.call({ ...context, busy: 'download:' }), null)
+  const attempts = []
+  const retry = { retryDownloadRequest: request, failureDismissed: false, disposed: false,
+    runLabAction: async (...args) => { attempts.push(args); return null },
+    runAction: () => assert.fail('AMD retry must not download the standard variant') }
+  await ModelsPage.methods.retryDownload.call(retry)
+  assert.deepEqual(attempts, [['download', row]])
+  assert.equal(retry.failureDismissed, false)
+  retry.runLabAction = async () => ({ message: 'Starting download' })
+  await ModelsPage.methods.retryDownload.call(retry)
+  assert.equal(retry.failureDismissed, false, 'readback replaces the failure; a fast new failure must remain visible')
+  const standard = { ...context, status: { downloadVariant: 'standard', downloadProgress: { model: 'small', count: 1 } },
+    actionAvailable: () => true }
+  assert.deepEqual(ModelsPage.computed.retryDownloadRequest.call(standard), { action: 'download', model })
+  assert.deepEqual(ModelsPage.computed.retryDownloadRequest.call({ ...standard,
+    status: { downloadProgress: { model: 'small', count: 3 } } }), { action: 'downloadAll', model })
+
+  const downloading = { lab: { download: { downloading: true, variant: 'standard', model: 'small' } }, labRow: () => row }
+  assert.equal(ModelsPage.methods.isPairDownloading.call(downloading, model), false)
+  downloading.lab.download.variant = 'amd'
+  assert.equal(ModelsPage.methods.isPairDownloading.call(downloading, model), true)
+  downloading.lab.download.model = 'other'
+  assert.equal(ModelsPage.methods.isPairDownloading.call(downloading, model), false)
+}
+
+
+
+assert.equal(ModelsPage.computed.labLocked.call({ lab: { isOnroad: true, download: { downloading: false } } }), false)
+
+const reconnecting = managerFixture()
+reconnecting.manager.start()
+await reconnecting.reply(0, { ...managerPayload, jetlink: { active: true, runtimeState: "active", state: "active" } })
+reconnecting.manager.load()
+await reconnecting.reply(1, { error: "Temporary network failure" }, 503)
+assert.equal(reconnecting.manager.data.stale, true)
+assert.deepEqual(reconnecting.manager.data.models, managerPayload.models)
+assert.equal(reconnecting.manager.data.activeSmallModel, managerPayload.activeSmallModel)
+assert.equal(reconnecting.manager.data.jetlink.active, false)
+assert.equal(reconnecting.updates.at(-1).error, "")
+reconnecting.manager.stop()
+assert.doesNotMatch(ModelsPage.template, /<Transition name="gx-panel"/)
+
+const fullSave = managerFixture()
+fullSave.manager.start()
+await fullSave.reply(0, managerPayload)
+const fullSaving = fullSave.manager.action("select-small", small)
+await fullSave.reply(1, { ...managerPayload, activeSmallModel: small.value, message: "Saved" })
+assert.equal((await fullSaving).message, "Saved")
+assert.equal(fullSave.requests.length, 2)
+assert.equal(fullSave.manager.data.activeSmallModel, small.value)
+assert.equal(fullSave.manager.saving, false)
+assert.equal(fullSave.updates.at(-1).loading, false)
+const invalidFullSaving = fullSave.manager.action("select-big")
+await fullSave.reply(2, { ...managerPayload, schemaVersion: 2, message: "bad snapshot" })
+assert.equal(await invalidFullSaving, null)
+assert.equal(fullSave.requests.length, 3)
+assert.equal(fullSave.manager.data, null)
+assert.match(fullSave.updates.at(-1).error, /Invalid Model Manager/)
+fullSave.manager.stop()

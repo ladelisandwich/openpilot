@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "url": "https://github.com/commaai/openpilot.git",
+    "commit": "ad4c9cdf1857034bb06c12e4b0cfba093e6ae3d6"
+  },
+  "dependencies": [
+    {
+      "path": "msgq_repo",
+      "url": "https://github.com/commaai/msgq.git",
+      "commit": "a95f3c1c5e7a4d84b193433a2a04d20c7a72878c",
+      "tree": "7ca6bb28fbdda7bf3d6ad73fc31ded92ae4c9098",
+      "exclude": []
+    },
+    {
+      "path": "opendbc_repo",
+      "url": "https://github.com/commaai/opendbc.git",
+      "commit": "35f7e0813462607ef1d703e52313e7571e31405d",
+      "tree": "fe3f2be71c3f865fb672b458c37347ec4843c982",
+      "exclude": []
+    },
+    {
+      "path": "panda",
+      "url": "https://github.com/commaai/panda.git",
+      "commit": "f38f504ffac4a6d42bb4c20897adcf5b68093151",
+      "tree": "6d6101f8f3700088062c247a9509f8b5ac8d23c7",
+      "exclude": []
+    },
+    {
+      "path": "rednose_repo",
+      "url": "https://github.com/commaai/rednose.git",
+      "commit": "d7c66e80d2d28a63d0720692ccaa029d504751ba",
+      "tree": "9f000b8db090de568e6111f2d2861445708e7b27",
+      "exclude": []
+    },
+    {
+      "path": "teleoprtc_repo",
+      "url": "https://github.com/commaai/teleoprtc.git",
+      "commit": "f19ceb4553d1d9ccd46cc86f47483564814423ec",
+      "tree": "e65e0df08e088daf80e8b4e570c9fa134c51efc3",
+      "exclude": []
+    },
+    {
+      "path": "tinygrad_repo",
+      "url": "https://github.com/tinygrad/tinygrad.git",
+      "commit": "ec91b74b5b6b0fc924b72d3f27689679ca2438b9",
+      "tree": "1cb22a40b0aa242b2e432fc7b88f8b85fc391f81",
+      "exclude": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "path": "mapd_repo",
+      "url": "https://github.com/pfeiferj/mapd.git",
+      "commit": "7201c6b4b4ec1b0b9ea21daa8c05b80fdd7e01ee",
+      "tree": "c9072e54aec00579eb2f7ef381b2c0c8c3682fa0",
+      "exclude": [
+        "CLAUDE.md",
+        "Readme.md",
+        "Roadmap.md"
+      ]
+    }
+  ],
+  "vendored_extensions": [
+    {
+      "path": "jetlink_repo",
+      "url": "https://github.com/zoompilot/jetlink.git",
+      "commit": "9cfde98eec1d7cc714d800504944cf1a3944513d",
+      "tree": "dbcb53149dbc8ae5df9d8236deeb216f2493a5f9",
+      "include": [
+        "jetlink",
+        "LICENSE",
+        "pyproject.toml",
+        "README.md"
+      ],
+      "exclude": []
+    }
+  ]
+}

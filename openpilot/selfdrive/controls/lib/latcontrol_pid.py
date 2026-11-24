@@ -1,0 +1,79 @@
+import math
+
+from openpilot.cereal import log
+from openpilot.selfdrive.controls.lib.latcontrol import LatControl
+from openpilot.common.pid import PIDController
+
+
+class LatControlPID(LatControl):
+  def __init__(self, CP, CI, dt):
+    super().__init__(CP, CI, dt)
+    self.pid = PIDController(
+      (CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
+      (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
+      pos_limit=self.steer_max,
+      neg_limit=-self.steer_max,
+    )
+    self.ff_factor = CP.lateralTuning.pid.kf
+    self.get_steer_feedforward = CI.get_steer_feedforward_function()
+    self.automatic_pid_previous_setpoint = None
+
+  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay):
+    if getattr(self, 'route_flm_effects', None) is not None:
+      self.route_flm_effects.begin_frame(self)
+      self.route_flm_observation.begin_frame()
+    pid_log = log.ControlsState.LateralPIDState.new_message()
+    pid_log.steeringAngleDeg = float(CS.steeringAngleDeg)
+    pid_log.steeringRateDeg = float(CS.steeringRateDeg)
+
+    angle_steers_des_no_offset = math.degrees(VM.get_steer_from_curvature(-desired_curvature, CS.vEgo, params.roll))
+    angle_steers_des = angle_steers_des_no_offset + params.angleOffsetDeg
+    error = angle_steers_des - CS.steeringAngleDeg
+
+    pid_log.steeringAngleDesiredDeg = angle_steers_des
+    pid_log.angleError = error
+    if not active:
+      output_torque = 0.0
+      self.automatic_pid_previous_setpoint = None
+      pid_log.active = False
+
+    else:
+      # offset does not contribute to resistive torque
+      ff = self.ff_factor * self.get_steer_feedforward(angle_steers_des_no_offset, CS.vEgo)
+      from openpilot.starpilot.flm.pid_stages import begin_frame, error_for_frame
+
+      ff = begin_frame(
+        self,
+        CS,
+        desired_curvature=desired_curvature,
+        desired_angle_deg=angle_steers_des_no_offset,
+        actual_angle_deg=CS.steeringAngleDeg - params.angleOffsetDeg,
+        error_deg=error,
+        baseline_ff=ff,
+        active=active,
+        limited=steer_limited_by_safety or curvature_limited,
+      )
+      error = error_for_frame(self, CS, error, active=active, limited=steer_limited_by_safety or curvature_limited)
+      freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
+
+      output_torque = self.pid.update(error, feedforward=ff, speed=CS.vEgo, freeze_integrator=freeze_integrator)
+
+      from openpilot.starpilot.flm.pid_stages import finish_frame
+
+      output_torque = finish_frame(
+        self,
+        CS,
+        desired_angle_deg=angle_steers_des_no_offset,
+        actual_angle_deg=CS.steeringAngleDeg - params.angleOffsetDeg,
+        baseline_output=output_torque,
+        active=active,
+        limited=steer_limited_by_safety or curvature_limited,
+      )
+      pid_log.active = True
+      pid_log.p = float(self.pid.p)
+      pid_log.i = float(self.pid.i)
+      pid_log.f = float(self.pid.f)
+      pid_log.output = float(output_torque)
+      pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
+
+    return output_torque, angle_steers_des, pid_log

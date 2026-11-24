@@ -1,0 +1,370 @@
+{
+  "msgq_repo/libmsgq.a": {
+    "recipe": "msgq_repo/SConscript",
+    "required_tracked": true
+  },
+  "msgq_repo/libvisionipc.a": {
+    "recipe": "msgq_repo/SConscript",
+    "required_tracked": true
+  },
+  "msgq_repo/msgq/_ipc.so": {
+    "recipe": "msgq_repo/SConscript",
+    "required_tracked": true
+  },
+  "msgq_repo/msgq/visionipc/_visionipc.so": {
+    "recipe": "msgq_repo/SConscript",
+    "required_tracked": true
+  },
+  "opendbc_repo/opendbc/can/_raw_value.so": {
+    "recipe": "opendbc_repo/opendbc/can/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/cereal/libcereal.a": {
+    "recipe": "openpilot/cereal/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/cereal/libsocketmaster.a": {
+    "recipe": "openpilot/cereal/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/common/libcommon.a": {
+    "recipe": "openpilot/common/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/common/libparams_c.so": {
+    "recipe": "openpilot/common/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/acados_ocp_long.json": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/Makefile": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/acados_ocp_solver_pyx.c": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/acados_ocp_solver_pyx.so": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/libacados.so": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/libacados_ocp_solver_long.so": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/libblasfeo.so": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/libhpipm.so": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/c_generated_code/libqpOASES_e.so.3.1": {
+    "recipe": "openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/locationd/models/generated/car.cpp": {
+    "recipe": "openpilot/selfdrive/locationd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/locationd/models/generated/car.h": {
+    "recipe": "openpilot/selfdrive/locationd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/locationd/models/generated/libcar.so": {
+    "recipe": "openpilot/selfdrive/locationd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/locationd/models/generated/libpose.so": {
+    "recipe": "openpilot/selfdrive/locationd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/locationd/models/generated/pose.cpp": {
+    "recipe": "openpilot/selfdrive/locationd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/locationd/models/generated/pose.h": {
+    "recipe": "openpilot/selfdrive/locationd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/modeld/models/dm_warp_1344x760_tinygrad.pkl": {
+    "recipe": "openpilot/selfdrive/modeld/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/modeld/models/dm_warp_1928x1208_tinygrad.pkl": {
+    "recipe": "openpilot/selfdrive/modeld/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/modeld/models/driving_warp_1344x760_tinygrad.pkl": {
+    "recipe": "openpilot/selfdrive/modeld/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/modeld/models/driving_warp_1928x1208_tinygrad.pkl": {
+    "recipe": "openpilot/selfdrive/modeld/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/libpanda.a": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/main.o": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/panda.o": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/panda_safety.o": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/panda_usb.o": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/pandad": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/pandad.o": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/spi.o": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/selfdrive/pandad/tests/test_panda_debug": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/selfdrive/pandad/tests/test_panda_faults": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/selfdrive/pandad/tests/test_panda_owner": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/selfdrive/pandad/tests/test_peripheral_state": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/selfdrive/pandad/tests/test_preap_pedal_startup": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/selfdrive/pandad/tests/test_producer_sink": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/selfdrive/pandad/tests/test_producer_timing": {
+    "recipe": "openpilot/selfdrive/pandad/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/starpilot/flm/_primitive_walk.binding.json": {
+    "recipe": "openpilot/starpilot/flm/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/starpilot/flm/_primitive_walk.so": {
+    "recipe": "openpilot/starpilot/flm/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/starpilot/ui/native/_raylib_extra.so": {
+    "recipe": "openpilot/starpilot/ui/native/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/system/loggerd/bootlog": {
+    "recipe": "openpilot/system/loggerd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/system/loggerd/encoderd": {
+    "recipe": "openpilot/system/loggerd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/system/loggerd/liblogger.a": {
+    "recipe": "openpilot/system/loggerd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/system/loggerd/loggerd": {
+    "recipe": "openpilot/system/loggerd/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/system/loggerd/tests/test_model_metadata": {
+    "recipe": "openpilot/system/loggerd/SConscript",
+    "required_tracked": false
+  },
+  "openpilot/tools/replay/libmedia_mux.so": {
+    "recipe": "openpilot/tools/replay/SConscript",
+    "required_tracked": true
+  },
+  "openpilot/tools/replay/replay": {
+    "recipe": "openpilot/tools/replay/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/body_h7.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.body_h7.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_hkg_remote.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_hkg_remote_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_remote.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_remote_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_tesla_wake.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_h7_tesla_wake_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_hkg_remote.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_hkg_remote_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_remote.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_remote_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_tesla_wake.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/bootstub.panda_tesla_wake_can_ignition_only.bin": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/gitversion.h": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_hkg_remote.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_hkg_remote_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_remote.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_remote_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_tesla_wake.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_h7_tesla_wake_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_hkg_remote.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_hkg_remote_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_remote.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_remote_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_tesla_wake.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/panda_tesla_wake_can_ignition_only.bin.signed": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/board/obj/version": {
+    "recipe": "panda/SConscript",
+    "required_tracked": true
+  },
+  "panda/tests/libpanda/libpanda.so": {
+    "recipe": "panda/tests/libpanda/SConscript",
+    "required_tracked": true
+  },
+  "rednose_repo/rednose/helpers/ekf_sym_pyx.so": {
+    "recipe": "rednose_repo/rednose/SConscript",
+    "required_tracked": true
+  },
+  "rednose_repo/rednose/helpers/libekf_sym.a": {
+    "recipe": "rednose_repo/rednose/SConscript",
+    "required_tracked": true
+  }
+}

@@ -1,0 +1,1050 @@
+{
+  "reviewed_schema_commit": "22dc5f1681129b81802361635a145d66ae9d2ee0",
+  "reviewed_schema_sha256": "c778b70843e3e8732378c611bf315fad93a86b2c4bb8c604d196cc5ca417414b",
+  "incumbent_fixture_sha256": "a36ab54c00b5bbe61d520873d24aadfb8f33babd70c31a07046516d5545838d9",
+  "types": {
+    "0xf35cc4560bbf6ec2": {
+      "kind": "struct",
+      "before_name": "StarPilotCarState",
+      "after_name": "StarPilotCarState",
+      "old_field_count": 37,
+      "old_storage": {
+        "dataWordCount": 3,
+        "pointerCount": 4,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 3,
+        "pointerCount": 7,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 4,
+            "type": {
+              "struct": {
+                "typeId": 16038131374300856979
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "feedbackPublication",
+          "codeOrder": 37,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 37
+          }
+        },
+        {
+          "slot": {
+            "offset": 5,
+            "type": {
+              "struct": {
+                "typeId": 10457083163342666783
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "toyotaCruise",
+          "codeOrder": 39,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 38
+          }
+        },
+        {
+          "slot": {
+            "offset": 6,
+            "type": {
+              "struct": {
+                "typeId": 15172299076723568810
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "steeringLimitInfo",
+          "codeOrder": 38,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 39
+          }
+        }
+      ]
+    },
+    "0xa1680744031fdb2d": {
+      "kind": "struct",
+      "before_name": "SlcState",
+      "after_name": "SlcState",
+      "old_field_count": 51,
+      "old_storage": {
+        "dataWordCount": 15,
+        "pointerCount": 20,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 21,
+        "pointerCount": 22,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 140,
+            "type": {
+              "bool": null
+            },
+            "defaultValue": {
+              "bool": false
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "automaticAdoptionPending",
+          "codeOrder": 51,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 51
+          }
+        },
+        {
+          "slot": {
+            "offset": 15,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "pendingSinceMonoTime",
+          "codeOrder": 52,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 52
+          }
+        },
+        {
+          "slot": {
+            "offset": 27,
+            "type": {
+              "float32": null
+            },
+            "defaultValue": {
+              "float32": 0.0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "lastReceivedSpeedLimit",
+          "codeOrder": 53,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 53
+          }
+        },
+        {
+          "slot": {
+            "offset": 20,
+            "type": {
+              "text": null
+            },
+            "defaultValue": {
+              "text": ""
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "lastReceivedSource",
+          "codeOrder": 54,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 54
+          }
+        },
+        {
+          "slot": {
+            "offset": 32,
+            "type": {
+              "float32": null
+            },
+            "defaultValue": {
+              "float32": 0.0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "lastReceivedAdjustedLimit",
+          "codeOrder": 55,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 55
+          }
+        },
+        {
+          "slot": {
+            "offset": 17,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "acceptedMonoTime",
+          "codeOrder": 56,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 56
+          }
+        },
+        {
+          "slot": {
+            "offset": 33,
+            "type": {
+              "float32": null
+            },
+            "defaultValue": {
+              "float32": 0.0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "upcomingSpeedLimit",
+          "codeOrder": 57,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 57
+          }
+        },
+        {
+          "slot": {
+            "offset": 21,
+            "type": {
+              "text": null
+            },
+            "defaultValue": {
+              "text": ""
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "upcomingBoundaryId",
+          "codeOrder": 58,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 58
+          }
+        },
+        {
+          "slot": {
+            "offset": 141,
+            "type": {
+              "bool": null
+            },
+            "defaultValue": {
+              "bool": false
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "acceptedIsPreview",
+          "codeOrder": 59,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 59
+          }
+        },
+        {
+          "slot": {
+            "offset": 18,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "wheelOverrideSince",
+          "codeOrder": 60,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 60
+          }
+        },
+        {
+          "slot": {
+            "offset": 19,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "wheelAdoptMonoTime",
+          "codeOrder": 61,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 61
+          }
+        },
+        {
+          "slot": {
+            "offset": 40,
+            "type": {
+              "float32": null
+            },
+            "defaultValue": {
+              "float32": 0.0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "wheelAdoptTargetMps",
+          "codeOrder": 62,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 62
+          }
+        }
+      ]
+    },
+    "0xa5cd762cd951a455": {
+      "kind": "struct",
+      "before_name": "CustomReserved5",
+      "after_name": "StarPilotSteeringTracking",
+      "old_field_count": 0,
+      "old_storage": {
+        "dataWordCount": 0,
+        "pointerCount": 0,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 1,
+        "pointerCount": 3,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 0,
+            "type": {
+              "uint16": null
+            },
+            "defaultValue": {
+              "uint16": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "version",
+          "codeOrder": 0,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 0
+          }
+        },
+        {
+          "slot": {
+            "offset": 0,
+            "type": {
+              "struct": {
+                "typeId": 11521001962468299081
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "sourceReceipt",
+          "codeOrder": 1,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 1
+          }
+        },
+        {
+          "slot": {
+            "offset": 1,
+            "type": {
+              "struct": {
+                "typeId": 16642614975093727651
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "trial",
+          "codeOrder": 2,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 2
+          }
+        },
+        {
+          "slot": {
+            "offset": 2,
+            "type": {
+              "struct": {
+                "typeId": 17249445999981723666
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "restore",
+          "codeOrder": 3,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 3
+          }
+        }
+      ]
+    },
+    "0xc2243c65e0340384": {
+      "kind": "struct",
+      "before_name": "StarPilotLateralState",
+      "after_name": "StarPilotLateralState",
+      "old_field_count": 11,
+      "old_storage": {
+        "dataWordCount": 4,
+        "pointerCount": 3,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 4,
+        "pointerCount": 6,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 3,
+            "type": {
+              "struct": {
+                "typeId": 14224968370459730102
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "feedbackConsumption",
+          "codeOrder": 11,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 11
+          }
+        },
+        {
+          "slot": {
+            "offset": 4,
+            "type": {
+              "struct": {
+                "typeId": 15818253234314615745
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "trackingApplication",
+          "codeOrder": 12,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 12
+          }
+        },
+        {
+          "slot": {
+            "offset": 5,
+            "type": {
+              "struct": {
+                "typeId": 12190420819089146754
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "torqueTuning",
+          "codeOrder": 13,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 13
+          }
+        }
+      ]
+    },
+    "0xbd443b539493bc68": {
+      "kind": "struct",
+      "before_name": "SlcCruiseCommand",
+      "after_name": "SlcCruiseCommand",
+      "old_field_count": 14,
+      "old_storage": {
+        "dataWordCount": 10,
+        "pointerCount": 2,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 10,
+        "pointerCount": 4,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 2,
+            "type": {
+              "text": null
+            },
+            "defaultValue": {
+              "text": ""
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "source",
+          "codeOrder": 14,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 14
+          }
+        },
+        {
+          "slot": {
+            "offset": 3,
+            "type": {
+              "text": null
+            },
+            "defaultValue": {
+              "text": ""
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "upcomingBoundaryId",
+          "codeOrder": 15,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 15
+          }
+        }
+      ]
+    },
+    "0x94d51b83b2a8ea50": {
+      "kind": "enum",
+      "before_name": "SlcCruiseCommand.Kind",
+      "after_name": "SlcCruiseCommand.Kind",
+      "old_field_count": 2,
+      "old_storage": {},
+      "new_storage": {},
+      "added_enumerants": [
+        {
+          "name": "adoptAcceptedLimit",
+          "codeOrder": 2
+        }
+      ]
+    },
+    "0xf2447170bb68f358": {
+      "kind": "struct",
+      "before_name": "LearningControlEvidence",
+      "after_name": "LearningControlEvidence",
+      "old_field_count": 46,
+      "old_storage": {
+        "dataWordCount": 14,
+        "pointerCount": 19,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 14,
+        "pointerCount": 21,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 19,
+            "type": {
+              "list": {
+                "elementType": {
+                  "float64": null
+                }
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "000000000400000000000000020001000e0000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "vehicleModelAnchor",
+          "codeOrder": 46,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 46
+          }
+        },
+        {
+          "slot": {
+            "offset": 20,
+            "type": {
+              "list": {
+                "elementType": {
+                  "float64": null
+                }
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "000000000400000000000000020001000e0000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "liveAppliedCoordinates",
+          "codeOrder": 47,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 47
+          }
+        }
+      ]
+    },
+    "0xa4f1eb3323f5f582": {
+      "kind": "struct",
+      "before_name": "MapdOut",
+      "after_name": "MapdOut",
+      "old_field_count": 34,
+      "old_storage": {
+        "dataWordCount": 14,
+        "pointerCount": 6,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 16,
+        "pointerCount": 7,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 19,
+            "type": {
+              "float32": null
+            },
+            "defaultValue": {
+              "float32": 0.0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "previewSpeedLimit",
+          "codeOrder": 34,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 34
+          }
+        },
+        {
+          "slot": {
+            "offset": 28,
+            "type": {
+              "float32": null
+            },
+            "defaultValue": {
+              "float32": 0.0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "previewDistance",
+          "codeOrder": 35,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 35
+          }
+        },
+        {
+          "slot": {
+            "offset": 6,
+            "type": {
+              "text": null
+            },
+            "defaultValue": {
+              "text": ""
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "previewBoundaryId",
+          "codeOrder": 36,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 36
+          }
+        },
+        {
+          "slot": {
+            "offset": 15,
+            "type": {
+              "int64": null
+            },
+            "defaultValue": {
+              "int64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "previewWayId",
+          "codeOrder": 37,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 37
+          }
+        }
+      ]
+    },
+    "0x9099c88083a9a9ff": {
+      "kind": "enum",
+      "before_name": "SlcCruiseEvent.Kind",
+      "after_name": "SlcCruiseEvent.Kind",
+      "old_field_count": 12,
+      "old_storage": {},
+      "new_storage": {},
+      "added_enumerants": [
+        {
+          "name": "engagementAdopt",
+          "codeOrder": 12
+        }
+      ]
+    },
+    "0x9e04a179bcb4ab72": {
+      "kind": "struct",
+      "before_name": "StarPilotModelDataV2.VisionObservation",
+      "after_name": "StarPilotModelDataV2.VisionObservation",
+      "old_field_count": 12,
+      "old_storage": {
+        "dataWordCount": 6,
+        "pointerCount": 2,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 6,
+        "pointerCount": 3,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 2,
+            "type": {
+              "struct": {
+                "typeId": 12978956571779529976
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "00000000040000000000000002000100100000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "stopSigns",
+          "codeOrder": 12,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 12
+          }
+        }
+      ]
+    },
+    "0xe4b42a95dcb60d90": {
+      "kind": "struct",
+      "before_name": "StarPilotCarControl.Navigation.Instruction",
+      "after_name": "StarPilotCarControl.Navigation.Instruction",
+      "old_field_count": 6,
+      "old_storage": {
+        "dataWordCount": 2,
+        "pointerCount": 3,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 2,
+        "pointerCount": 4,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 3,
+            "type": {
+              "list": {
+                "elementType": {
+                  "struct": {
+                    "typeId": 17182543244013116018
+                  }
+                }
+              }
+            },
+            "defaultValue": {
+              "schemaValueHex": "000000000400000000000000020001000e0000000000000000000000000000000000000000000000"
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "lanes",
+          "codeOrder": 6,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 6
+          }
+        }
+      ]
+    },
+    "0x9ccdc8676701b412": {
+      "kind": "struct",
+      "before_name": "SlcAction",
+      "after_name": "SlcAction",
+      "old_field_count": 8,
+      "old_storage": {
+        "dataWordCount": 4,
+        "pointerCount": 4,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 5,
+        "pointerCount": 4,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 4,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "wheelAdoptMonoTime",
+          "codeOrder": 8,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 8
+          }
+        }
+      ]
+    },
+    "0xcd96dafb67a082d0": {
+      "kind": "struct",
+      "before_name": "SlcCruiseEvent",
+      "after_name": "SlcCruiseEvent",
+      "old_field_count": 16,
+      "old_storage": {
+        "dataWordCount": 7,
+        "pointerCount": 6,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 8,
+        "pointerCount": 6,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 7,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "wheelOverrideSince",
+          "codeOrder": 16,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 16
+          }
+        }
+      ]
+    },
+    "0xda96579883444c35": {
+      "kind": "struct",
+      "before_name": "StarPilotLongitudinalPlan",
+      "after_name": "StarPilotLongitudinalPlan",
+      "old_field_count": 5,
+      "old_storage": {
+        "dataWordCount": 4,
+        "pointerCount": 0,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "new_storage": {
+        "dataWordCount": 6,
+        "pointerCount": 0,
+        "preferredListEncoding": "inlineComposite",
+        "isGroup": false,
+        "discriminantCount": 0,
+        "discriminantOffset": 0
+      },
+      "added_fields": [
+        {
+          "slot": {
+            "offset": 17,
+            "type": {
+              "bool": null
+            },
+            "defaultValue": {
+              "bool": false
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "forceStopBraking",
+          "codeOrder": 5,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 5
+          }
+        },
+        {
+          "slot": {
+            "offset": 4,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "forceStopEpisodeMonoTime",
+          "codeOrder": 6,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 6
+          }
+        },
+        {
+          "slot": {
+            "offset": 3,
+            "type": {
+              "uint8": null
+            },
+            "defaultValue": {
+              "uint8": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "departureAlertKind",
+          "codeOrder": 7,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 7
+          }
+        },
+        {
+          "slot": {
+            "offset": 5,
+            "type": {
+              "uint64": null
+            },
+            "defaultValue": {
+              "uint64": 0
+            },
+            "hadExplicitDefault": false
+          },
+          "name": "departureAlertMonoTime",
+          "codeOrder": 8,
+          "discriminantValue": 65535,
+          "ordinal": {
+            "explicit": 8
+          }
+        }
+      ]
+    }
+  },
+  "published_addition_commits": {
+    "slc": "ab8368f287b78b42f8590722878c7d5834609e19",
+    "flm": "b151ca11cb4d88f32d7adfdbcff50baf29f4fbbc",
+    "tesla_cooperative_steering": "63beafc6af294d0759b47dc3bc546f24082a2a5d",
+    "vision_stop_signs": "0571890b8e6d023050ae0ec1e0c5fa9163422568",
+    "navigation_lanes": "0cc9ddddfe89ba679a96e6947e2cc3f9aaf58130",
+    "applied_torque_tuning": "22dc5f1681129b81802361635a145d66ae9d2ee0"
+  },
+  "review_basis": "Published SLC, FLM, and Tesla cooperative-steering additions. Every incumbent wire field descriptor and enum prefix was independently checked unchanged; only the exact typed deltas listed here are permitted. Tesla adds steeringLimitInfo @39 at pointer slot 6 using the existing SteeringLimitInfo type. ToyotaCruise @38 retains pointer slot 5, type, and default; only its declaration codeOrder changes from 38 to 39. Published vision stop-sign addition appends VisionObservation.stopSigns @12 at pointer slot 2 with StopObservation type 0xb41e843c9023fcf8 and a null struct default. All 12 incumbent descriptors and nested Status/Stream types remain unchanged; data words stay 6 and pointers grow from 2 to 3. Old-reader relay preserves the populated stop observation and incumbent fields. Published navigation lane guidance appends Instruction.lanes @6 at pointer slot 3 as List(Navigation.Lane), type 0xee74a80b1d309a72, with a null list default. All six incumbent descriptors remain unchanged; data words stay 2 and pointers grow from 3 to 4. The new Lane type has one data word and two pointers, with active @0 :Bool, directions @1 :List(Text), and activeDirection @2 :Text; its compiled ID and layout are pinned separately. Old-reader relay preserves empty and populated lane lists on both instruction and nextManeuver, along with all incumbent parent fields. Published applied-torque telemetry appends StarPilotLateralState.torqueTuning @13 at pointer slot 5 as TorqueTuning type 0xa92d1325b855c382 with a null struct default. All thirteen incumbent field descriptors remain unchanged; data words stay 4 and pointers grow from 5 to 6. The new type has three data words and no pointers, with version @0 :UInt16, factor @1 :Float64, friction @2 :Float64, manualFactor @3 :Bool, manualFriction @4 :Bool, and learned @5 :Bool. Its compiled ID and exact layout are pinned separately. Historical messages retain absent/version-zero telemetry; incumbent-reader relay preserves both populated telemetry and incumbent fields. This addition reports applied controller values and grants no tuning or actuation authority."
+}

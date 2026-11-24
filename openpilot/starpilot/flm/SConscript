@@ -1,0 +1,28 @@
+Import('envCython')
+import hashlib
+import json
+import platform
+import struct
+import sys
+import sysconfig
+
+native = envCython.Clone()
+native.Append(CCFLAGS=['-O2', '-fno-fast-math', '-fno-finite-math-only'])
+extension = native.Program('_primitive_walk.so', '_primitive_walk.pyx', LIBS=[])
+
+
+def write_binding(target, source, env):
+  files = {'_primitive_walk.pyx': source[1], 'native_primitives.py': source[2],
+           'SConscript': source[3], 'SConstruct': source[4]}
+  value = {'schema': 1, 'revision': 'flm-exact-primitives-v1',
+           'sources': {name: hashlib.sha256(open(str(path), 'rb').read()).hexdigest() for name, path in files.items()},
+           'artifact_sha256': hashlib.sha256(open(str(source[0]), 'rb').read()).hexdigest(),
+           'abi': {'implementation': sys.implementation.name, 'cache_tag': sys.implementation.cache_tag,
+                   'python': list(sys.version_info[:2]), 'SOABI': sysconfig.get_config_var('SOABI'),
+                   'machine': platform.machine(), 'pointer_bits': struct.calcsize('P') * 8, 'platform': sys.platform}}
+  with open(str(target[0]), 'w') as output:
+    output.write(json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False) + '\n')
+
+
+native.Command('_primitive_walk.binding.json',
+               [extension[0], '_primitive_walk.pyx', 'native_primitives.py', 'SConscript', '#SConstruct'], write_binding)

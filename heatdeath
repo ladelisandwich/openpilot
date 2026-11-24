@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PYTHON_BIN="${HEATDEATH_PYTHON:-python3}"
+if [[ -z "${HEATDEATH_PYTHON:-}" && -x /usr/local/venv/bin/python3 ]]; then
+  PYTHON_BIN=/usr/local/venv/bin/python3
+fi
+exec "$PYTHON_BIN" -B "$ROOT_DIR/tools/heatdeath/heatdeath.py" "$@"
