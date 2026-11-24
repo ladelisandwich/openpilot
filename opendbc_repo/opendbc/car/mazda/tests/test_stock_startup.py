@@ -174,6 +174,12 @@ def complete_frames(packer, cp, tick, *, main, engaged=False, reverse=False, spe
     "DOORS": {},
     "BLINK_INFO": {},
     "BSM": {},
+    # the body inputs the fork's car state reads (tools/mazda/CONTROLLABILITY.md)
+    "TURN_SWITCH": {},
+    "MSG_05": {},
+    "MSG_11": {},
+    "EPB": {},
+    "TRACTION": {},
   }
   camera = {
     "CAM_LKAS": {"CTR": tick % 16, "ERR_BIT_1": int(permanent), "LKAS_REQUEST": 0},

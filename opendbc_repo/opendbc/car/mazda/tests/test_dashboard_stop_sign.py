@@ -4,14 +4,14 @@ import pytest
 from opendbc.can import CANPacker
 from opendbc.car import Bus, gen_empty_fingerprint
 from opendbc.car.mazda.interface import CarInterface
-from opendbc.car.mazda.values import CAR, DBC
+from opendbc.car.mazda.values import CAR, DBC, GEN1
 from opendbc.car.mazda.tests.test_stock_startup import complete_frames, exercise_startup
 from openpilot.starpilot.car.mazda import dashboard
 
 SUPPORTED = (CAR.MAZDA_CX5_2022, CAR.MAZDA_CX9_2021)
 
 
-@pytest.mark.parametrize('identity', list(CAR))
+@pytest.mark.parametrize('identity', sorted(GEN1, key=str))
 @pytest.mark.parametrize('alpha,release', ((False, False), (True, False), (False, True), (True, True)))
 def test_all_factory_variants_preserve_stock_ownership(identity, alpha, release):
   cp = CarInterface.get_params(identity, gen_empty_fingerprint(), [], alpha, release, False)
@@ -32,11 +32,13 @@ def test_actual_card_composes_original_camera_observation(identity, aol, monkeyp
     monkeypatch.setattr(dashboard.time, 'monotonic_ns', lambda: mono[0])
     monkeypatch.setattr(dashboard.time, 'clock_gettime_ns', lambda clock: mono[0] + offset)
     create = messaging.new_message
+
     def new_message(service=None, size=None, **kwargs):
       kwargs.setdefault('logMonoTime', mono[0])
       return create(service, size, **kwargs)
     monkeypatch.setattr(messaging, 'new_message', new_message)
     sent, send = [], card.pm.send
+
     def capture(service, event):
       if service == 'starpilotCarState':
         event = event.to_bytes()
@@ -95,7 +97,7 @@ def test_composition_preserves_other_evidence(age, health, monkeypatch):
   assert message.starpilotCarState.dashboardStopSign == int(valid)
 
 
-@pytest.mark.parametrize('identity', list(CAR))
+@pytest.mark.parametrize('identity', sorted(GEN1, key=str))
 def test_all_six_dom_dashboard_identities_observe_without_new_actuation(identity, monkeypatch):
   cp = CarInterface.get_params(identity, gen_empty_fingerprint(), [], False, False, False)
   ci = CarInterface(cp)

@@ -1,23 +1,39 @@
 """Optional Mazda camera observation; never a longitudinal control grant."""
 import time
 
-from opendbc.car.mazda.values import CAR, MazdaFlags
+from opendbc.car.mazda.values import GEN1, MazdaFlags
 from openpilot.cereal import messaging
 
 MAX_AGE_NS = 150_000_000
-DASHBOARD_CARS = frozenset(CAR)
+DASHBOARD_CARS = frozenset(GEN1)  # the mazda_2017 DBC's camera; the fork's GEN2/GEN3 platforms use other DBCs
 
 
 def capable(cp):
   # Read-only observation scope is separate from active-control/AOL admission.
-  # Dom's intentional dashboard commit explicitly covers all six GEN1 IDs.
-  return (cp.brand == 'mazda' and cp.carFingerprint in DASHBOARD_CARS and int(cp.flags) == int(MazdaFlags.GEN1) and not cp.notCar)
+  # Dom's intentional dashboard commit explicitly covers all six GEN1 IDs. Any GEN1 flag set (the Torque
+  # Interceptor and radar emulation configurations of the ladelisandwich fork included) keeps the camera.
+  return (cp.brand == 'mazda' and cp.carFingerprint in DASHBOARD_CARS and bool(int(cp.flags) & int(MazdaFlags.GEN1)) and
+          not int(cp.flags) & int(MazdaFlags.GEN2 | MazdaFlags.GEN3) and not cp.notCar)
 
 
 def compose(cp, parsed, state, message, *, car_state_stamp):
   if not capable(cp):
     return message
-  return write_stop_sign(parsed, state, message, car_state_stamp=car_state_stamp)
+  message = write_stop_sign(parsed, state, message, car_state_stamp=car_state_stamp)
+  return write_body_inputs(parsed, message)
+
+
+# The body inputs the car state reads for openpilot's own use (opendbc mazda carstate; tools/mazda/CONTROLLABILITY.md),
+# on starpilotCarState for modeld's wiper gate, the tune export and the card's own hooks.
+BODY_INPUTS = (("distance_increase_button", "distanceIncreasePressed"), ("hazard_lights", "hazardLights"),
+               ("wipers_active", "wipersActive"), ("washer_active", "washerActive"), ("horn_pressed", "hornPressed"),
+               ("auto_hold_active", "autoHoldActive"), ("lamps_on", "lampsOn"))
+
+
+def write_body_inputs(parsed, message):
+  for attribute, field in BODY_INPUTS:
+    setattr(message.starpilotCarState, field, bool(getattr(parsed, attribute, False)))
+  return message
 
 
 def write_stop_sign(parsed, state, message, *, car_state_stamp):

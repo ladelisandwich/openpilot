@@ -6,6 +6,7 @@ from collections import deque
 from openpilot.cereal import log
 from opendbc.car import structs
 from opendbc.car.hyundai.values import CAR, HyundaiFlags
+from opendbc.car.mazda.values import MazdaSafetyFlags, CarControllerParams as MazdaCarControllerParams
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY, CV
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -15,6 +16,8 @@ from openpilot.starpilot.lateral.controller_selection import ControllerMode, def
 from openpilot.starpilot.lateral.torque_shaping import KP as STARPILOT_KP
 from openpilot.starpilot.lateral.torque_extension import apply_turn_assist, create_extension, create_turn_assist
 from openpilot.starpilot.flm import live as flm
+from openpilot.starpilot.lateral.mazda_ti_shaping import (get_mazda_ti_friction_scale, get_mazda_ti_lat_accel_factor_scale,
+                                                         mazda_ti_error_scale)
 
 # At higher speeds (25+mph) we can assume:
 # Lateral acceleration achieved by a specific car correlates to
@@ -81,9 +84,45 @@ class LatControlTorque(LatControl):
     self.native_learning_last_tick = 0
     self.native_learning_source = None
 
+    # Mazda with a Torque Interceptor (starpilot/lateral/mazda_ti_shaping.py)
+    self.is_mazda_ti = CP.brand == "mazda" and bool(CP.flags & MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+    self.mazda_ti_base_params = None
+    self.mazda_ti_v_ego = 0.0
+    if self.is_mazda_ti:
+      ccp = MazdaCarControllerParams(CP)
+      # The TI's authority ends at TI_CEILING (700 of 800 counts), where the car controller clamps: the PID limits
+      # and the saturation test sit there too, so a pinned TI is reported instead of hidden behind the
+      # command/output mismatch (opendbc mazda values.py).
+      self.steer_max = ccp.TI_CEILING / ccp.STEER_MAX
+      # The plant gain and friction change with speed: the live or tune values are the highway base, shaped each frame.
+      self.mazda_ti_base_params = (float(self.torque_params.latAccelFactor), float(self.torque_params.friction))
+      self.update_limits()
+
+  def _mazda_ti_shaped_params(self, v_ego):
+    base_lat_accel_factor, base_friction = self.mazda_ti_base_params
+    return (base_lat_accel_factor * get_mazda_ti_lat_accel_factor_scale(v_ego),
+            base_friction * get_mazda_ti_friction_scale(v_ego))
+
+  def _apply_mazda_ti_speed_shape(self, v_ego):
+    self.mazda_ti_v_ego = v_ego
+    lat_accel_factor, friction = self._mazda_ti_shaped_params(v_ego)
+    # torque_params is a capnp Float32 builder: compare in float32, or the limits are recomputed every frame
+    if np.float32(lat_accel_factor) != np.float32(self.torque_params.latAccelFactor) or \
+       np.float32(friction) != np.float32(self.torque_params.friction):
+      self.torque_params.latAccelFactor = lat_accel_factor
+      self.torque_params.friction = friction
+      self.update_limits()
+
+  def mazda_ti_error_scale(self, v_ego) -> float:
+    return mazda_ti_error_scale(v_ego, self.pid._k_p[0], self.pid._k_p[1])
+
   def update_torque_parameters(self, latAccelFactor, latAccelOffset, friction):
     if self.starpilot_extension is not None:
       latAccelFactor, latAccelOffset, friction = self.starpilot_extension.transform_torque_parameters(latAccelFactor, latAccelOffset, friction)
+    if self.mazda_ti_base_params is not None:
+      # the live tune is the highway base; the speed shape rides on it
+      self.mazda_ti_base_params = (float(latAccelFactor), float(friction))
+      latAccelFactor, friction = self._mazda_ti_shaped_params(self.mazda_ti_v_ego)
     self.torque_params.latAccelFactor = latAccelFactor
     self.torque_params.latAccelOffset = latAccelOffset
     self.torque_params.friction = friction
@@ -117,6 +156,8 @@ class LatControlTorque(LatControl):
   def update_standard(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, *, friction_policy=None):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
     pid_log.version = VERSION
+    if self.mazda_ti_base_params is not None:
+      self._apply_mazda_ti_speed_shape(CS.vEgo)
     measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
     measurement = measured_curvature * CS.vEgo**2
     future_desired_lateral_accel = desired_curvature * CS.vEgo**2
@@ -140,6 +181,9 @@ class LatControlTorque(LatControl):
     expected_lateral_accel = self.lat_accel_request_buffer[-delay_frames]
     setpoint = expected_lateral_accel
     error = setpoint - measurement
+    if self.is_mazda_ti:
+      # the fork's tested low-speed response on this controller's gain schedule (P, I and the friction input)
+      error *= self.mazda_ti_error_scale(CS.vEgo)
 
     lookahead_idx = int(np.clip(-delay_frames + self.lookahead_frames, -self.lat_accel_request_buffer_len + 1, -2))
     raw_lateral_jerk = (self.lat_accel_request_buffer[lookahead_idx + 1] - self.lat_accel_request_buffer[lookahead_idx - 1]) / (2 * self.dt)

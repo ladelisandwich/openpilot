@@ -37,7 +37,9 @@ MIN_BUCKET_POINTS = np.array([100, 300, 500, 500, 500, 500, 300, 100])
 MIN_ENGAGE_BUFFER = 2  # secs
 
 VERSION = 1  # bump this to invalidate old parameter caches
-ALLOWED_CARS = ['toyota', 'hyundai', 'rivian', 'honda', 'volkswagen']
+# mazda: the Torque Interceptor car steers at every speed, and its live tune only ever reached the controller
+# through Force Auto Tune without this (the StarPilot 6 fork's finding)
+ALLOWED_CARS = ['toyota', 'hyundai', 'rivian', 'honda', 'volkswagen', 'mazda']
 
 
 def slope2rot(slope):

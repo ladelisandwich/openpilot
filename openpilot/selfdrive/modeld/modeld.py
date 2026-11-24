@@ -33,6 +33,7 @@ from msgq.visionipc import VisionIpcClient, VisionBuf
 from opendbc.car.car_helpers import get_demo_car_params
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.params import Params
+from openpilot.starpilot.car.mazda.wipers import MazdaWiperGate, wiper_gate_active
 from openpilot.common.hardware.usb import cable_connected, usb_host_connected
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import config_realtime_process, set_core_affinity, DT_MDL
@@ -488,10 +489,11 @@ def main(demo=False):
   pub_socks = ["modelIdentity", "modelV2", "drivingModelData", "cameraOdometry", "laneChangeAssistWire"] + (["chestnutGpuState"] if CHESTNUT else [])
   pm = PubMaster(pub_socks)
   sm = SubMaster(["deviceState", "carState", "narrowRoadCameraState", "extrinsicsCalibration", "driverMonitoringState",
-                  "carControl", "controlsState", "lateralDelay", "starpilotNavigation", "longitudinalPlan"])
+                  "carControl", "controlsState", "lateralDelay", "starpilotNavigation", "longitudinalPlan", "starpilotCarState"])
 
   publish_state = PublishState()
   params = Params()
+  wiper_gate = MazdaWiperGate(wiper_gate_active(CP, params))
   chestnut_state = ChestnutGpuState(pm, model.chestnut) if CHESTNUT else None
 
   # setup filter to track dropped frames
@@ -682,6 +684,9 @@ def main(demo=False):
                     auto_evidence(sm, modelv2_send.modelV2, direction, runtime_lane_policy.minimum_lane_width_m,
                                   now_mono_ns=mono_now_ns, now_boot_ns=boot_now_ns,
                                   model_valid=bool(modelv2_send.valid), vehicle_capable=auto_vehicle_capable))
+      if wiper_gate.feed(sm, mono_now_ns):
+        # Mazda "Wipers Mean Rain": no automated lane change while wiping, or for 3 s after the washer
+        auto_ready = False
       engaged = bool(sm['carControl'].latActive)
       DH.update(car_state, sm['carControl'].latActive, lane_change_prob,
                 auto_evidence=auto_ready, engaged=auto_trigger_engaged(sm, runtime_lane_policy,

@@ -180,3 +180,10 @@ legend = ["LAT_ACCEL_FACTOR", "MAX_LAT_ACCEL_MEASURED", "FRICTION"]
 "VOLVO_S60_RECHARGE" = [1.5, 1.5, 0.1]
 
 "BUICK_ENVISION_SDGM" = [2.6, 2.5, 0.14]
+
+# Mazda GEN2/GEN3 with the Torque Interceptor (ladelisandwich fork)
+"MAZDA_3_2019" = [1.45, 3.0, 0.33]
+"MAZDA_CX_30" = [1.45, 3.0, 0.238]
+"MAZDA_CX_50" = [1.45, 3.0, 0.33]
+"MAZDA_3_2023" = [1.45, 3.0, 0.33]
+"MAZDA_CX_30_2023" = [1.45, 3.0, 0.3]

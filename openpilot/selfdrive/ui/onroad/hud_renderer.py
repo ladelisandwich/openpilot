@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from openpilot.common.constants import CV
 from openpilot.selfdrive.ui.onroad.exp_button import ExpButton
 from openpilot.selfdrive.ui.onroad.model_source import ModelSource
+from openpilot.starpilot.ui.onroad_mazda_hybrid import MazdaHybridIcon
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.multilang import tr
@@ -73,6 +74,7 @@ class HudRenderer(Widget):
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
     self._model_source = ModelSource(scale=3)
+    self._mazda_hybrid_icon = MazdaHybridIcon()
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
@@ -122,6 +124,8 @@ class HudRenderer(Widget):
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
     button_y = rect.y + UI_CONFIG.border_size
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
+    self._mazda_hybrid_icon.render_left_of(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size),
+                                           ui_state.CP, ui_state.started)
     self._draw_model_source(rect)
 
   def _draw_model_source(self, rect: rl.Rectangle) -> None:

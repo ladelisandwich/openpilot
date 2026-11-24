@@ -222,6 +222,14 @@ struct StarPilotCarState @0xf35cc4560bbf6ec2 {
   feedbackPublication @37 :FeedbackPublication;
   steeringLimitInfo @39 :StarPilotCarControl.SteeringLimitInfo;
   toyotaCruise @38 :ToyotaCruise;
+  # Mazda GEN1 body inputs (starpilot/car/mazda/dashboard.py)
+  distanceIncreasePressed @40 :Bool;  # a separate distance-increase button is held (Mazda GEN1: CRZ_BTNS.DISTANCE_MORE)
+  hazardLights @41 :Bool;     # the hazard switch is on (Mazda GEN1: TURN_SWITCH.HAZARD)
+  wipersActive @42 :Bool;     # the front wipers are sweeping (Mazda GEN1: BLINK_INFO.WIPER_LO or WIPER_HI)
+  washerActive @43 :Bool;     # the front washer pump is running (Mazda GEN1: BLINK_INFO.FRONT_WASHER)
+  hornPressed @44 :Bool;      # the horn is pressed (Mazda GEN1: TURN_SWITCH.HORN)
+  autoHoldActive @45 :Bool;   # the car's auto hold is holding the brakes (Mazda GEN1: EPB.HOLD_STATE 3)
+  lampsOn @46 :Bool;          # exterior lamps on (Mazda GEN1: MSG_11.LAMPS_ON)
 
   struct ToyotaCruise {
     version @0 :UInt16;

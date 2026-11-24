@@ -24,6 +24,7 @@ from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.lateral_controller_factory import create_lateral_controller
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.modeld.constants import LAT_SMOOTH_SECONDS
+from openpilot.selfdrive.controls.lib.steer_limit import SteerLimitReclassifier, mazda_steer_limit_schedule
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
 from openpilot.starpilot.car.hyundai.lateral_fault import LateralFaultLatch
 from openpilot.starpilot.feature_runtime import enabled as feature_enabled
@@ -122,6 +123,13 @@ class Controls:
     self.pm = messaging.PubMaster(['carControl', 'controlsState', 'starpilotLateralState'])
 
     self.steer_limited_by_safety = False
+    # Mazda torque cars, behind the MazdaSteerLimitClassifier toggle (read at startup): the flag in publish() fires on
+    # every rate-limited step (10 of 800 counts clears the 0.01 threshold), so the integrator sits frozen through
+    # ordinary motion on 8-30% of hands-off steering frames. The classifier keeps the freeze for a mismatch that would
+    # wind the integrator further, releases it otherwise, and never counts the TI ceiling, where the PID limits already
+    # sit (lib/steer_limit.py).
+    self.steer_limit = SteerLimitReclassifier(mazda_steer_limit_schedule(self.CP))
+    self.mazda_steer_limit_classifier = self.CP.brand == "mazda" and self.params.get_bool("MazdaSteerLimitClassifier")
     self.curvature = 0.0
     self.desired_curvature = 0.0
     self.model_turn_assist = ModelTurnAssist()
@@ -777,9 +785,15 @@ class Controls:
         )
       else:
         self.steer_limited_by_safety = abs(CC.actuators.torque - CO.actuatorsOutput.torque) > 1e-2
+        if hasattr(self.LaC, "pid"):
+          self.steer_limited_by_safety = self.steer_limit.update(
+            self.mazda_steer_limit_classifier, CC.latActive,
+            float(CC.actuators.torque), float(CO.actuatorsOutput.torque), self.steer_limited_by_safety,
+            float(getattr(lac_log, "error", 0.0)), float(self.LaC.pid.i))
 
     else:
       self.steer_limited_by_safety = False
+      self.steer_limit.reset()
 
     # TODO: both controlsState and carControl valids should be set by
     #       sm.all_checks(), but this creates a circular dependency

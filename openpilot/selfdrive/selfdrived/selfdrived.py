@@ -215,6 +215,7 @@ class SelfdriveD:
     self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
     self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
     self.radar_recovery_enabled = self.params.get_bool("RadarRecoveryAlert")
+    self.mazda_tcs_off_alert = self.params.get_bool("MazdaTcsOffAlert")
     self.blindspot_alert_settings = (self.params.get_bool("LoudBlindspotAlert"),
                                     self.params.get_bool("LoudBlindspotAlertWhenDisengaged"))
 
@@ -353,6 +354,9 @@ class SelfdriveD:
         intent=self.aol_last_intent if self.aol_replay else None)
       show_low_speed = self.low_speed_advisory.update(float(CS.vEgo), float(self.CP.minSteerSpeed),
         drive_id=drive_id, eligible=eligible)
+      if self.CP.brand == "mazda" and not self.mazda_tcs_off_alert:
+        # Mazda reports TCS off as espDisabled, which soft-disables; off-road use is legitimate, so it is opt-in
+        car_events = [event for event in car_events if event.name != EventName.espDisabled]
       self.events.add_from_msg([event for event in car_events if event.name != EventName.belowSteerSpeed])
       if show_low_speed:
         self.events.add(EventName.belowSteerSpeed)
@@ -2407,6 +2411,7 @@ class SelfdriveD:
       self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
       self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
       self.radar_recovery_enabled = self.params.get_bool("RadarRecoveryAlert")
+      self.mazda_tcs_off_alert = self.params.get_bool("MazdaTcsOffAlert")
       self.blindspot_alert_settings = (self.params.get_bool("LoudBlindspotAlert"),
                                       self.params.get_bool("LoudBlindspotAlertWhenDisengaged"))
       self.departure_alert_settings = (self.params.get_bool("GreenLightAlert"), self.params.get_bool("LeadDepartingAlert"))

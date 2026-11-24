@@ -4,6 +4,7 @@
 #include "opendbc/safety/modes/mazda_stock_aol.h"
 
 // CAN msgs we care about
+/********** GEN1 msgs **********/
 #define MAZDA_LKAS          0x243U
 #define MAZDA_LKAS_HUD      0x440U
 #define MAZDA_CRZ_CTRL      0x21cU
@@ -11,40 +12,204 @@
 #define MAZDA_STEER_TORQUE  0x240U
 #define MAZDA_ENGINE_DATA   0x202U
 #define MAZDA_PEDALS        0x165U
+#define TI_STEER_TORQUE     0x24AU
+// Radar
+#define MAZDA_CRZ_INFO      0x21BU
+#define MAZDA_RADAR_361     0x361U
+#define MAZDA_RADAR_362     0x362U
+#define MAZDA_RADAR_363     0x363U
+#define MAZDA_RADAR_364     0x364U
+#define MAZDA_RADAR_365     0x365U
+#define MAZDA_RADAR_366     0x366U
+#define MAZDA_RADAR_499     0x499U
+#define MAZDA_RADAR_UDS     0x764U
+/************* GEN2 msgs *************/
+#define MAZDA_2019_BRAKE          0x43FU  // main bus
+#define MAZDA_2019_GAS            0x202U  // camera bus DBC: ENGINE_DATA
+#define MAZDA_2019_CRUISE         0x44AU  // main bus. DBC: CRUISE_STATE
+#define MAZDA_2019_SPEED          0x217U  // camera bus. DBC: SPEED
+#define MAZDA_2019_STEER_TORQUE   0x24BU  // aux bus. DBC: TI_FEEDBACK
+#define MAZDA_2019_CRZ_BTNS       0x9DU   // rx on main tx on camera. DBC: CRZ_BTNS
+#define MAZDA_2019_ACC            0x220U  // main bus. DBC: ACC
+#define MAZDA_TI_LKAS             0x249U
+/************* GEN3 msgs *************/
+#define MAZDA_2023_SPEED          0x215  // main bus. DBC: WHEEL_SPEEDS
+#define MAZDA_2023_BRAKE          0x9F  // main bus. DBC: BRAKE_PEDAL
+#define MAZDA_2023_ACC            0x21e  // main bus. DBC: ACC
 
 // CAN bus numbers
 #define MAZDA_MAIN 0
+#define MAZDA_AUX  1
 #define MAZDA_CAM  2
+
+// param flag masks
+const int FLAG_GEN1 = 1;
+const int FLAG_GEN2 = 2;
+const int FLAG_GEN3 = 4;
+const int FLAG_TORQUE_INTERCEPTOR = 8;
+const int FLAG_RADAR_INTERCEPTOR = 16;
+const int FLAG_NO_FSC = 32;
+const int FLAG_NO_MRCC = 64;
+const int FLAG_RADAR_EMULATION = 256;
+
+bool gen1 = false;
+bool gen2 = false;
+bool gen3 = false;
+bool torque_interceptor = false;
+bool radar_interceptor = false;
+bool no_fsc = false;
+bool no_mrcc = false;
+bool radar_emulation = false;
+
+// Radar emulation: the stock radar is silenced over UDS and openpilot impersonates it.
+// Only the exact heartbeat frames the module would have sent are allowed on the bus.
+// Radar heartbeat frames are replayed from what this car's own radar broadcast before it
+// was silenced (see capture_stock_radar_frames), so their content cannot be checked against
+// a fixed pattern -- the bytes legitimately differ between models and firmware. Byte-pattern
+// validation is therefore not applied to these addresses.
+//
+// What this gives up: panda can no longer distinguish a replayed radar track from a
+// fabricated one. These frames carry lead presence but command no acceleration.
+// What is unchanged: CRZ_INFO accel limits, CRZ_CTRL gated on controls_allowed, the UDS
+// allowlist, and the address/bus allowlist. The acceleration path is untouched.
+static bool mazda_radar_heartbeat_msg_valid(const CANPacket_t *msg) {
+  return (msg->addr == MAZDA_RADAR_499) || (msg->addr == MAZDA_RADAR_361) ||
+         (msg->addr == MAZDA_RADAR_362) || (msg->addr == MAZDA_RADAR_363) ||
+         (msg->addr == MAZDA_RADAR_364) || (msg->addr == MAZDA_RADAR_365) ||
+         (msg->addr == MAZDA_RADAR_366);
+}
+
+
 
 // track msgs coming from OP so that we know what CAM msgs to drop and what to forward
 static void mazda_rx_hook(const CANPacket_t *msg) {
+  // StarPilot 7's stock always-on-lateral bookkeeping: inert unless mazda_aol_enabled (an unmodified GEN1, param 0)
   mazda_aol_rx(msg);
-  if (msg_matches(msg, MAZDA_ENGINE_DATA, MAZDA_MAIN)) {
-    // sample speed: scale by 0.01 to get kph
-    int speed = (msg->data[2] << 8) | msg->data[3];
-    vehicle_moving = speed > 10;  // moving when speed > 0.1 kph
+  if ((int)msg->bus == MAZDA_MAIN) {
+    if (gen1) {
+      if (msg->addr == MAZDA_ENGINE_DATA) {
+        // sample speed: scale by 0.01 to get kph
+        int speed = (msg->data[2] << 8) | msg->data[3];
+        vehicle_moving = speed > 10; // moving when speed > 0.1 kph
+      }
+
+      if (msg->addr == MAZDA_STEER_TORQUE && !torque_interceptor) {
+        int torque_driver_new = msg->data[0] - 127U;
+        // update array of samples
+        update_sample(&torque_driver, torque_driver_new);
+      }
+
+      // enter controls on rising edge of ACC, exit controls on ACC off
+      if (msg->addr == MAZDA_CRZ_CTRL && !no_mrcc && !radar_interceptor && !radar_emulation) {
+        acc_main_on = GET_BIT(msg, 17U);
+        bool cruise_engaged = msg->data[0] & 0x8U;
+        const bool was_allowed = controls_allowed;
+        pcm_cruise_check(cruise_engaged);
+        mazda_aol_engagement(msg, cruise_engaged, !was_allowed && controls_allowed);
+      }
+
+      if (msg->addr == MAZDA_ENGINE_DATA) {
+        gas_pressed = (msg->data[4] || (msg->data[5] & 0xF0U));
+      }
+
+      if (msg->addr == MAZDA_PEDALS) {
+        bool brake = (msg->data[0] & 0x10U);
+        if (radar_emulation) {
+          // Radar suppression removes the stock CRZ_CTRL frame, so derive Mazda's
+          // "main on" state from PEDALS instead. ACC_OFF means MRCC is armed but not
+          // actively controlling, ACC_ACTIVE means stock ACC has engaged.
+          bool cruise_engaged = GET_BIT(msg, 3U);
+          bool acc_armed = GET_BIT(msg, 2U) || cruise_engaged;
+          acc_main_on = acc_armed;
+
+          // Only feed PEDALS into pcm_cruise_check when the ACC state is actually
+          // meaningful. Brake-only samples can arrive with both ACC bits low while the
+          // driver is holding the pedal; treating those as a stock ACC-off edge drops
+          // controls before the normal brake-edge logic runs.
+          if (acc_armed || cruise_engaged_prev || (!brake && !brake_pressed_prev)) {
+            pcm_cruise_check(cruise_engaged);
+          }
+        } else if (radar_interceptor || no_mrcc) {
+          // acc_main_on = GET_BIT(to_push, 17U); TODO
+          bool cruise_engaged = msg->data[0] & 0x8U;
+          pcm_cruise_check(cruise_engaged);
+        } else {
+        }
+        brake_pressed = brake;
+      }
+    }
+
+    if (gen2) {
+      if (msg->addr == MAZDA_2019_BRAKE) {
+        brake_pressed = (msg->data[5] & 0x4U);
+      }
+
+      if (msg->addr == MAZDA_2019_CRUISE) {
+        acc_main_on = true;
+        bool cruise_engaged = msg->data[0] & 0x20U;
+        bool pre_enable = msg->data[0] & 0x40U;
+        pcm_cruise_check((cruise_engaged || pre_enable));
+      }
+    }
+
+    if (gen3) {
+      if (msg->addr == MAZDA_2023_BRAKE) {
+        brake_pressed = (msg->data[7] & 0x8U);
+      }
+      if (msg->addr == MAZDA_2023_SPEED) {
+        int speed = ( (msg->data[0] << 8) | (msg->data[1]) ) - 10000; // Front Left Wheel Speed
+        vehicle_moving = speed != 0;
+      }
+    }
   }
 
-  if (msg_matches(msg, MAZDA_STEER_TORQUE, MAZDA_MAIN)) {
-    int torque_driver_new = msg->data[0] - 127U;
-    // update array of samples
-    update_sample(&torque_driver, torque_driver_new);
+  if ((msg->bus == MAZDA_AUX)) {
+
+    if (msg->addr == TI_STEER_TORQUE && gen1 && torque_interceptor) {
+      int torque_driver_new = msg->data[0] - 127;
+      update_sample(&torque_driver, torque_driver_new);
+    }
+
+    // enter controls on rising edge of ACC, exit controls on ACC off
+    if (msg->addr == MAZDA_CRZ_CTRL) {
+      bool cruise_engaged = msg->data[0] & 0x8U;
+      pcm_cruise_check(cruise_engaged);
+
+      acc_main_on = GET_BIT(msg, 17U);
+    }
+
+    if (msg->addr == MAZDA_2019_STEER_TORQUE && (gen2 || gen3)) {
+      update_sample(&torque_driver, (int16_t)(msg->data[0] << 8 | msg->data[1]));
+    }
+
+    if (msg->addr == MAZDA_2019_CRUISE && gen3) {
+      uint8_t state = msg->data[0] & 0x70U;
+      bool cruise_engaged = (0x30U == state);
+      bool cruise_override = (0x40U == state);
+      //bool cruise_disable = (state == 0x10U);
+      acc_main_on = true;
+      pcm_cruise_check(cruise_engaged || cruise_override);
+    }
   }
 
-  // enter controls on rising edge of ACC, exit controls on ACC off
-  if (msg_matches(msg, MAZDA_CRZ_CTRL, MAZDA_MAIN)) {
-    bool cruise_engaged = msg->data[0] & 0x8U;
-    const bool was_allowed = controls_allowed;
-    pcm_cruise_check(cruise_engaged);
-    mazda_aol_engagement(msg, cruise_engaged, !was_allowed && controls_allowed);
-  }
+  if ((msg->bus == MAZDA_CAM)) {
+    if (gen2) {
 
-  if (msg_matches(msg, MAZDA_ENGINE_DATA, MAZDA_MAIN)) {
-    gas_pressed = (msg->data[4] | (msg->data[5] & 0xF0U)) != 0U;
-  }
+      if (msg->addr == MAZDA_2019_GAS) {
+        gas_pressed = (msg->data[4] || ((msg->data[5] & 0xC0U)));
+      }
 
-  if (msg_matches(msg, MAZDA_PEDALS, MAZDA_MAIN)) {
-    brake_pressed = (msg->data[0] & 0x10U);
+      if (msg->addr == MAZDA_2019_SPEED) {
+        // sample speed: scale by 0.01 to get kph
+        int speed = (msg->data[4] << 8) | (msg->data[5]);
+        vehicle_moving = (speed > 10);  // moving when speed > 0.1 kph
+      }
+    }
+    if (gen3) {
+      if (msg->addr == MAZDA_2019_GAS) {
+        gas_pressed = (msg->data[4] || (msg->data[5] & 0xC0U));
+      }
+    }
   }
 }
 
@@ -59,23 +224,98 @@ static bool mazda_tx_hook(const CANPacket_t *msg) {
     .type = TorqueDriverLimited,
   };
 
+  const TorqueSteeringLimits MAZDA_2019_STEERING_LIMITS = {
+    .max_torque = 8000,
+    .max_rate_up = 45,
+    .max_rate_down = 80,
+    .max_rt_delta = 1688,  // (45*100hz*250000/1000000)*1.5
+    .driver_torque_multiplier = 1,
+    .driver_torque_allowance = 1400,
+    .type = TorqueDriverLimited,
+  };
+
   bool tx = true;
   // Check if msg is sent on the main BUS
-  // steer cmd checks
-  if (msg_matches(msg, MAZDA_LKAS, MAZDA_MAIN)) {
-    int desired_torque = (((msg->data[0] & 0x0FU) << 8) | msg->data[1]) - 2048U;
+  if (msg->bus == (unsigned char)MAZDA_MAIN) {
+    // steer cmd checks
+    if (msg->addr == MAZDA_LKAS) {
+      int desired_torque = (((msg->data[0] & 0x0FU) << 8) | msg->data[1]) - 2048U;
 
-    if (steer_torque_cmd_checks(desired_torque, -1, MAZDA_STEERING_LIMITS)) {
+      if (steer_torque_cmd_checks(desired_torque, -1, MAZDA_STEERING_LIMITS)) {
+        tx = false;
+      }
+    }
+
+    // cruise buttons check
+    if (msg->addr == MAZDA_CRZ_BTNS) {
+      // allow resume spamming while controls allowed, but
+      // only allow cancel while controls not allowed
+      bool cancel_cmd = (msg->data[0] == 0x1U);
+      if (!controls_allowed && !cancel_cmd) {
+        tx = false;
+      }
+    }
+  }
+  // radar emulation: openpilot owns the longitudinal + heartbeat frames on bus 0 and bus 2
+  bool long_emu_bus = (msg->bus == (unsigned char)MAZDA_MAIN) || (msg->bus == (unsigned char)MAZDA_CAM);
+
+  if (radar_emulation && long_emu_bus && (msg->addr == MAZDA_CRZ_INFO)) {
+    bool stock_standby = (msg->data[0] == 0x01U) && (msg->data[1] == 0xffU) &&
+                         (msg->data[2] == 0xe3U) && (msg->data[3] == 0xffU) &&
+                         (msg->data[4] == 0xc0U) && (msg->data[5] == 0x00U) &&
+                         ((msg->data[6] & 0xf0U) == 0x00U) &&
+                         (msg->data[7] == ((0x5dU - msg->data[6]) & 0xffU));
+    // Keep this window aligned with the software clip in car/mazda/longitudinal.py.
+    // If it is tighter than the sender, panda silently drops 0x21b once ACCEL_CMD
+    // crosses the threshold, which looks like an unexplained set-speed unlatch.
+    const LongitudinalLimits MAZDA_LONG_LIMITS = {
+      .max_accel = 2000,
+      .min_accel = -2000,
+      .inactive_accel = 0,
+    };
+
+    // CRZ_INFO.ACCEL_CMD is a 13-bit big-endian field spanning data[2] low bits,
+    // all of data[3], and data[4] high bits.
+    int desired_accel = ((((int)msg->data[2] & 0x3) << 11) | (((int)msg->data[3]) << 3) | (((int)msg->data[4]) >> 5)) - 4096;
+    if (!stock_standby && longitudinal_accel_checks(desired_accel, MAZDA_LONG_LIMITS)) {
       tx = false;
     }
   }
 
-  // cruise buttons check
-  if (msg_matches(msg, MAZDA_CRZ_BTNS, MAZDA_MAIN)) {
-    // allow resume spamming while controls allowed, but
-    // only allow cancel while controls not allowed
-    bool cancel_cmd = (msg->data[0] == 0x1U);
-    if (!controls_allowed && !cancel_cmd) {
+  if (radar_emulation && long_emu_bus && (msg->addr == MAZDA_CRZ_CTRL)) {
+    bool cruise_active = GET_BIT(msg, 3U);
+    if (!controls_allowed && cruise_active) {
+      tx = false;
+    }
+  }
+
+  if (radar_emulation && long_emu_bus && (msg->addr == MAZDA_RADAR_499)) {
+    if (!mazda_radar_heartbeat_msg_valid(msg)) {
+      tx = false;
+    }
+  }
+
+  if (radar_emulation && long_emu_bus && ((msg->addr == MAZDA_RADAR_361) || (msg->addr == MAZDA_RADAR_362) ||
+                                          (msg->addr == MAZDA_RADAR_363) || (msg->addr == MAZDA_RADAR_364) ||
+                                          (msg->addr == MAZDA_RADAR_365) || (msg->addr == MAZDA_RADAR_366))) {
+    if (!mazda_radar_heartbeat_msg_valid(msg)) {
+      tx = false;
+    }
+  }
+
+  // only a tester-present or a default/programming session request may reach the radar
+  if (radar_emulation && (msg->bus == (unsigned char)MAZDA_MAIN) && (msg->addr == MAZDA_RADAR_UDS)) {
+    bool tester_present = (msg->data[0] == 0x02U) && (msg->data[1] == 0x3EU) && (msg->data[2] == 0x80U);
+    bool session_control = (msg->data[0] == 0x02U) && (msg->data[1] == 0x10U) &&
+                           ((msg->data[2] == 0x01U) || (msg->data[2] == 0x02U));
+    if (!tester_present && !session_control) {
+      tx = false;
+    }
+  }
+
+  if ((gen2 || gen3) && (msg->bus == MAZDA_AUX) && (msg->addr == MAZDA_TI_LKAS)) {
+    int desired_torque = (int16_t)((msg->data[0] << 8) | msg->data[1]);  // signal is signed
+    if (steer_torque_cmd_checks(desired_torque, -1, MAZDA_2019_STEERING_LIMITS)) {
       tx = false;
     }
   }
@@ -85,20 +325,97 @@ static bool mazda_tx_hook(const CANPacket_t *msg) {
 }
 
 static safety_config mazda_init(uint16_t param) {
-  static CanMsg MAZDA_TX_MSGS[] = {
-    {MAZDA_LKAS, 0, 8, .check_relay = true},
-    {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false},
-    {MAZDA_LKAS_HUD, 0, 8, .check_relay = true},
-  };
+  static CanMsg MAZDA_TX_MSGS[] = {{MAZDA_LKAS, 0, 8, .check_relay = true}, {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false}, {MAZDA_LKAS_HUD, 0, 8, .check_relay = true}};
+  static const CanMsg MAZDA_TI_TX_MSGS[] = {{MAZDA_LKAS, 0, 8, .check_relay = true}, {MAZDA_TI_LKAS, 1, 8, .check_relay = false}, {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false}, {MAZDA_LKAS_HUD, 0, 8, .check_relay = true}};
+  static const CanMsg MAZDA_RI_TX_MSGS[] = {{MAZDA_LKAS, 0, 8, .check_relay = true}, {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false}, {MAZDA_LKAS_HUD, 0, 8, .check_relay = true},
+                                    {MAZDA_CRZ_CTRL, 0, 8, .check_relay = true}, {MAZDA_CRZ_INFO, 0, 8, .check_relay = true}, {MAZDA_RADAR_361, 0, 8, .check_relay = true}, {MAZDA_RADAR_362, 0, 8, .check_relay = true},
+                                    {MAZDA_RADAR_363, 0, 8, .check_relay = true}, {MAZDA_RADAR_364, 0, 8, .check_relay = true}, {MAZDA_RADAR_365, 0, 8, .check_relay = true}, {MAZDA_RADAR_366, 0, 8, .check_relay = true},
+                                    {MAZDA_RADAR_499, 0, 8, .check_relay = true}};
+  static const CanMsg MAZDA_TI_RI_TX_MSGS[] = {{MAZDA_LKAS, 0, 8, .check_relay = true}, {MAZDA_TI_LKAS, 1, 8, .check_relay = false}, {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false}, {MAZDA_LKAS_HUD, 0, 8, .check_relay = true},
+                                  {MAZDA_CRZ_CTRL, 0, 8, .check_relay = true}, {MAZDA_CRZ_INFO, 0, 8, .check_relay = true}, {MAZDA_RADAR_361, 0, 8, .check_relay = true}, {MAZDA_RADAR_362, 0, 8, .check_relay = true},
+                                  {MAZDA_RADAR_363, 0, 8, .check_relay = true}, {MAZDA_RADAR_364, 0, 8, .check_relay = true}, {MAZDA_RADAR_365, 0, 8, .check_relay = true}, {MAZDA_RADAR_366, 0, 8, .check_relay = true},
+                                  {MAZDA_RADAR_499, 0, 8, .check_relay = true}};
 
-  static const RxCheck mazda_rx_checks[] = {
+#define MAZDA_RADAR_EMU_MSGS \
+    {MAZDA_CRZ_INFO, 0, 8, .check_relay = false}, {MAZDA_CRZ_CTRL, 0, 8, .check_relay = false}, \
+    {MAZDA_RADAR_499, 0, 8, .check_relay = false}, {MAZDA_RADAR_361, 0, 8, .check_relay = false}, \
+    {MAZDA_RADAR_362, 0, 8, .check_relay = false}, {MAZDA_RADAR_363, 0, 8, .check_relay = false}, \
+    {MAZDA_RADAR_364, 0, 8, .check_relay = false}, {MAZDA_RADAR_365, 0, 8, .check_relay = false}, \
+    {MAZDA_RADAR_366, 0, 8, .check_relay = false}, {MAZDA_RADAR_UDS, 0, 8, .check_relay = false}, \
+    {MAZDA_CRZ_INFO, MAZDA_CAM, 8, .check_relay = false}, {MAZDA_CRZ_CTRL, MAZDA_CAM, 8, .check_relay = false}, \
+    {MAZDA_RADAR_499, MAZDA_CAM, 8, .check_relay = false}, {MAZDA_RADAR_361, MAZDA_CAM, 8, .check_relay = false}, \
+    {MAZDA_RADAR_362, MAZDA_CAM, 8, .check_relay = false}, {MAZDA_RADAR_363, MAZDA_CAM, 8, .check_relay = false}, \
+    {MAZDA_RADAR_364, MAZDA_CAM, 8, .check_relay = false}, {MAZDA_RADAR_365, MAZDA_CAM, 8, .check_relay = false}, \
+    {MAZDA_RADAR_366, MAZDA_CAM, 8, .check_relay = false}
+
+  static const CanMsg MAZDA_RE_TX_MSGS[] = {{MAZDA_LKAS, 0, 8, .check_relay = true}, {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false}, {MAZDA_LKAS_HUD, 0, 8, .check_relay = true},
+                                    MAZDA_RADAR_EMU_MSGS};
+  static const CanMsg MAZDA_TI_RE_TX_MSGS[] = {{MAZDA_LKAS, 0, 8, .check_relay = true}, {MAZDA_TI_LKAS, 1, 8, .check_relay = false}, {MAZDA_CRZ_BTNS, 0, 8, .check_relay = false}, {MAZDA_LKAS_HUD, 0, 8, .check_relay = true},
+                                    MAZDA_RADAR_EMU_MSGS};
+
+  static const CanMsg MAZDA_2019_TX_MSGS[] = {{MAZDA_TI_LKAS, 1, 8, .check_relay = false}, {MAZDA_2019_ACC, 2, 8, .check_relay = true}};
+
+  static RxCheck mazda_rx_checks[] = {
     {.msg = {{MAZDA_CRZ_CTRL,     0, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{MAZDA_CRZ_BTNS,     0, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{MAZDA_STEER_TORQUE, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{MAZDA_ENGINE_DATA,  0, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
     {.msg = {{MAZDA_PEDALS,       0, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
   };
+  static RxCheck mazda_ti_rx_checks[] = {
+    {.msg = {{MAZDA_CRZ_CTRL,     0, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_CRZ_BTNS,     0, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_STEER_TORQUE, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_ENGINE_DATA,  0, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_PEDALS,       0, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{TI_STEER_TORQUE,    1, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
 
+  };
+  // CRZ_CTRL is deliberately absent: with the radar silenced the stock frame never
+  // arrives, and keeping the check would flag CAN invalid and block engagement.
+  static RxCheck mazda_re_rx_checks[] = {
+    {.msg = {{MAZDA_CRZ_BTNS,     0, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_STEER_TORQUE, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_ENGINE_DATA,  0, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_PEDALS,       0, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+  };
+  static RxCheck mazda_ti_re_rx_checks[] = {
+    {.msg = {{MAZDA_CRZ_BTNS,     0, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_STEER_TORQUE, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_ENGINE_DATA,  0, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_PEDALS,       0, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{TI_STEER_TORQUE,    1, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+  };
+
+  static RxCheck mazda_2019_rx_checks[] = {
+    {.msg = {{MAZDA_2019_BRAKE,         0, 8, 20U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_GAS,           2, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_CRUISE,        0, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_SPEED,         2, 8, 30U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_STEER_TORQUE,  1, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+  };
+
+  static RxCheck mazda_2023_rx_checks[] = {
+    {.msg = {{MAZDA_2023_BRAKE,         0, 8, 5U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_GAS,           2, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_CRUISE,        1, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2023_SPEED,         2, 8, 30U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+    {.msg = {{MAZDA_2019_STEER_TORQUE,  1, 8, 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
+};
+
+  // Check flags. Upstream runs a stock GEN1 with safety param 0, so GEN1 is the default generation.
+  gen2 = GET_FLAG(param, FLAG_GEN2);
+  gen3 = GET_FLAG(param, FLAG_GEN3);
+  gen1 = GET_FLAG(param, FLAG_GEN1) || (!gen2 && !gen3);
+  radar_interceptor = GET_FLAG(param, FLAG_RADAR_INTERCEPTOR);
+  torque_interceptor = GET_FLAG(param, FLAG_TORQUE_INTERCEPTOR);
+  no_fsc = GET_FLAG(param, FLAG_NO_FSC);
+  no_mrcc = GET_FLAG(param, FLAG_NO_MRCC);
+  radar_emulation = GET_FLAG(param, FLAG_RADAR_EMULATION);
+
+  // StarPilot 7's stock always-on-lateral: only an unmodified GEN1 (param 0) that asked for it (alternative
+  // experience 32). With the Torque Interceptor or the radar emulation flags set it stays off, and unlike
+  // upstream the flagged configurations keep their transmit tables.
   mazda_aol_reset();
   mazda_aol_enabled = (param == 0U) && ((unsigned int)alternative_experience == 32U);
   MAZDA_TX_MSGS[0].check_relay = !mazda_aol_enabled;
@@ -113,11 +430,37 @@ static safety_config mazda_init(uint16_t param) {
     };
     aol_policy = &policy;
   }
+
   safety_config ret = BUILD_SAFETY_CFG(mazda_rx_checks, MAZDA_TX_MSGS);
-  if (((unsigned int)alternative_experience == 32U) && (param != 0U)) {
-    ret.tx_msgs = NULL;
-    ret.tx_msgs_len = 0;
+
+  if (gen1) {
+    SET_RX_CHECKS(mazda_rx_checks, ret);
+    if (radar_emulation && torque_interceptor) {
+      SET_RX_CHECKS(mazda_ti_re_rx_checks, ret);
+      SET_TX_MSGS(MAZDA_TI_RE_TX_MSGS, ret);
+    } else if (radar_emulation) {
+      SET_RX_CHECKS(mazda_re_rx_checks, ret);
+      SET_TX_MSGS(MAZDA_RE_TX_MSGS, ret);
+    } else if (radar_interceptor && torque_interceptor) {
+      SET_RX_CHECKS(mazda_ti_rx_checks, ret);
+      SET_TX_MSGS(MAZDA_TI_RI_TX_MSGS, ret);
+    } else if (radar_interceptor) {
+      SET_TX_MSGS(MAZDA_RI_TX_MSGS, ret);
+    } else if (torque_interceptor) {
+      SET_RX_CHECKS(mazda_ti_rx_checks, ret);
+      SET_TX_MSGS(MAZDA_TI_TX_MSGS, ret);
+    } else {
+      SET_TX_MSGS(MAZDA_TX_MSGS, ret);
+    }
   }
+
+  if (gen2) {
+    ret = BUILD_SAFETY_CFG(mazda_2019_rx_checks, MAZDA_2019_TX_MSGS);
+  }
+  if (gen3) {
+    ret = BUILD_SAFETY_CFG(mazda_2023_rx_checks, MAZDA_2019_TX_MSGS);
+  }
+
   return ret;
 }
 

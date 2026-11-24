@@ -1182,6 +1182,11 @@ class Car:
     if self.CP.brand == 'mazda':
       from openpilot.starpilot.car.mazda.dashboard import compose
       companion = compose(self.CP, self.CI.CS, CS, companion, car_state_stamp=int(cs_send.logMonoTime))
+      if not hasattr(self, 'mazda_card_hooks'):
+        from openpilot.starpilot.car.mazda.hybrid_buttons import MazdaCardHooks
+        self.mazda_card_hooks = MazdaCardHooks(self.CP, self.params)
+      # the hybrid longitudinal mode switch (distance increase) and the horn-tap bookmark
+      self.mazda_card_hooks.update(self.CI.CS)
     elif self.CP.brand == 'hyundai':
       from openpilot.starpilot.car.hyundai.dashboard import compose as hyundai_compose
       companion = hyundai_compose(self.CP, self.CI.CS, CS, companion, car_state_stamp=int(cs_send.logMonoTime))

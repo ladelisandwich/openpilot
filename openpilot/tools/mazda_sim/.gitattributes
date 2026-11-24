@@ -1,0 +1,5 @@
+# the containers run these straight from your checkout: keep LF even with core.autocrlf on Windows
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*Dockerfile text eol=lf

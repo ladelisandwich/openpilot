@@ -278,5 +278,5 @@ def learning_allowed(params, CP, *, selection: ControllerSelection | None = None
     return False
   # Reuse the native estimator only in its existing brand scope. Actual
   # controller parameter ownership still belongs to Controls or TorqueHost.
-  native_brand = str(CP.brand) in ('toyota', 'hyundai', 'rivian', 'honda', 'volkswagen')
+  native_brand = str(CP.brand) in ('toyota', 'hyundai', 'rivian', 'honda', 'volkswagen', 'mazda')
   return native_brand and controller_uses_native_learning(selected) and CP.lateralTuning.which() == 'torque'

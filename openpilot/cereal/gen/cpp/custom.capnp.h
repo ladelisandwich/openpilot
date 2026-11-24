@@ -3630,6 +3630,20 @@ public:
   inline bool hasSteeringLimitInfo() const;
   inline  ::cereal::StarPilotCarControl::SteeringLimitInfo::Reader getSteeringLimitInfo() const;
 
+  inline bool getDistanceIncreasePressed() const;
+
+  inline bool getHazardLights() const;
+
+  inline bool getWipersActive() const;
+
+  inline bool getWasherActive() const;
+
+  inline bool getHornPressed() const;
+
+  inline bool getAutoHoldActive() const;
+
+  inline bool getLampsOn() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -3805,6 +3819,27 @@ public:
   inline  ::cereal::StarPilotCarControl::SteeringLimitInfo::Builder initSteeringLimitInfo();
   inline void adoptSteeringLimitInfo(::capnp::Orphan< ::cereal::StarPilotCarControl::SteeringLimitInfo>&& value);
   inline ::capnp::Orphan< ::cereal::StarPilotCarControl::SteeringLimitInfo> disownSteeringLimitInfo();
+
+  inline bool getDistanceIncreasePressed();
+  inline void setDistanceIncreasePressed(bool value);
+
+  inline bool getHazardLights();
+  inline void setHazardLights(bool value);
+
+  inline bool getWipersActive();
+  inline void setWipersActive(bool value);
+
+  inline bool getWasherActive();
+  inline void setWasherActive(bool value);
+
+  inline bool getHornPressed();
+  inline void setHornPressed(bool value);
+
+  inline bool getAutoHoldActive();
+  inline void setAutoHoldActive(bool value);
+
+  inline bool getLampsOn();
+  inline void setLampsOn(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -18319,6 +18354,104 @@ inline void StarPilotCarState::Builder::adoptSteeringLimitInfo(
 inline ::capnp::Orphan< ::cereal::StarPilotCarControl::SteeringLimitInfo> StarPilotCarState::Builder::disownSteeringLimitInfo() {
   return ::capnp::_::PointerHelpers< ::cereal::StarPilotCarControl::SteeringLimitInfo>::disown(_builder.getPointerField(
       ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+
+inline bool StarPilotCarState::Reader::getDistanceIncreasePressed() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<70>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getDistanceIncreasePressed() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<70>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setDistanceIncreasePressed(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<70>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool StarPilotCarState::Reader::getHazardLights() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<71>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getHazardLights() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<71>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setHazardLights(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<71>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool StarPilotCarState::Reader::getWipersActive() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<72>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getWipersActive() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<72>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setWipersActive(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<72>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool StarPilotCarState::Reader::getWasherActive() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<73>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getWasherActive() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<73>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setWasherActive(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<73>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool StarPilotCarState::Reader::getHornPressed() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<74>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getHornPressed() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<74>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setHornPressed(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<74>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool StarPilotCarState::Reader::getAutoHoldActive() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<75>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getAutoHoldActive() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<75>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setAutoHoldActive(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<75>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool StarPilotCarState::Reader::getLampsOn() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<76>() * ::capnp::ELEMENTS);
+}
+
+inline bool StarPilotCarState::Builder::getLampsOn() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<76>() * ::capnp::ELEMENTS);
+}
+inline void StarPilotCarState::Builder::setLampsOn(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<76>() * ::capnp::ELEMENTS, value);
 }
 
 inline  ::uint16_t StarPilotCarState::ToyotaCruise::Reader::getVersion() const {

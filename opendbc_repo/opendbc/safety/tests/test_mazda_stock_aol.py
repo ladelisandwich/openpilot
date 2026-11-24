@@ -117,10 +117,19 @@ class TestMazdaStockAol(unittest.TestCase):
     self.assertEqual(self.safety.aol_get_permission_mask(), 0)
     self.feed()
     self.assertEqual(self.safety.aol_get_permission_mask(), 0)
+    # StarPilotHQ empties the transmit table of a flagged safety word under the always-on-lateral experience. This fork
+    # keeps each configuration's own table (the Torque Interceptor and radar emulation flags are its normal state) and
+    # only leaves the AOL policy unarmed: no permission, no camera forwarding.
     for word in (1, 2, 32, 65535):
       self.configure(word=word)
       self.feed()
-      self.assertFalse(self.safety.safety_tx_hook(self.packet('CAM_LKAS', {'LKAS_REQUEST': 0})))
+      self.assertEqual(self.safety.aol_get_permission_mask(), 0)
+      if word in (1, 32):
+        # a GEN1 word owns 0x243 on bus 0, so the camera's copy stays blocked
+        self.assertEqual(self.safety.safety_fwd_hook(2, 0x243), -1)
+      else:
+        # GEN2/GEN3 words transmit on other buses and never send 0x243
+        self.assertFalse(self.safety.safety_tx_hook(self.packet('CAM_LKAS', {'LKAS_REQUEST': 0})))
     self.configure(experience=0)
     self.feed(main=False)
     self.feed(main=True)

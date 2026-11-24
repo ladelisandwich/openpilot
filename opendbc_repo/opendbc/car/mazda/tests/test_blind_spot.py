@@ -3,12 +3,12 @@ import unittest
 from opendbc.can import CANPacker
 from opendbc.car import Bus, gen_empty_fingerprint
 from opendbc.car.mazda.interface import CarInterface
-from opendbc.car.mazda.values import CAR, DBC
+from opendbc.car.mazda.values import DBC, GEN1
 
 
 class TestMazdaBlindSpot(unittest.TestCase):
   def test_reported_capability_matches_both_live_sides(self):
-    for model in CAR:
+    for model in sorted(GEN1, key=str):  # the fork's GEN2/GEN3 platforms have no blind spot monitor read
       with self.subTest(model=model):
         cp = CarInterface.get_params(model, gen_empty_fingerprint(), [], False, False, False)
         self.assertTrue(cp.deprecated.enableBsm)

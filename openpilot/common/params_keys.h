@@ -405,4 +405,23 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"JetlinkSpec", {PERSISTENT | DONT_LOG, JSON}},
     {"JetlinkProgress", {CLEAR_ON_MANAGER_START | DONT_LOG, JSON}},
     {"Version", {PERSISTENT, STRING}},
+
+    // Mazda GEN1 with the Torque Interceptor and the radar emulation (ladelisandwich fork). The compiled params
+    // library does not know these keys; common/params.py serves them from <params>/dx (header-only keys).
+    {"TorqueInterceptorEnabled", {PERSISTENT, BOOL, "1"}},
+    {"RadarInterceptorEnabled", {PERSISTENT, BOOL}},
+    {"RadarEmulationEnabled", {PERSISTENT, BOOL}},
+    {"LowerMinSetSpeed", {PERSISTENT, BOOL}},
+    {"MazdaHybridLong", {PERSISTENT, BOOL}},
+    {"MazdaSteerLimitClassifier", {PERSISTENT, BOOL}},
+    {"MazdaTcsOffAlert", {PERSISTENT, BOOL}},
+    {"MazdaWiperWeatherMode", {PERSISTENT, BOOL}},
+    {"MazdaHornBookmark", {PERSISTENT, BOOL}},
+    {"MazdaHybridMaster", {PERSISTENT | DONT_LOG, INT, "0"}},
+    {"NoMRCC", {PERSISTENT, BOOL}},
+    {"NoFSC", {PERSISTENT, BOOL}},
+    {"BlendedACC", {PERSISTENT, BOOL, "1"}},
+    {"ManualTransmission", {PERSISTENT, BOOL}},
+    {"EcuDisableFailed", {PERSISTENT, BOOL}},  // written by the Mazda interface at every init (radar emulation)
+    {"TetheringEnabled", {PERSISTENT, INT, "0"}},  // the hotspot mode: 0 off, 1 always, 2 onroad (system/ui/lib/tethering_auto.py)
 };
