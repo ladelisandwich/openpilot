@@ -81,7 +81,8 @@ the two repositories share GitHub's object store), never as a `git merge`.
   The first drive on this branch sat in `elm327` safety with "CAN Bus Disconnected: Likely Faulty Cable".
   `openpilot/starpilot/car/mazda/ti_startup.py` lets card initialize on the car bus alone while bus 1 is the
   only silent parser, which is what the fork's previous base did implicitly (it set `ControlsReady`
-  unconditionally once selfdrived had initialized).
+  unconditionally once selfdrived had initialized). The same gate also wants a valid `carControl`, which
+  controlsd marks valid only with a valid CarState, so during that startup the message's liveness stands in.
 - Verified here (x86 builds of the libraries, restored to the device's aarch64 binaries before the commit): 482 tests
   in the Mazda, params, controller, card-hook, steer-limit, tethering and prime-state suites and 85 in Dom's Mazda
   safety, params, torque-controller, CAN-subscription and cache suites. Dom's AOL deadline test needs the acados

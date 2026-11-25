@@ -1742,8 +1742,11 @@ class Car:
       # Keep stock ECU output intact until CAN and controls are ready. Mazda with the Torque Interceptor is the
       # exception: its feedback bus exists only once pandad has set the Mazda safety mode, which waits for
       # ControlsReady, so the car bus alone decides readiness then (starpilot/car/mazda/ti_startup.py).
-      can_ready = (CS.canValid and not CS.canTimeout) or ti_startup_pending(self.CP, self.CI.can_parsers, CS)
-      if not can_ready or not self.sm.valid['carControl'] or not self.sm.all_alive(['carControl']):
+      ti_startup = ti_startup_pending(self.CP, self.CI.can_parsers, CS)
+      can_ready = (CS.canValid and not CS.canTimeout) or ti_startup
+      # controlsd marks carControl valid only with a valid CarState: during that startup its liveness has to do
+      control_ready = self.sm.all_alive(['carControl']) and (self.sm.valid['carControl'] or ti_startup)
+      if not can_ready or not control_ready:
         self.publish_sendcan([], valid=False)
         return
       mixed = self.vehicle_startup.owner if self.mixed_startup_keepalive() else None

@@ -4,10 +4,22 @@ The interceptor answers on bus 1, which the panda routes to the OBD-C port only 
 TORQUE_INTERCEPTOR flag. pandad applies that mode after card signals ControlsReady, and card's generic rule holds
 ControlsReady until CarState is valid, which needs the interceptor's feedback: a cycle nothing breaks on its own.
 While the car bus itself is healthy and the interceptor's bus is the only silent one, the startup is pending, and
-card may initialize on the car bus alone, as the fork's previous base did.
+card may initialize on the car bus alone, as the fork's previous base did. controlsd marks carControl valid only
+with a valid CarState, so the same pending state also stands in for that message's validity.
 """
 from opendbc.car import Bus
 from opendbc.car.mazda.values import MazdaSafetyFlags
+from opendbc.can.parser import MAX_BAD_COUNTER
+
+
+def parser_healthy(cp) -> bool:
+  """can_valid without its side effect on the invalid-count debounce (and without the short-circuit of the
+  interface's all(), which leaves parsers after the first invalid one unevaluated)."""
+  bus_timeout = cp.bus_timeout
+  if bus_timeout:
+    return False
+  now = cp._last_update_nanos
+  return all(st.valid(now, bus_timeout) and st.counter_fail < MAX_BAD_COUNTER for st in cp.message_states.values())
 
 
 def ti_startup_pending(CP, can_parsers, CS) -> bool:
@@ -19,9 +31,4 @@ def ti_startup_pending(CP, can_parsers, CS) -> bool:
   body = can_parsers.get(Bus.body)
   if body is None or not body.bus_timeout:
     return False  # the interceptor answers: something else keeps CarState invalid
-  for bus, cp in can_parsers.items():
-    # can_invalid_cnt is 0 right after the interface found every message of that parser valid; reading it, unlike
-    # can_valid, has no side effect on the debounce
-    if bus != Bus.body and (cp.bus_timeout or cp.can_invalid_cnt != 0):
-      return False
-  return True
+  return all(parser_healthy(cp) for bus, cp in can_parsers.items() if bus != Bus.body)
