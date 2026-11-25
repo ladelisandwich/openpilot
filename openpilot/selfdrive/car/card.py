@@ -49,6 +49,7 @@ from openpilot.starpilot.car.rivian.aol import retained_brake_lateral_intent as 
 from opendbc.car.rivian.stock_aol import (qualified as qualified_rivian_aol,
                                          native_observation as rivian_native_observation,
                                          temporary_restriction as rivian_temporary_restriction)
+from openpilot.starpilot.car.mazda.ti_startup import ti_startup_pending
 from opendbc.car.mazda.stock_aol import (qualified as qualified_mazda_aol,
                                         native_observation as mazda_native_observation,
                                         temporary_restriction as mazda_temporary_restriction)
@@ -1738,9 +1739,11 @@ class Car:
       return
 
     if not self.ci_initialized:
-      # Keep stock ECU output intact until CAN and controls are ready.
-      if (not CS.canValid or CS.canTimeout or not self.sm.valid['carControl'] or
-          not self.sm.all_alive(['carControl'])):
+      # Keep stock ECU output intact until CAN and controls are ready. Mazda with the Torque Interceptor is the
+      # exception: its feedback bus exists only once pandad has set the Mazda safety mode, which waits for
+      # ControlsReady, so the car bus alone decides readiness then (starpilot/car/mazda/ti_startup.py).
+      can_ready = (CS.canValid and not CS.canTimeout) or ti_startup_pending(self.CP, self.CI.can_parsers, CS)
+      if not can_ready or not self.sm.valid['carControl'] or not self.sm.all_alive(['carControl']):
         self.publish_sendcan([], valid=False)
         return
       mixed = self.vehicle_startup.owner if self.mixed_startup_keepalive() else None

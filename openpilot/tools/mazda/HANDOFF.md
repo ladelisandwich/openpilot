@@ -74,6 +74,14 @@ the two repositories share GitHub's object store), never as a `git merge`.
   the body-input messages the fork reads (TURN_SWITCH, MSG_05, MSG_11, EPB, TRACTION), the dashboard camera and
   the blind-spot test enumerate GEN1 only, and the stock-AOL safety test encodes this fork's policy that a flagged
   safety word keeps its own transmit table (upstream empties it under the AOL experience).
+- Dom's card initializes the car interface, and so signals `ControlsReady`, only once CarState is valid with no
+  bus timeout ("keep stock ECU output intact until CAN and controls are ready"). With the Torque Interceptor
+  that never happens on its own: its feedback (TI_FEEDBACK, bus 1) exists only once pandad has set the Mazda
+  safety mode with the TI flag, which routes bus 1 to the OBD-C port, and pandad waits for `ControlsReady`.
+  The first drive on this branch sat in `elm327` safety with "CAN Bus Disconnected: Likely Faulty Cable".
+  `openpilot/starpilot/car/mazda/ti_startup.py` lets card initialize on the car bus alone while bus 1 is the
+  only silent parser, which is what the fork's previous base did implicitly (it set `ControlsReady`
+  unconditionally once selfdrived had initialized).
 - Verified here (x86 builds of the libraries, restored to the device's aarch64 binaries before the commit): 482 tests
   in the Mazda, params, controller, card-hook, steer-limit, tethering and prime-state suites and 85 in Dom's Mazda
   safety, params, torque-controller, CAN-subscription and cache suites. Dom's AOL deadline test needs the acados
