@@ -1949,6 +1949,12 @@ class Car:
           self._clear_learning_evidence()
 
       self.CC_prev = CC
+    elif self.sm.all_alive(['carControl']) and ti_startup_pending(self.CP, self.CI.can_parsers, CS):
+      # Mazda Torque Interceptor startup: it reports only once openpilot addresses it. The inactive frames the
+      # fork's previous base sent from here on go out until its feedback makes CarState valid.
+      inactive = car.CarControl.new_message().as_reader()
+      self.last_actuators_output, can_sends = self.CI.apply(inactive, int(time.monotonic() * 1e9))
+      self.publish_sendcan(can_sends, valid=False)
 
   def step(self):
     CS, RD = self.state_update(defer_radar=True)

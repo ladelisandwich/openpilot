@@ -83,6 +83,9 @@ the two repositories share GitHub's object store), never as a `git merge`.
   only silent parser, which is what the fork's previous base did implicitly (it set `ControlsReady`
   unconditionally once selfdrived had initialized). The same gate also wants a valid `carControl`, which
   controlsd marks valid only with a valid CarState, so during that startup the message's liveness stands in.
+  After the init Dom's card also sends controls only with a valid `carControl`; the interceptor reports only
+  once it is addressed, so during the same pending state card applies an inactive CarControl (Dom's own
+  keepalive pattern) until the feedback arrives.
 - Verified here (x86 builds of the libraries, restored to the device's aarch64 binaries before the commit): 482 tests
   in the Mazda, params, controller, card-hook, steer-limit, tethering and prime-state suites and 85 in Dom's Mazda
   safety, params, torque-controller, CAN-subscription and cache suites. Dom's AOL deadline test needs the acados
