@@ -37,6 +37,15 @@ def planner_experimental(conditional_experimental: bool, hybrid_choice: bool) ->
   return bool(hybrid_choice)
 
 
+def display_mode(CP, configured, effective, stock_choice):
+  """The onroad screen's (configured, effective) Conditional Mode pair. With hybrid longitudinal the driver's ACC-master
+  choice is the mode: the screen reads it as the stock choice with no conditional decision, so the edge colour and the
+  "ACC - Experimental/Chill" text follow selfdriveState.experimentalMode (planner_experimental) like the planner does."""
+  if CP is not None and mazda_hybrid_buttons_active(CP):
+    return stock_choice, None
+  return configured, effective
+
+
 class HornBookmarks:
   """Rising edges of the horn, for selfdrived's bookmark count (the MazdaHornBookmark toggle)."""
   def __init__(self, enabled: bool):

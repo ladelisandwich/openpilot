@@ -656,6 +656,8 @@ class RuntimeSnapshotAdapter:
     observation = speed_limit_fallback(ui, observation, now_ns, cruise_kph=cruise,
                                       car=display_car if display_car_valid else None, read_message=display_message)
     experimental = bool(display_selfdrive.experimentalMode) if display_selfdrive is not None else _flag(params, "ExperimentalMode")
+    from openpilot.starpilot.car.mazda.hybrid_buttons import display_mode as mazda_display_mode
+    conditional_configured, conditional = mazda_display_mode(cp, self._conditional_choice, conditional, ModeChoice.STOCK)
     observed_experimental = bool(display_selfdrive.experimentalMode) if display_selfdrive is not None else False
     try:
       persona = _personality(log.LongitudinalPersonality.schema.enumerants[str(display_selfdrive.personality)])
@@ -755,7 +757,7 @@ class RuntimeSnapshotAdapter:
                          slc_system_long_available=system_long,
                          slc_wheel_confirmation_available=wheel_confirmation,
                          curve=curve, show_curve_status=self._show_curve_status,
-                         conditional_configured=self._conditional_choice, conditional_effective=conditional,
+                         conditional_configured=conditional_configured, conditional_effective=conditional,
                          conditional_perception=perception,
                          conditional_lead=conditional_lead_from_message(display_radar) if display_car_valid else None,
                          navigation=displayed_navigation,
