@@ -1,5 +1,10 @@
 """Mazda hybrid longitudinal: who has gas and brake right now, drawn left of the experimental-mode button.
 
+On the device the StarPilot shell draws the onroad screen (starpilot/ui/onroad.py), and its experimental-mode button
+is the steering wheel widget: the shell draws the icon from its extra overlays (render_shell, hooked in
+runtime_app.py), left of the wheel, or in the wheel's place when the wheel is hidden, and not while an alert shows.
+The stock HUD's hook (selfdrive/ui/onroad/hud_renderer.py) only draws under the upstream UI (STARPILOT_UI=upstream).
+
 A car sending radar waves while the stock radar (MRCC) drives, an eye with a "c" while openpilot drives on comma's
 vision with the emulated radar. Animated only while that master is actually driving (the waves go out one after
 another while MRCC holds the cruise; the eye looks left and right while openpilot commands gas and brake), still
@@ -48,6 +53,19 @@ def mazda_hybrid_active(CP) -> bool:
 def decode_hybrid_master(status: int) -> tuple[bool, bool, bool]:
   """(openpilot's emulated radar is the ACC master, the driver's choice is still to come, the master is driving)."""
   return bool(status & HYBRID_MASTER_EMULATING), bool(status & HYBRID_MASTER_PENDING), bool(status & HYBRID_MASTER_ACTIVE)
+
+
+def shell_anchor(content: rl.Rectangle, customization) -> rl.Rectangle:
+  """What the icon sits left of in the StarPilot shell's large layout: the steering wheel widget where it is drawn
+  (onroad_large_widgets.SteeringWheelWidget.render), or, with the wheel hidden, a spot one icon to the right of the
+  wheel's, so the icon takes the wheel's place."""
+  from openpilot.starpilot.ui.onroad_customization import offset, placement, widget_size
+  dx, dy = offset(customization, "large", "steering_wheel")
+  x, y = content.x + content.width - 146 - 96 + dx, content.y + 45 + dy
+  size, _ = widget_size(customization, "large", "steering_wheel")
+  if not placement(customization, "large", "steering_wheel")["enabled"]:
+    return rl.Rectangle(x + SPACING + SIZE, y, size, size)
+  return rl.Rectangle(x, y, size, size)
 
 
 def eye_look(t: float) -> float:
@@ -126,6 +144,13 @@ class MazdaHybridIcon:
       wave_alpha = wave_alphas(now) if self._active else (1.0, 1.0, 1.0)
       for texture, a in zip(waves, wave_alpha, strict=True):
         self._draw_layer(texture, dest, alpha * a)
+
+  def render_shell(self, content: rl.Rectangle, state, CP, started: bool) -> None:
+    """The StarPilot shell's large onroad layout (its extra overlays)."""
+    from openpilot.starpilot.ui.onroad_state import AlertSize
+    if state.alert.size != AlertSize.NONE:
+      return
+    self.render_left_of(shell_anchor(content, state.customization), CP, started)
 
   @staticmethod
   def _white(alpha: float) -> rl.Color:

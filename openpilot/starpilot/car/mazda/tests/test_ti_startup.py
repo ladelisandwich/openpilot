@@ -5,7 +5,7 @@ from opendbc.car import Bus
 from opendbc.can.parser import MAX_BAD_COUNTER
 from opendbc.car.mazda.values import MazdaSafetyFlags
 
-from openpilot.starpilot.car.mazda.ti_startup import parser_healthy, ti_startup_pending
+from openpilot.starpilot.car.mazda.ti_startup import inactive_keepalive, parser_healthy, ti_startup_pending
 
 
 class State:
@@ -64,6 +64,23 @@ class TestTiStartup(unittest.TestCase):
 
   def test_missing_body_parser(self):
     self.assertFalse(ti_startup_pending(cp(), {Bus.pt: parser(states=[State()])}, cs()))
+
+
+class TestInactiveKeepalive(unittest.TestCase):
+  def test_radar_emulation_keeps_its_frames_through_any_bus_fault(self):
+    emulating = SimpleNamespace(brand="mazda", flags=(MazdaSafetyFlags.TORQUE_INTERCEPTOR | MazdaSafetyFlags.RADAR_EMULATION).value)
+    # the car bus itself faulted: not the TI startup, but the emulated radar still goes out inactive
+    car_bus_fault = parsers(pt=parser(states=[State(ok=False)]))
+    self.assertFalse(ti_startup_pending(emulating, car_bus_fault, cs(valid=False, timeout=False)))
+    self.assertTrue(inactive_keepalive(emulating, car_bus_fault, cs(valid=False, timeout=False)))
+
+  def test_interceptor_only_during_its_startup(self):
+    self.assertTrue(inactive_keepalive(cp(), parsers(body=parser(bus_timeout=True)), cs()))
+    self.assertFalse(inactive_keepalive(cp(), parsers(pt=parser(states=[State(ok=False)])), cs(valid=False, timeout=False)))
+
+  def test_other_brands(self):
+    flags = (MazdaSafetyFlags.TORQUE_INTERCEPTOR | MazdaSafetyFlags.RADAR_EMULATION).value
+    self.assertFalse(inactive_keepalive(SimpleNamespace(brand="hyundai", flags=flags), parsers(body=parser(bus_timeout=True)), cs()))
 
 
 if __name__ == "__main__":

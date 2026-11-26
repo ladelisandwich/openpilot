@@ -49,7 +49,7 @@ from openpilot.starpilot.car.rivian.aol import retained_brake_lateral_intent as 
 from opendbc.car.rivian.stock_aol import (qualified as qualified_rivian_aol,
                                          native_observation as rivian_native_observation,
                                          temporary_restriction as rivian_temporary_restriction)
-from openpilot.starpilot.car.mazda.ti_startup import ti_startup_pending
+from openpilot.starpilot.car.mazda.ti_startup import inactive_keepalive, ti_startup_pending
 from opendbc.car.mazda.stock_aol import (qualified as qualified_mazda_aol,
                                         native_observation as mazda_native_observation,
                                         temporary_restriction as mazda_temporary_restriction)
@@ -1186,8 +1186,8 @@ class Car:
       if not hasattr(self, 'mazda_card_hooks'):
         from openpilot.starpilot.car.mazda.hybrid_buttons import MazdaCardHooks
         self.mazda_card_hooks = MazdaCardHooks(self.CP, self.params)
-      # the hybrid longitudinal mode switch (distance increase) and the horn-tap bookmark
-      self.mazda_card_hooks.update(self.CI.CS)
+      # the hybrid longitudinal mode switch (distance increase); selfdrived counts the horn-tap bookmarks
+      self.mazda_card_hooks.update(self.CI.CS, can_valid=CS.canValid)
     elif self.CP.brand == 'hyundai':
       from openpilot.starpilot.car.hyundai.dashboard import compose as hyundai_compose
       companion = hyundai_compose(self.CP, self.CI.CS, CS, companion, car_state_stamp=int(cs_send.logMonoTime))
@@ -1949,9 +1949,10 @@ class Car:
           self._clear_learning_evidence()
 
       self.CC_prev = CC
-    elif self.sm.all_alive(['carControl']) and ti_startup_pending(self.CP, self.CI.can_parsers, CS):
-      # Mazda Torque Interceptor startup: it reports only once openpilot addresses it. The inactive frames the
-      # fork's previous base sent from here on go out until its feedback makes CarState valid.
+    elif self.sm.all_alive(['carControl']) and inactive_keepalive(self.CP, self.CI.can_parsers, CS):
+      # Mazda: the Torque Interceptor reports only once openpilot addresses it, and with radar emulation openpilot
+      # stands in for the radar on the car bus; inactive frames go out while carControl is invalid
+      # (starpilot/car/mazda/ti_startup.py inactive_keepalive).
       inactive = car.CarControl.new_message().as_reader()
       self.last_actuators_output, can_sends = self.CI.apply(inactive, int(time.monotonic() * 1e9))
       self.publish_sendcan(can_sends, valid=False)

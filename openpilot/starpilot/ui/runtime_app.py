@@ -198,7 +198,13 @@ class StarShellSession:
         self.view.onroad.stock_confidence_reset = camera_owner.reset_stock_confidence_layer
         self.view.onroad.extra_overlays = lambda rect, state: camera_owner.render_model_source_layer(rect, show_long_indicator=None)
       else:
-        self.view.onroad.extra_overlays = lambda rect, state: camera_owner.render_model_source_layer(rect)
+        # the Mazda hybrid master icon (onroad_mazda_hybrid.py) is the stock HUD's; the shell draws it here instead
+        mazda_hybrid_icon = getattr(getattr(camera_owner, "_hud_renderer", None), "_mazda_hybrid_icon", None)
+        def large_overlays(rect, state):
+          camera_owner.render_model_source_layer(rect)
+          if mazda_hybrid_icon is not None:
+            mazda_hybrid_icon.render_shell(rect, state, ui_state.CP, ui_state.started)
+        self.view.onroad.extra_overlays = large_overlays
     except Exception:
       self.fonts.close()
       raise

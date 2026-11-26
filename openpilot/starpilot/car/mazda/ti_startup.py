@@ -32,3 +32,16 @@ def ti_startup_pending(CP, can_parsers, CS) -> bool:
   if body is None or not body.bus_timeout:
     return False  # the interceptor answers: something else keeps CarState invalid
   return all(parser_healthy(cp) for bus, cp in can_parsers.items() if bus != Bus.body)
+
+
+def inactive_keepalive(CP, can_parsers, CS) -> bool:
+  """Whether card sends an inactive CarControl while carControl is alive but invalid (card.py, after its
+  valid-carControl branch). With the Torque Interceptor: during its startup (ti_startup_pending). With radar
+  emulation: always, because openpilot is then the radar's replacement on the car bus. Dom's card sends nothing at
+  all without a valid carControl, and a bus fault anywhere (controlsd marks carControl valid only with a valid
+  CarState) would leave the PCM without its ACC frames and the stock radar without its tester-present, so it drops
+  out of its session and the hybrid manager latches the radar silence as failed for the drive. The fork's previous
+  base sent on every live carControl; the inactive frames keep the sessions up without commanding anything."""
+  if CP.brand != "mazda":
+    return False
+  return bool(CP.flags & MazdaSafetyFlags.RADAR_EMULATION) or ti_startup_pending(CP, can_parsers, CS)

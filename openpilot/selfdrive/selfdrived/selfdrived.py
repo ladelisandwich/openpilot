@@ -216,6 +216,13 @@ class SelfdriveD:
     self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
     self.radar_recovery_enabled = self.params.get_bool("RadarRecoveryAlert")
     self.mazda_tcs_off_alert = self.params.get_bool("MazdaTcsOffAlert")
+    # Mazda hybrid longitudinal: the driver's ACC-master choice (ExperimentalMode) is the planner's mode too
+    # (starpilot/car/mazda/hybrid_buttons.py planner_experimental)
+    from openpilot.starpilot.car.mazda.hybrid_buttons import mazda_hybrid_buttons_active
+    self.mazda_hybrid_long = mazda_hybrid_buttons_active(self.CP)
+    self.mazda_hybrid_choice = self.params.get_bool("ExperimentalMode") if self.mazda_hybrid_long else False
+    from openpilot.starpilot.car.mazda.hybrid_buttons import HornBookmarks
+    self.mazda_horn_bookmarks = HornBookmarks(self.CP.brand == "mazda" and self.params.get_bool("MazdaHornBookmark"))
     self.blindspot_alert_settings = (self.params.get_bool("LoudBlindspotAlert"),
                                     self.params.get_bool("LoudBlindspotAlertWhenDisengaged"))
 
@@ -390,6 +397,9 @@ class SelfdriveD:
       if bookmark is None:
         break
       count += 1
+    horn_bookmarks = getattr(self, 'mazda_horn_bookmarks', None)
+    if horn_bookmarks is not None and horn_bookmarks.enabled and self.sm.seen['starpilotCarState']:
+      count += horn_bookmarks.update(self.sm['starpilotCarState'].hornPressed)
     device = self.sm['deviceState']
     if self.bookmarks.update(started=device.started, drive_id=int(device.startedMonoTime), bookmarks=count):
       prime_type = self.params.get("PrimeType")
@@ -2388,6 +2398,9 @@ class SelfdriveD:
         self.publish_axis_proof(CS, source_context=(initial_state, not previous_deferred))
     self.update_alerts(CS)
     self.update_conditional_mode(CS)
+    if self.mazda_hybrid_long:
+      from openpilot.starpilot.car.mazda.hybrid_buttons import planner_experimental
+      self.experimental_mode = planner_experimental(self.experimental_mode, self.mazda_hybrid_choice)
 
     self.publish_selfdriveState(CS, axis_published=axis_published)
 
@@ -2412,6 +2425,8 @@ class SelfdriveD:
       self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
       self.radar_recovery_enabled = self.params.get_bool("RadarRecoveryAlert")
       self.mazda_tcs_off_alert = self.params.get_bool("MazdaTcsOffAlert")
+      if self.mazda_hybrid_long:
+        self.mazda_hybrid_choice = self.params.get_bool("ExperimentalMode")
       self.blindspot_alert_settings = (self.params.get_bool("LoudBlindspotAlert"),
                                       self.params.get_bool("LoudBlindspotAlertWhenDisengaged"))
       self.departure_alert_settings = (self.params.get_bool("GreenLightAlert"), self.params.get_bool("LeadDepartingAlert"))

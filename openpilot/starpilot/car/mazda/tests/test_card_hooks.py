@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from openpilot.common.test import OpenpilotTestCase
 from opendbc.car.mazda.values import MazdaSafetyFlags
-from openpilot.starpilot.car.mazda.hybrid_buttons import MazdaCardHooks, mazda_hybrid_buttons_active
+from openpilot.starpilot.car.mazda.hybrid_buttons import HornBookmarks, MazdaCardHooks, mazda_hybrid_buttons_active, planner_experimental
 from openpilot.starpilot.car.mazda.wipers import WASHER_BLOCK_S, MazdaWiperGate
 
 
@@ -49,6 +49,13 @@ class TestMazdaCardHooks(OpenpilotTestCase):
     press(hooks, 60)                      # and a long press toggles back out again
     self.assertFalse(params.get_bool("ExperimentalMode"))
 
+  def test_planner_mode_is_the_master_choice(self):
+    # emulation (ExperimentalMode on) always plans in Experimental Mode, whatever Conditional Mode decided, and MRCC
+    # never does: StarPilot 6's forced CEStatus, so the planner and the car controller's ACC master always agree
+    for conditional in (False, True):
+      self.assertTrue(planner_experimental(conditional, True))
+      self.assertFalse(planner_experimental(conditional, False))
+
   def test_no_mode_switch_without_hybrid_long(self):
     params = FakeParams(ExperimentalMode=False)
     hooks = MazdaCardHooks(STOCK, params)
@@ -56,18 +63,26 @@ class TestMazdaCardHooks(OpenpilotTestCase):
     self.assertFalse(params.get_bool("ExperimentalMode"))
 
   def test_one_bookmark_per_horn_press_when_enabled(self):
-    params = FakeParams(MazdaHornBookmark=True)
-    hooks = MazdaCardHooks(STOCK, params)
-    sent = []
-    hooks.bookmark = lambda: sent.append(1)
-    for horn in (0, 1, 1, 1, 0, 0, 1, 0):
-      hooks.update(SimpleNamespace(distance_increase_button=0, horn_pressed=bool(horn)))
-    self.assertEqual(len(sent), 2)
-    off = MazdaCardHooks(STOCK, FakeParams(MazdaHornBookmark=False))
-    off.bookmark = lambda: sent.append(1)
-    for horn in (0, 1, 0):
-      off.update(SimpleNamespace(distance_increase_button=0, horn_pressed=bool(horn)))
-    self.assertEqual(len(sent), 2)
+    on = HornBookmarks(True)
+    self.assertEqual(sum(on.update(bool(horn)) for horn in (0, 1, 1, 1, 0, 0, 1, 0)), 2)
+    off = HornBookmarks(False)
+    self.assertEqual(sum(off.update(bool(horn)) for horn in (0, 1, 0)), 0)
+
+  def test_card_never_publishes_bookmarks(self):
+    # the UI owns userBookmark: a second publisher in card would raise on send and take card down
+    import inspect
+    from openpilot.starpilot.car.mazda import hybrid_buttons
+    self.assertNotIn("pub_sock", inspect.getsource(hybrid_buttons))
+
+  def test_stale_button_never_switches_the_mode(self):
+    params = FakeParams(ExperimentalMode=False)
+    hooks = MazdaCardHooks(HYBRID, params, long_press_frames=50)
+    for _ in range(60):
+      hooks.update(SimpleNamespace(distance_increase_button=1))
+    for _ in range(20):                   # CAN drops out with the button reading pressed
+      hooks.update(SimpleNamespace(distance_increase_button=1), can_valid=False)
+    hooks.update(SimpleNamespace(distance_increase_button=0))   # recovery: not a long-press release
+    self.assertFalse(params.get_bool("ExperimentalMode"))
 
 
 class TestMazdaWiperGate(OpenpilotTestCase):

@@ -9,14 +9,17 @@ at release:
   - short tap while in Experimental Mode: back to MRCC; in MRCC it does nothing here.
 
 The mode lives in the ExperimentalMode param, where the car controller reads it (opendbc carcontroller
-_hybrid_experimental). The distance-decrease side (openpilot's gapAdjustCruise) keeps its StarPilot functions.
+_hybrid_experimental), and selfdrived publishes the same choice as the planner's mode (planner_experimental):
+emulation always plans in Experimental Mode, as StarPilot 6's forced CEStatus did, and Conditional Mode's automatic
+triggers never move either one. The distance-decrease side (openpilot's gapAdjustCruise) keeps its StarPilot functions.
 While MRCC drives, the stock radar sees either side of the rocker itself and steps its own following distance.
 
-Horn tap bookmarks (the MazdaHornBookmark toggle): one userBookmark per press, however long the horn is held;
-selfdrived counts userBookmark messages as saved events.
+Horn tap bookmarks (the MazdaHornBookmark toggle): one bookmark per press, however long the horn is held. selfdrived
+counts them itself from starpilotCarState.hornPressed (HornBookmarks), next to the userBookmark messages: the UI
+already publishes userBookmark, and msgq hands a service to its newest publisher, so a second publisher in card
+would raise on its next send and take card (the TI and emulated-radar frames) down with it.
 """
 from opendbc.car.mazda.values import MazdaSafetyFlags
-from openpilot.cereal import messaging
 from openpilot.selfdrive.car.cruise import CRUISE_LONG_PRESS
 
 
@@ -26,26 +29,45 @@ def mazda_hybrid_buttons_active(CP) -> bool:
     bool(flags & MazdaSafetyFlags.RADAR_EMULATION)
 
 
+def planner_experimental(conditional_experimental: bool, hybrid_choice: bool) -> bool:
+  """selfdrived's experimentalMode with hybrid longitudinal: the driver's choice, which is also the car controller's
+  ACC master (emulation = True). Conditional Mode would otherwise decide on its own (its default, Automatic, does
+  whenever ConditionalModeConfig is absent), and the planner ran chill under emulation."""
+  del conditional_experimental  # the conditional result never overrides the master choice, in either direction
+  return bool(hybrid_choice)
+
+
+class HornBookmarks:
+  """Rising edges of the horn, for selfdrived's bookmark count (the MazdaHornBookmark toggle)."""
+  def __init__(self, enabled: bool):
+    self.enabled = enabled
+    self.previously = False
+
+  def update(self, horn: bool) -> int:
+    horn = bool(horn) and self.enabled
+    pressed = horn and not self.previously
+    self.previously = horn
+    return int(pressed)
+
+
 class MazdaCardHooks:
   def __init__(self, CP, params, long_press_frames: int = CRUISE_LONG_PRESS):
     self.params = params
     self.hybrid = mazda_hybrid_buttons_active(CP)
-    self.horn_bookmark = params.get_bool("MazdaHornBookmark")
     self.long_press_frames = long_press_frames
     self.distance_increase_counter = 0
     self.distance_increase_previously = False
-    self.horn_pressed_previously = False
-    self._bookmark_sock = None
 
-  def update(self, parsed) -> None:
-    """parsed is the opendbc Mazda CarState (its distance_increase_button and horn_pressed), once per card cycle."""
-    if self.hybrid:
-      self._update_hybrid_mode_button(bool(getattr(parsed, "distance_increase_button", 0)))
-    if self.horn_bookmark:
-      horn = bool(getattr(parsed, "horn_pressed", False))
-      if horn and not self.horn_pressed_previously:
-        self.bookmark()
-      self.horn_pressed_previously = horn
+  def update(self, parsed, can_valid: bool = True) -> None:
+    """parsed is the opendbc Mazda CarState (its distance_increase_button), once per card cycle. While CAN is
+    invalid the button value may be stale: the press is dropped, so a recovery never reads as a long-press release."""
+    if not self.hybrid:
+      return
+    if not can_valid:
+      self.distance_increase_counter = 0
+      self.distance_increase_previously = False
+      return
+    self._update_hybrid_mode_button(bool(getattr(parsed, "distance_increase_button", 0)))
 
   def _update_hybrid_mode_button(self, pressed: bool) -> None:
     if pressed:
@@ -60,8 +82,3 @@ class MazdaCardHooks:
       self.params.put_bool("ExperimentalMode", not experimental)
     elif experimental:
       self.params.put_bool("ExperimentalMode", False)
-
-  def bookmark(self) -> None:
-    if self._bookmark_sock is None:
-      self._bookmark_sock = messaging.pub_sock('userBookmark')
-    self._bookmark_sock.send(messaging.new_message('userBookmark').to_bytes())
