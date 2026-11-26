@@ -486,6 +486,8 @@ class Car:
     self.controller_cruise_sock = messaging.sub_sock('slcAction', conflate=False) if cruise_action_eligible(self.CP) else None
     self.v_cruise_helper = VCruiseHelper(self.CP)
     self.v_cruise_helper.intervals = read_cruise_intervals(self.params, self.CP)
+    from openpilot.starpilot.car.mazda.low_set_speed import LowSetSpeed
+    self.mazda_low_set_speed = LowSetSpeed(self.CP, self.params) if self.CP.brand == 'mazda' else None
 
     self.experimental_mode = self.params.get_bool("ExperimentalMode")
     self.initial_cruise_speed = self.params.get("InitialCruiseSpeedKph", return_default=True)
@@ -617,6 +619,10 @@ class Car:
         selected_kph=cruise_helper.v_cruise_kph, is_metric=self.is_metric)
     stop = slc_physical.accepted_target(self.sm, now_ns, after_ns=floor_ns) if self.slc_replay else None
     cruise_helper.slc_stop_kph = slc_target_kph(stop, self.is_metric) if stop is not None else None
+    low_set_speed = getattr(self, 'mazda_low_set_speed', None)
+    if low_set_speed is not None:
+      # Mazda Lower Minimum Set Speed: openpilot owns the set speed while its emulated radar is the ACC master
+      cruise_helper.owner_set_speed = low_set_speed.owns_set_speed(self.CI.CC)
     self.update_cruise_speed(CS, pending, wheel_context=wheel_context)
     if self.controller_cruise_sock is not None:
       for _ in range(8):

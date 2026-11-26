@@ -59,6 +59,14 @@ hash-pinned by FLM's producer_clock_equivalence). The amount is the owner's to t
 controlsd start. The stepper subclasses InitialCruiseSpeedControl so the StarPilot shell's settings adapter shows it. Scan script: PC scratch osc_scan.py (band-passed angle/output/
 desired per 4 s window, episodes with wall-clock times).
 
+**Lower Minimum Set Speed (2026-11-26).** On the StarPilot 6 fork the toggle only ever worked with plain radar
+emulation (8a17f8aa2 made hybrid long ignore it); on sp7 nothing read it. It works again while openpilot's emulated
+radar is the ACC master: starpilot/car/mazda/low_set_speed.py tells card's cruise helper to own the set speed
+(VCruiseHelper.owner_set_speed): seeded from the PCM's speed when emulation takes over, stepped by SET+/SET- down to
+V_CRUISE_MIN (8 km/h), back to the PCM's speed when MRCC takes over (a disengage always hands back). MRCC itself keeps
+the car's 19 mph floor; no software can change that. Untested on the car: cruising far below 19 mph with no lead
+(the PCM's reaction is unknown; the old fork had the same exposure).
+
 Also fixed the same day, from an audit of the port: card now sends inactive frames on any invalid carControl while
 radar emulation is configured (Dom sends nothing then, and a bus fault anywhere left the PCM without its ACC frames
 and the radar without tester-present; ti_startup.inactive_keepalive); the hybrid button ignores a press while CAN is

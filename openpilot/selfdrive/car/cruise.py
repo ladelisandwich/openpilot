@@ -76,6 +76,10 @@ class VCruiseHelper:
     self.slc_wheel_press: SlcWheelContext | None = None
     self.slc_wheel_tap: SlcWheelContext | None = None
     self.slc_stop_kph: float | None = None  # SLC's limit plus offset; a step never skips over it
+    # set by card each frame where openpilot owns the set speed although the car runs pcmCruise
+    # (Mazda Lower Minimum Set Speed while its emulated radar is the ACC master, starpilot/car/mazda/low_set_speed.py)
+    self.owner_set_speed = False
+    self.owner_set_speed_prev = False
 
   @property
   def v_cruise_initialized(self):
@@ -85,7 +89,9 @@ class VCruiseHelper:
                       slc_enabled: bool = False, wheel_context: SlcWheelContext | None = None):
     from opendbc.car.subaru.software_cruise import selected as subaru_software_selected
     subaru_software = subaru_software_selected(self.CP)
-    software_cruise = not self.CP.pcmCruise or subaru_software
+    owner = bool(self.owner_set_speed)
+    owner_started, self.owner_set_speed_prev = owner and not self.owner_set_speed_prev, owner
+    software_cruise = not self.CP.pcmCruise or subaru_software or owner
     self.slc_cruise_change = None
     self.slc_consumed_button = None
     self.slc_released_suppressed = False
@@ -117,7 +123,7 @@ class VCruiseHelper:
 
     if CS.cruiseState.available:
       if software_cruise:
-        if subaru_software and (not enabled or not self.v_cruise_initialized):
+        if (subaru_software or owner) and (not enabled or not self.v_cruise_initialized or owner_started):
           stock_kph = CS.cruiseState.speed * CV.MS_TO_KPH
           self.v_cruise_kph = stock_kph if 0 < stock_kph < V_CRUISE_UNSET else V_CRUISE_UNSET
         self._update_v_cruise_non_pcm(CS, enabled, is_metric)
@@ -239,7 +245,8 @@ class VCruiseHelper:
     """Apply the normal software cruise step without synthesizing button events."""
     from opendbc.car.subaru.software_cruise import selected as subaru_software_selected
     subaru_software = subaru_software_selected(self.CP)
-    if ((self.CP.pcmCruise and not subaru_software) or button_type not in (ButtonType.accelCruise, ButtonType.decelCruise) or
+    if ((self.CP.pcmCruise and not subaru_software and not self.owner_set_speed) or
+        button_type not in (ButtonType.accelCruise, ButtonType.decelCruise) or
         not 0 < self.v_cruise_kph < V_CRUISE_UNSET or
         (button_type == ButtonType.accelCruise and CS.cruiseState.standstill)):
       return False
