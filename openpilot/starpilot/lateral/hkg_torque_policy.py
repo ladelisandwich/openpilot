@@ -69,6 +69,9 @@ class HKGShapedTorquePolicy:
   def pid_error_context(self, error):
     return error
 
+  def error_scale(self, speed):
+    return 1.0
+
   def output_context(self, value, setpoint, jerk, measurement, speed):
     return self.output(value, setpoint, speed)
 
@@ -106,7 +109,7 @@ class HKGShapedTorquePolicy:
     self.previous_measurement = measurement
     lsf = (np.interp(cs.vEgo, LOW_SPEED_X, LOW_SPEED_Y) / max(cs.vEgo, MIN_SPEED)) ** 2
     kp = np.interp(cs.vEgo, parent.pid._k_p[0], parent.pid._k_p[1])
-    error = (setpoint - measurement) * (1 + lsf / max(kp, 1e-3))
+    error = (setpoint - measurement) * (1 + lsf / max(kp, 1e-3)) * self.error_scale(cs.vEgo)
     gravity_adjusted = future - roll
     ff = gravity_adjusted - parent.torque_params.latAccelOffset * fade
     ff = self.feedforward_context(ff, setpoint, jerk, measurement, cs.vEgo)

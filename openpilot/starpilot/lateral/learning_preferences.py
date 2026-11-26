@@ -69,6 +69,11 @@ def read_preference(params, CP, *, legacy_snapshot=None, preference_snapshot=Non
     vehicles = _decode(raw)['vehicles']
     if fingerprint in vehicles.get(brand, {}):
       return LearningPreference(vehicles[brand][fingerprint], True, 'scope', raw)
+    from openpilot.starpilot.lateral.controller_selection import mazda_torque_interceptor
+    if mazda_torque_interceptor(CP):
+      # Mazda with a Torque Interceptor: the fork's tested tune is the fixed one (StarPilot 6 never fed the live
+      # tune to this car), so learning stays off until the driver turns it on for this car
+      return LearningPreference(False, True, 'default', raw)
     legacy, readable = read_saved(params, LEGACY_KEY, 1) if legacy_snapshot is None else legacy_snapshot
     if not readable or legacy not in (None, b'0', b'1'):
       raise ValueError('Invalid legacy preference')

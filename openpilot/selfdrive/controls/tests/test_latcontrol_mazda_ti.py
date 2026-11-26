@@ -13,7 +13,9 @@ from opendbc.car.toyota.values import CAR as TOYOTA
 from opendbc.car.vehicle_model import VehicleModel
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.controls.lib.latcontrol_torque import INTERP_SPEEDS, KP_INTERP, LatControlTorque
-from openpilot.starpilot.lateral.mazda_ti_shaping import (get_mazda_ti_friction_scale, get_mazda_ti_lat_accel_factor_scale,
+from openpilot.starpilot.lateral.controller_selection import ControllerMode, default_selection
+from openpilot.starpilot.lateral.mazda_ti_shaping import (SP6_KP, SP6_LOW_SPEED_X, SP6_LOW_SPEED_Y, get_mazda_ti_friction_scale,
+                                                         get_mazda_ti_lat_accel_factor_scale, get_sp6_mazda_ti_error_scale,
                                                          mazda_ti_error_scale, sp6_effective_gain)
 
 
@@ -31,11 +33,11 @@ def cx9_params(torque_interceptor=True, friction=None):
   return CP
 
 
-def run_torque(v_ego, torque_interceptor, curvature, curvature_error, frames=150, friction=None):
+def run_torque(v_ego, torque_interceptor, curvature, curvature_error, frames=150, friction=None, mode=ControllerMode.STANDARD):
   """Settle on the requested curvature, then hold curvature_error short of it with the integrator from zero."""
   CP = cx9_params(torque_interceptor, friction)
   CI = interfaces[MAZDA.MAZDA_CX9_2021](CP)
-  controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL)
+  controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL, controller_mode=mode)
   VM = VehicleModel(CP)
   CS = car.CarState.new_message()
   CS.vEgo = v_ego
@@ -67,9 +69,12 @@ class TestMazdaTiShaping(OpenpilotTestCase):
       self.assertEqual(get_mazda_ti_friction_scale(v_ego), 1.0)
 
   def test_error_scale_reproduces_the_tested_effective_gain(self):
-    # the fork's effective gain: a nearly flat 1.2-1.5x of the highway gain from 5 to 13.5 m/s, 1.0 from 30 m/s
+    # the fork's effective gain: about 1.1 per m/s^2 of error from 5 to 13.5 m/s, 0.76 at 20 m/s, the 0.6 highway gain
+    # from 30 m/s (StarPilot 6's KP of 0.6 plus its low-speed factor, times its error scale)
     for v_ego in (5.0, 7.5, 10.0, 13.5):
-      self.assertTrue(1.15 <= sp6_effective_gain(v_ego) <= 1.55, (v_ego, sp6_effective_gain(v_ego)))
+      self.assertTrue(1.05 <= sp6_effective_gain(v_ego) * SP6_KP <= 1.15, (v_ego, sp6_effective_gain(v_ego)))
+    self.assertAlmostEqual(sp6_effective_gain(20.0) * SP6_KP, 0.76, places=6)
+    self.assertAlmostEqual(sp6_effective_gain(30.0) * SP6_KP, SP6_KP + (5.0 / 30.0) ** 2, places=6)
     for v_ego in (30.0, 35.0):
       self.assertEqual(mazda_ti_error_scale(v_ego, INTERP_SPEEDS, KP_INTERP), 1.0)
     for v_ego in (3.0, 5.0, 7.5, 10.0, 13.5, 20.0, 25.0):
@@ -77,9 +82,13 @@ class TestMazdaTiShaping(OpenpilotTestCase):
       controller_gain = float(np.interp(v_ego, INTERP_SPEEDS, KP_INTERP)) / KP_INTERP[-1]
       self.assertLess(scale, 1.0)
       self.assertAlmostEqual(scale * controller_gain, sp6_effective_gain(v_ego), places=6)
-    # the ratio of two piecewise-linear schedules: rising, give or take a few thousandths between the knots
-    speeds = np.linspace(3.0, 30.0, 109)
-    self.assertTrue(np.all(np.diff([mazda_ti_error_scale(v, INTERP_SPEEDS, KP_INTERP) for v in speeds]) >= -0.01))
+    # no hole: from 5 m/s up the converted gain never drops below the highway gain, and it falls toward it with speed
+    # from 13.5 m/s (the scale itself is the ratio of two piecewise-linear schedules and need not be monotonic)
+    speeds = np.linspace(5.0, 30.0, 101)
+    gains = [mazda_ti_error_scale(v, INTERP_SPEEDS, KP_INTERP) * float(np.interp(v, INTERP_SPEEDS, KP_INTERP)) / KP_INTERP[-1]
+             for v in speeds]
+    self.assertTrue(min(gains) >= 1.0)
+    self.assertTrue(np.all(np.diff([g for v, g in zip(speeds, gains, strict=True) if v >= 13.5]) <= 1e-9))
 
   @parameterized.expand([(3.0,), (5.0,), (8.5,), (10.0,), (12.0,)])
   def test_softens_low_speed_error_response(self, v_ego):
@@ -128,7 +137,7 @@ class TestMazdaTiShaping(OpenpilotTestCase):
     for torque_interceptor in (True, False):
       CP = cx9_params(torque_interceptor)
       CI = interfaces[MAZDA.MAZDA_CX9_2021](CP)
-      controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL)
+      controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL, controller_mode=ControllerMode.STANDARD)
       CS = car.CarState.new_message(vEgo=30.0)
       params = log.VehicleParameters.new_message(steerRatio=CP.steerRatio, stiffnessFactor=1.0)
       lac_log = None
@@ -153,3 +162,45 @@ class TestMazdaTiShaping(OpenpilotTestCase):
     CP = CarInterface.get_non_essential_params(TOYOTA.TOYOTA_RAV4)
     CP.flags = int(CP.flags) | int(MazdaSafetyFlags.TORQUE_INTERCEPTOR)
     self.assertFalse(LatControlTorque(CP.as_reader(), CarInterface(CP), DT_CTRL).is_mazda_ti)
+
+
+class TestMazdaTiStarPilotController(OpenpilotTestCase):
+  """The StarPilot controller (StarPilot 6's) with the fork's TI shaping, this car's default."""
+
+  def test_default_controller(self):
+    self.assertEqual(default_selection(cx9_params(True)).mode, ControllerMode.STARPILOT)
+    self.assertEqual(default_selection(cx9_params(False)).mode, ControllerMode.STANDARD)
+    CP = cx9_params(True)
+    controller = LatControlTorque(CP.as_reader(), interfaces[MAZDA.MAZDA_CX9_2021](CP), DT_CTRL)
+    self.assertEqual(controller.controller_mode, ControllerMode.STARPILOT)
+    self.assertTrue(controller.is_mazda_ti and controller.starpilot_extension.policy.mazda_ti)
+
+  @parameterized.expand([(3.0,), (5.0,), (7.5,), (10.0,), (12.0,), (13.5,), (20.0,), (30.0,)])
+  def test_effective_gain_is_starpilot_6s(self, v_ego):
+    # the proportional term per m/s^2 of lateral-accel error is StarPilot 6's (KP + LSF) * error scale; the stock
+    # (non-TI) car on the same controller has no error scale
+    curvature_error = 0.05 / v_ego ** 2
+    ti, _ = run_torque(v_ego, True, 0.02, curvature_error, mode=ControllerMode.STARPILOT)
+    stock, _ = run_torque(v_ego, False, 0.02, curvature_error, mode=ControllerMode.STARPILOT)
+    lsf = (float(np.interp(v_ego, SP6_LOW_SPEED_X, SP6_LOW_SPEED_Y)) / v_ego) ** 2
+    stock_gain = stock.pid.p / 0.05
+    self.assertAlmostEqual(stock_gain, SP6_KP + lsf, delta=(SP6_KP + lsf) * 0.02)
+    self.assertAlmostEqual(ti.pid.p, stock.pid.p * get_sp6_mazda_ti_error_scale(v_ego), delta=abs(stock.pid.p) * 1e-6)
+    self.assertAlmostEqual(ti.pid.p / 0.05, sp6_effective_gain(v_ego) * SP6_KP, delta=sp6_effective_gain(v_ego) * SP6_KP * 0.02)
+
+  @parameterized.expand([(3.0,), (8.5,), (15.0,), (25.0,)])
+  def test_shapes_the_plant_by_speed(self, v_ego):
+    ti, _ = run_torque(v_ego, True, 0.01, 0.0, mode=ControllerMode.STARPILOT)
+    base_lat_accel_factor, base_friction = ti.mazda_ti_base_params
+    self.assertAlmostEqual(float(ti.torque_params.latAccelFactor), base_lat_accel_factor * get_mazda_ti_lat_accel_factor_scale(v_ego), places=5)
+    self.assertAlmostEqual(float(ti.torque_params.friction), base_friction * get_mazda_ti_friction_scale(v_ego), places=5)
+    self.assertAlmostEqual(ti.pid.pos_limit, ti.steer_max * float(ti.torque_params.latAccelFactor), places=5)
+
+  def test_saturates_at_the_ti_ceiling(self):
+    CP = cx9_params(True)
+    controller = LatControlTorque(CP.as_reader(), interfaces[MAZDA.MAZDA_CX9_2021](CP), DT_CTRL, controller_mode=ControllerMode.STARPILOT)
+    CS = car.CarState.new_message(vEgo=30.0)
+    params = log.VehicleParameters.new_message(steerRatio=CP.steerRatio, stiffnessFactor=1.0)
+    for _ in range(1000):
+      out, _, lac_log = controller.update(True, CS, VehicleModel(CP), params, False, 0.01, False, 0.2)
+    self.assertEqual((round(abs(out), 6), bool(lac_log.saturated)), (round(700 / 800, 6), True))

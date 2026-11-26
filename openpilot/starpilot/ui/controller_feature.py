@@ -7,7 +7,8 @@ import math
 import json
 
 from openpilot.starpilot.lateral.controller_selection import (
-  DOCUMENT_KEY, LEARNING_OFF_KEY, MAX_DOCUMENT_BYTES, ControllerMode, policy_for, replace_mode, selection_from_bytes,
+  DOCUMENT_KEY, LEARNING_OFF_KEY, MAX_DOCUMENT_BYTES, ControllerMode, mazda_torque_interceptor, policy_for, replace_mode,
+  selection_from_bytes,
 )
 from openpilot.starpilot.lateral.learning_preferences import (
   KEY as LEARNING_PREFERENCES_KEY, MAX_BYTES as LEARNING_PREFERENCES_LIMIT, read_preference, replace_preference,
@@ -24,6 +25,9 @@ CHOICES = ('Stock Controller', 'StarPilot Controller')
 MODES = dict(zip(CHOICES, (ControllerMode.STANDARD, ControllerMode.STARPILOT), strict=True))
 TUNING_GUIDANCE = ("StarPilot's torque controller can provide higher low-speed steering accuracy, but may require additional tuning. " +
                    "Join the StarPilot Discord and open a tuning request: https://firestar.link/discord")
+MAZDA_TI_GUIDANCE = ("Mazda with a Torque Interceptor: StarPilot Controller is the StarPilot 6 steering tune this car was " +
+                     "developed on (the default); Stock Controller is openpilot 0.11's controller with the same Torque " +
+                     "Interceptor shaping converted onto its gains.")
 SETUP_ACTION = 'torque_prepare_firestar'
 SETUP_QUESTION = 'Change tuning preparation? Turning it off restores your previous steering preferences.'
 SETUP_DEFAULTS = {'TurnAssist': b'0', LEARNING_OFF_KEY: b'1', 'LaneCentering': b'0',
@@ -184,6 +188,8 @@ class ControllerFeature:
     allowed = valid and learning_valid and self.authority('preferences')
     reason = ('Choose the steering controller for your next drive. ' + TUNING_GUIDANCE if valid and learning_valid else
               'Saved steering preferences are unreadable or invalid; no change was made.')
+    if valid and learning_valid and mazda_torque_interceptor(CP):
+      reason = 'Choose the steering controller for your next drive. ' + MAZDA_TI_GUIDANCE
     return FeatureRow(DOCUMENT_KEY, 'Steering Controller', value, raw, CHOICES if valid else (),
                       available=allowed, reason=reason, capability=capability,
                       dependencies=((LEARNING_OFF_KEY, learning), (LEARNING_PREFERENCES_KEY, preference.raw)),

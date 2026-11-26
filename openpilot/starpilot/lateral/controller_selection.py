@@ -171,9 +171,21 @@ def model_turn_assist_supported(CP) -> bool:
   return turn_assist_supported(CP) and policy_for(CP) == 'ioniq6'
 
 
+def mazda_torque_interceptor(CP) -> bool:
+  try:
+    from opendbc.car.mazda.values import MazdaSafetyFlags
+    return str(CP.brand) == 'mazda' and bool(int(CP.flags) & MazdaSafetyFlags.TORQUE_INTERCEPTOR)
+  except (AttributeError, TypeError, ValueError):
+    return False
+
+
 def default_selection(CP) -> ControllerSelection:
   policy = policy_for(CP)
   mode = ControllerMode.STARPILOT if policy and policy != 'generic' else ControllerMode.STANDARD
+  if policy == 'generic' and mazda_torque_interceptor(CP):
+    # the Mazda TI's tested tune is StarPilot 6's controller, which the StarPilot mode carries
+    # (generic_torque_policy.py); the standard controller stays selectable
+    mode = ControllerMode.STARPILOT
   return ControllerSelection(mode, policy, 'default')
 
 
@@ -278,5 +290,5 @@ def learning_allowed(params, CP, *, selection: ControllerSelection | None = None
     return False
   # Reuse the native estimator only in its existing brand scope. Actual
   # controller parameter ownership still belongs to Controls or TorqueHost.
-  native_brand = str(CP.brand) in ('toyota', 'hyundai', 'rivian', 'honda', 'volkswagen', 'mazda')
+  native_brand = str(CP.brand) in ('toyota', 'hyundai', 'rivian', 'honda', 'volkswagen')
   return native_brand and controller_uses_native_learning(selected) and CP.lateralTuning.which() == 'torque'

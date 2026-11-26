@@ -102,8 +102,12 @@ class CarInterface(CarInterfaceBase):
       ret.transmissionType = structs.CarParams.TransmissionType.automatic
 
     if candidate in GEN1:
-      # the fork's value for the Torque Interceptor path; a stock GEN1 keeps upstream's 0.1
-      ret.steerActuatorDelay = 0.335 if p.get_bool("TorqueInterceptorEnabled") else 0.1
+      # Torque Interceptor: lagd starts from steerActuatorDelay + 0.2 until it has its own estimate, and on openpilot 0.11
+      # it learns only above 50 mph, so this start is what the model and the controller run on for a long while.
+      # 0.115 starts them at 0.315 s, the total the StarPilot 6 fork drove on (its learned 0.216 s on this car plus its
+      # 0.1 s lateral smoothing). The fork's 0.335 started them at 0.535 s, and the first StarPilot 7 drives wove at
+      # highway speed with the model's own request in the loop. A stock GEN1 keeps upstream's 0.1.
+      ret.steerActuatorDelay = 0.115 if p.get_bool("TorqueInterceptorEnabled") else 0.1
       # Upstream runs a stock GEN1 with safety param 0 (and StarPilot 7's stock always-on-lateral only admits that), and the
       # panda treats 0 as GEN1. The GEN1 bit goes in with the first fork flag, where the firmware's TI bus switch looks for it.
       stock_safety_param = ret.safetyConfigs[0].safetyParam
