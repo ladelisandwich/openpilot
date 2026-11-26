@@ -75,12 +75,27 @@ invalid (a stale DISTANCE_MORE could read as a long press on recovery); the tool
 dead `'mazda'` in `learning_allowed`'s native_brand was reverted (a Mazda's policy is 'generic', which returns first).
 
 Open from that audit (not done; each needs its own change and a drive):
-- **Panda: the TI steering command (0x249, bus 1) is not checked on GEN1** (mazda.h torque-checks it only for
-  gen2/gen3; only the stock 0x243 is checked). Needs its own decode and limit check (0 without controls_allowed,
-  |cmd| <= 800), separate from the 0x243 rate state, and a firmware rebuild.
-- Panda: the radar programming-session request (UDS 0x10 0x02 to 0x764) is allowed at any time; gate it on
-  controls_allowed (keep 0x10 0x01 and tester-present). The GEN2 ignition rule (0x274) runs on this GEN1 car too;
-  and the bus-1 CRZ_CTRL engagement rule is a radar-interceptor leftover. Same firmware rebuild.
+- Done on branch `sp7-mazda-safety` (not driven yet): the panda now checks the GEN1 TI command 0x249 on bus 1 (same
+  decode as 0x243, 0 without controls_allowed, |cmd| <= 800, its CHKSUM copy must equal the command; no rate check,
+  the TI legitimately jumps from 0 to the LKAS command) and allows the radar programming-session request only with
+  controls_allowed (default session and tester-present always). The hybrid takeover asks for it only while engaged,
+  except that after a disengage mid-takeover the arbiter's debounce and dwell keep SILENCING asking for up to ~3 s
+  (the panda now drops those; if the radar had ignored the first request this ends in a silence timeout, takeovers
+  off for the drive, instead of silencing the radar while disengaged). CarInterface.init()'s non-hybrid silence goes
+  out before ControlsReady, in ELM327 mode, so it is unaffected. Replayed against the 81 sp7 segments in
+  `logs/sp7`: no frame the car sent would have been blocked that 0x243's check did not already block. Tests:
+  `TestMazdaTiRadarEmulationSafety` in test_mazda.py (the full car-safety suite for param 265). Firmware rebuilt.
+- Firmware build, reproducible: from the repo root, `scons -f <file containing SConscript('panda/SConscript')>
+  panda/board/obj` with the venv's arm-none-eabi-gcc 13.2.1 and a fresh `.sconsign.dblite` (a stale one keeps the
+  old gitversion.h). Building from `panda/` embeds `./board/...` paths instead and does not match. The firmware the
+  port committed was built with one line different from its committed mazda.h: `gen1 = GET_FLAG(param, FLAG_GEN1);`
+  instead of the GEN1-by-default line (byte-identical otherwise); it changes nothing for param 265.
+- Still open, reported only: the GEN2 ignition rule (0x274 data[5] & 4, ignition.h) runs on this GEN1 car; on the
+  drives it agrees with 0x9E except at shutdown, where it stays on ~0.8 s longer (ignition_can flips per frame in
+  that window); harmless here because the harness ignition line is high throughout. The bus-1 CRZ_CTRL rule
+  (mazda.h rx hook, any config) is a radar-interceptor leftover: bus 1 on this car carries only TI_FEEDBACK and
+  diagnostic traffic, so it is dead code, but any device on the OBD lines sending 0x21c could drive controls_allowed;
+  gate it on radar_interceptor (or remove it with the RI code).
 - Hazards do not hold the RES spam while MRCC is master (carcontroller RES path), unlike the emulation path.
 - Other writers of ExperimentalMode switch the ACC master too (Dom's Conditional Mode commit writes it as its
   baseline; the onroad experimental button). With the planner now following the master this stays consistent, but
