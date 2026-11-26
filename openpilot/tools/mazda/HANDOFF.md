@@ -4,6 +4,76 @@ State of the work on `mazda-long-ti1-testing` as of 2026-10-27 (evening, PC sess
 local or cloud, can continue without the old conversation.
 
 
+## StarPilot 7: the first drives and what changed after them (2026-11-25, PC session)
+
+The owner's findings after the first sp7 drives (routes `0000000a--0fb6848ddf` and `0000000b--62399ad21f`, 7 min
+each, in `/data/media/0/realdata`; the new tree logs there, not to `realdata_konik`): low-speed steering over-tuned,
+highway steering in an over-steer/correct loop, the long-switch icon gone, emulation not always in Experimental Mode.
+Baseline: the old branch's `000000ca`/`000000cb` (2026-11-23). Measured from the rlogs (lateralTorqueParameters,
+lateralDelay, controlsState.lateralControlState.torqueState):
+
+- **Lateral delay.** Both sp7 drives ran on `lateralDelay` 0.535 s, "unestimated", the whole time. The old branch ran
+  on its learned 0.216 s (std 0.007, 50 blocks) plus 0.1 s lateral smoothing = 0.316 s into the model and the
+  controller. 0.11's lagd starts at steerActuatorDelay + 0.2 (the fork's 0.335 gave 0.535), learns only above 50 mph
+  (the old one from 15 m/s), and its version bump threw the old estimate away. On the sp7 highway stretch the wheel
+  wove about 4 deg at roughly 1.7 Hz with the model's own desired lateral accel oscillating with it; the old routes at
+  the same speeds are smooth. Fix: the TI's steerActuatorDelay is 0.115, so lagd starts at 0.315 s (the old total)
+  until it learns its own.
+- **Controller.** The device has `LateralControllerSelection` = `{"MAZDA_CX9_2021": "starpilot"}`, saved between the two
+  drives: `0a` ran Dom's standard controller (torqueState version 1), `0b` the StarPilot one (version 2). The StarPilot
+  controller (starpilot/lateral/hkg_torque_policy.py, GenericTorquePolicy for this car) is StarPilot 6's controller
+  almost line for line (flat KP 0.6, KI 0.35, LOW_SPEED_X/Y, MAX_LAT_JERK_UP, the unwind and center-chatter logic),
+  but the port hooked the Mazda TI shaping only into the standard path, so `0b` ran with no error scale (about 5x the
+  old P at 5 m/s) and no speed shaping of latAccelFactor/friction. Note: StarPilot 6's SteerKP toggle pinned the KP
+  at a flat 0.6 every frame (controlsd), so its P per m/s^2 of error was (0.6 + LSF) * scale: 1.13 at 5 m/s, 1.08 at
+  7.5, 1.11 at 10 and 13.5, 0.76 at 20, 0.63 at 30; the port's sp6_effective_gain had dropped the division by KP.
+  Fix: GenericTorquePolicy applies the TI speed shape and StarPilot 6's error scale exactly as the old controller did,
+  the StarPilot controller is this car's default, and the standard controller's conversion uses the corrected gain.
+  Both are selectable in Dom's settings ("Steering Controller": StarPilot Controller = the StarPilot 6 tune, Stock
+  Controller = 0.11's controller with the converted shaping).
+- **Live learning.** torqued's `useParams` was true, but its filtered values were still the CarParams ones (calPerc
+  9-25), and FLM (steerlearnerd, `starpilotLateralState.learningEvidence`) only recorded: neither changed the drives
+  yet. The old branch never fed the live tune to this car. Learning is now off by default for the Mazda TI (Dom's "Use
+  StarPilot Auto Learn" row turns it on per vehicle; learning_preferences.py).
+- **Experimental Mode under emulation.** The planner follows `selfdriveState.experimentalMode`, which with Dom's
+  Conditional Mode on (its default, Automatic, whenever `ConditionalModeConfig` is absent, as on this device) is
+  Conditional Mode's own decision; the car controller picks emulation from the raw ExperimentalMode param. Fix:
+  selfdrived publishes the hybrid master choice as the planner's mode for hybrid long
+  (hybrid_buttons.planner_experimental), StarPilot 6's forced CEStatus.
+- **Icon.** The device's screen is the StarPilot shell (starpilot/ui/runtime_app.py, large layout on the tizi); it
+  uses the stock AugmentedRoadView only as a camera/model painter, so the stock HUD's icon hook never ran. The shell
+  now draws it from its extra overlays, left of its steering wheel (or in the wheel's place when hidden), not under an
+  alert (onroad_mazda_hybrid.render_shell). `/dev/shm/params/dx` was missing only because the device had rebooted.
+
+Also fixed the same day, from an audit of the port: card now sends inactive frames on any invalid carControl while
+radar emulation is configured (Dom sends nothing then, and a bus fault anywhere left the PCM without its ACC frames
+and the radar without tester-present; ti_startup.inactive_keepalive); the hybrid button ignores a press while CAN is
+invalid (a stale DISTANCE_MORE could read as a long press on recovery); the tools in `tools/mazda/` import again
+(opendbc's `get_raw_value` moved onto `Signal`); the Wipers Mean Rain text no longer promises weather offsets; the
+dead `'mazda'` in `learning_allowed`'s native_brand was reverted (a Mazda's policy is 'generic', which returns first).
+
+Open from that audit (not done; each needs its own change and a drive):
+- **Panda: the TI steering command (0x249, bus 1) is not checked on GEN1** (mazda.h torque-checks it only for
+  gen2/gen3; only the stock 0x243 is checked). Needs its own decode and limit check (0 without controls_allowed,
+  |cmd| <= 800), separate from the 0x243 rate state, and a firmware rebuild.
+- Panda: the radar programming-session request (UDS 0x10 0x02 to 0x764) is allowed at any time; gate it on
+  controls_allowed (keep 0x10 0x01 and tester-present). The GEN2 ignition rule (0x274) runs on this GEN1 car too;
+  and the bus-1 CRZ_CTRL engagement rule is a radar-interceptor leftover. Same firmware rebuild.
+- Hazards do not hold the RES spam while MRCC is master (carcontroller RES path), unlike the emulation path.
+- Other writers of ExperimentalMode switch the ACC master too (Dom's Conditional Mode commit writes it as its
+  baseline; the onroad experimental button). With the planner now following the master this stays consistent, but
+  a dedicated param would make the master independent of them.
+- Dead code for this car: GEN2/GEN3 platforms, the radar interceptor (RI, BlendedACC), NoMRCC/NoFSC/manual,
+  radar_session.py, ce_status_* in hybrid.py, the Lower Minimum Set Speed toggle (no reader), plain radar emulation
+  without hybrid (EcuDisableFailed path). The stock AOL pieces stay (Dom's tests depend on them).
+- selfdrived always initializes through its 6 s timeout with the TI (CarState invalid until ControlsReady).
+- FLM: the TI speed shaping rewrites torque_params each frame below 21 m/s, which resets FLM's baseline; moot while
+  learning is off (the new default), but FLM cannot hold an effect on this car if it is turned on.
+
+Analysis scripts used for the above (lat_summary.py, trace.py, delay_flm.py) were PC scratch tools; the same reads
+are easy with `openpilot.tools.lib.logreader._LogFileReader`.
+
+
 ## The StarPilot 7 branch: `sp7-mazda-long-ti1` (made 2026-11-24)
 
 The fork's work re-ported onto StarPilotHQ/StarPilot branch `Dom` ("StarPilot 7.0", openpilot 0.11.2 base, the
@@ -37,8 +107,9 @@ the two repositories share GitHub's object store), never as a `git merge`.
 - The hybrid mode switch: Dom has no CEStatus; the distance-increase button now flips the stock `ExperimentalMode`
   param (long press toggles, a tap leaves emulation), and the car controller reads that
   (`openpilot/starpilot/car/mazda/hybrid_buttons.py`, run from card.py's Mazda branch). Conditional Experimental
-  Mode's automatic triggers never touch it. The horn-tap bookmark publishes `userBookmark` from card (selfdrived
-  counts those); nothing else on Dom publishes that service.
+  Mode's automatic triggers never touch it. The horn-tap bookmark is counted in selfdrived from
+  `starpilotCarState.hornPressed` (the port first published `userBookmark` from card, but the UI publishes that
+  service too, and msgq's second publisher raises on send, which would have taken card down; fixed 2026-11-25).
 - Steering: the TI ceiling (700/800) and the speed-shaped plant moved to `openpilot/starpilot/lateral/
   mazda_ti_shaping.py` and Dom's `latcontrol_torque.py`. Dom's controller has no low-speed curvature factor; it
   raises the proportional gain itself (KP_INTERP, 14x at 5 m/s). The fork's low-speed error scale was tuned

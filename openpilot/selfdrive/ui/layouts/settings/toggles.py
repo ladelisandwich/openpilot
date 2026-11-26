@@ -56,9 +56,9 @@ DESCRIPTIONS = {
     "Off by default so the DSC OFF button stays usable for off-road driving."
   ),
   "MazdaWiperWeatherMode": tr_noop(
-    "Take the wipers as a rain report. While they sweep, follow further, accelerate and corner more gently, and " +
-    "skip automatic lane changes; a nudged lane change still goes. No lane change starts for three seconds after " +
-    "the washer. Uses your Weather Presets rain values when set, built-in ones otherwise."
+    "Take the wipers as a rain report: while they sweep, skip automatic lane changes; a nudged lane change still " +
+    "goes. No lane change starts for three seconds after the washer. (StarPilot 7 has no weather driving offsets, " +
+    "so the following distance and acceleration are not changed.)"
   ),
   "MazdaHornBookmark": tr_noop("A tap of the horn bookmarks the moment in the drive, like the bookmark wheel button."),
   "NoMRCC": tr_noop("Enable if your car does not have stock MRCC."),

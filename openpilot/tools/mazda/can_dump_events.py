@@ -18,7 +18,11 @@ import sys
 from collections import defaultdict
 
 from opendbc.can.dbc import DBC
-from opendbc.can.parser import get_raw_value
+
+
+def get_raw_value(dat, sig):
+  # opendbc on openpilot 0.11 reads a raw signal value with Signal.get_raw_value (its parser module function is gone)
+  return sig.get_raw_value(dat)
 
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument("dump")

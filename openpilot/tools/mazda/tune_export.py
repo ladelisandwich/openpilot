@@ -62,8 +62,12 @@ import time
 
 from openpilot.tools.lib.logreader import _LogFileReader
 from opendbc.can.dbc import DBC
-from opendbc.can.parser import get_raw_value
 from opendbc.car.mazda.torque_interceptor import violation_name
+
+
+def get_raw_value(dat, sig):
+  # opendbc on openpilot 0.11 reads a raw signal value with Signal.get_raw_value (its parser module function is gone)
+  return sig.get_raw_value(dat)
 
 try:
   from openpilot.system.hardware.hw import Paths
@@ -308,7 +312,7 @@ class Export:
       r["sstop"] = bool(getattr(evt.longitudinalPlan, "shouldStop", False))
     elif w == "radarState":
       lead = evt.radarState.leadOne
-      r["ld"], r["ld_d"], r["ld_v"] = lead.status, lead.dRel, lead.vRel
+      r["ld"], r["ld_d"], r["ld_v"] = lead.present, lead.dRel, lead.vRel
     elif w == "selfdriveState":
       ss = evt.selfdriveState
       r["exp"] = ss.experimentalMode

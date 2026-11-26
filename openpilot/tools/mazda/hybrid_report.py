@@ -29,7 +29,11 @@ from statistics import median
 
 from openpilot.tools.lib.logreader import _LogFileReader
 from opendbc.can.dbc import DBC
-from opendbc.can.parser import get_raw_value
+
+
+def get_raw_value(dat, sig):
+  # opendbc on openpilot 0.11 reads a raw signal value with Signal.get_raw_value (its parser module function is gone)
+  return sig.get_raw_value(dat)
 
 try:
   from openpilot.system.hardware.hw import Paths
@@ -199,7 +203,7 @@ class Scan:
     self.radar_lead_prev = None    # None right after a silence: the first frame back is not an edge
     self.tracks = {}               # addr -> (dRel, vRel, yRel) of the track frames that carry a target
     self.track_frames = 0
-    self.vision_lead = False       # radarState.leadOne.status: the vision lead on this car (radarUnavailable)
+    self.vision_lead = False       # radarState.leadOne.present: the vision lead on this car (radarUnavailable)
     self.vision_drel = 0.0
     self.vision_prev = False
     self.hud_lead = False          # carControl.hudControl.leadVisible, what the car controller acted on
@@ -254,7 +258,7 @@ class Scan:
         self.note("openpilot engaged" if en else "openpilot disengaged")
     elif w == "radarState":
       lead = evt.radarState.leadOne
-      self.vision_lead, self.vision_drel = bool(lead.status), float(lead.dRel)
+      self.vision_lead, self.vision_drel = bool(lead.present), float(lead.dRel)
       if self.vision_lead != self.vision_prev:
         self.vision_lead_edges.append((self.t, self.vision_lead))
         self.vision_prev = self.vision_lead

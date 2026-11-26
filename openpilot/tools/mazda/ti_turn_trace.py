@@ -24,7 +24,11 @@ from collections import deque
 
 from openpilot.tools.lib.logreader import _LogFileReader
 from opendbc.can.dbc import DBC
-from opendbc.can.parser import get_raw_value
+
+
+def get_raw_value(dat, sig):
+  # opendbc on openpilot 0.11 reads a raw signal value with Signal.get_raw_value (its parser module function is gone)
+  return sig.get_raw_value(dat)
 
 try:
   from openpilot.system.hardware.hw import Paths
