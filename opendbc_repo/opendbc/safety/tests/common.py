@@ -990,6 +990,12 @@ class SafetyTest(SafetyTestBase):
               continue
             if attr.startswith('TestHyundaiCanfd') and current_test.startswith('TestHyundaiCanfd'):
               continue
+            if attr.startswith('TestMazda') and current_test.startswith('TestMazda'):
+              continue
+            # Mazda radar emulation impersonates the stock radar, whose frame and UDS addresses overlap
+            # Hyundai CAN-FD (0x362), Toyota (0x365, 0x366) and ELM327's diagnostic range (0x764)
+            if 'TestMazdaTiRadarEmulationSafety' in (attr, current_test):
+              tx = list(filter(lambda m: m[0] not in [0x362, 0x365, 0x366, 0x764], tx))
             if {attr, current_test}.issubset({'TestHyundaiLongitudinalSafety', 'TestHyundaiLongitudinalSafetyCameraSCC',
                                               'TestHyundaiLongitudinalSafetyCameraSCCRefresh',
                                               'TestHyundaiLongitudinalSafetyCameraSCCRefreshHybrid', 'TestHyundaiSafetyFCEVLong'}):

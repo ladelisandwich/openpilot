@@ -303,12 +303,30 @@ static bool mazda_tx_hook(const CANPacket_t *msg) {
     }
   }
 
-  // only a tester-present or a default/programming session request may reach the radar
+  // only a tester-present or a default/programming session request may reach the radar. The programming
+  // session silences the radar (and with it the car's own AEB), so it needs controls_allowed: the hybrid
+  // takeover asks for it only while engaged, and the non-hybrid silence in CarInterface.init() goes out
+  // before this mode is set. Tester-present and the default session (the hand-back) are always allowed.
   if (radar_emulation && (msg->bus == (unsigned char)MAZDA_MAIN) && (msg->addr == MAZDA_RADAR_UDS)) {
     bool tester_present = (msg->data[0] == 0x02U) && (msg->data[1] == 0x3EU) && (msg->data[2] == 0x80U);
-    bool session_control = (msg->data[0] == 0x02U) && (msg->data[1] == 0x10U) &&
-                           ((msg->data[2] == 0x01U) || (msg->data[2] == 0x02U));
-    if (!tester_present && !session_control) {
+    bool session_control = (msg->data[0] == 0x02U) && (msg->data[1] == 0x10U);
+    bool default_session = session_control && (msg->data[2] == 0x01U);
+    bool programming_session = session_control && (msg->data[2] == 0x02U) && controls_allowed;
+    if (!tester_present && !default_session && !programming_session) {
+      tx = false;
+    }
+  }
+
+  // GEN1 Torque Interceptor command, the same 12-bit encoding as LKAS, mirrored in its CHKSUM field.
+  // Only the zero and max checks: the rate state belongs to LKAS, and the TI is legitimately sent 0 while
+  // LKAS steers (TI not in RUN) and jumps back to the LKAS command when it resumes.
+  if (gen1 && torque_interceptor && (msg->bus == (unsigned char)MAZDA_AUX) && (msg->addr == MAZDA_TI_LKAS)) {
+    int desired_torque = (((msg->data[0] & 0x0FU) << 8) | msg->data[1]) - 2048U;
+    int desired_torque_copy = (((msg->data[2] & 0x0FU) << 8) | msg->data[3]) - 2048U;
+    bool violation = safety_max_limit_check(desired_torque, MAZDA_STEERING_LIMITS.max_torque, -MAZDA_STEERING_LIMITS.max_torque);
+    violation |= desired_torque_copy != desired_torque;
+    violation |= !lateral_controls_allowed() && (desired_torque != 0);
+    if (violation) {
       tx = false;
     }
   }
