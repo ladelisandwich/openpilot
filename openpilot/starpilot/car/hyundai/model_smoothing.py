@@ -6,6 +6,10 @@ from opendbc.car.hyundai.values import CAR, HyundaiFlags
 
 
 def seconds(cp):
+  if cp.brand == 'mazda':
+    # the same hook carries the Mazda Torque Interceptor's StarPilot 6 smoothing (starpilot/car/mazda/model_smoothing.py)
+    from openpilot.starpilot.car.mazda.model_smoothing import seconds as mazda_seconds
+    return mazda_seconds(cp)
   required = HyundaiFlags.CANFD | HyundaiFlags.CCNC | HyundaiFlags.CANFD_CAMERA_SCC
   excluded = HyundaiFlags.CANFD_ANGLE_STEERING | HyundaiFlags.CANFD_LKA_STEER_MSG | HyundaiFlags.NON_SCC
   if (cp.brand != 'hyundai' or cp.carFingerprint != CAR.HYUNDAI_KONA_2ND_GEN or

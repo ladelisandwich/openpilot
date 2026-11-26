@@ -45,6 +45,20 @@ lateralDelay, controlsState.lateralControlState.torqueState):
   now draws it from its extra overlays, left of its steering wheel (or in the wheel's place when hidden), not under an
   alert (onroad_mazda_hybrid.render_shell). `/dev/shm/params/dx` was missing only because the device had rebooted.
 
+**Second drive (route `0000000e`, 2026-11-25 22:23, build 4c026b03).** lagd learned 0.208 s within minutes (the old
+branch's 0.216), the StarPilot controller ran with the TI shaping, fixed tune (useParams false). Rocking in the
+0.8-3 Hz band, median angle rms per 4 s window: 0.75 deg at 45-56 mph and 0.48 at 56-67 (old branch 0.19 and 0.15;
+the first sp7 drive 1.9 and 2.7); from 67 mph equal to the old branch. The owner felt it around 22:26 and it stopped
+when the driver held the wheel. Everything in the loop was 2-3x the old branch at 45-67 mph: the model's desired curvature
+(0.039 vs 0.017 m/s^2), the controller output (0.071 vs 0.022), the car (0.069 vs 0.022). The one loop difference left
+was openpilot 0.11 dropping the 0.1 s lateral smoothing (modeld's desired-curvature filter plus the same 0.1 s on the
+model's and the controller's delay). starpilot/car/mazda/model_smoothing.py restores it for the TI through the hook
+modeld and controlsd already call for the Kona (hyundai/model_smoothing.py), so neither file changes (modeld.py is
+hash-pinned by FLM's producer_clock_equivalence). The amount is the owner's to tune: Toggles, "Steering Smoothing"
+(MazdaLatSmoothSeconds, 0.01-0.10 s in 0.01 s steps, default 0.05 s, half of StarPilot 6's), read when modeld and
+controlsd start. The stepper subclasses InitialCruiseSpeedControl so the StarPilot shell's settings adapter shows it. Scan script: PC scratch osc_scan.py (band-passed angle/output/
+desired per 4 s window, episodes with wall-clock times).
+
 Also fixed the same day, from an audit of the port: card now sends inactive frames on any invalid carControl while
 radar emulation is configured (Dom sends nothing then, and a bus fault anywhere left the PCM without its ACC frames
 and the radar without tester-present; ti_startup.inactive_keepalive); the hybrid button ignores a press while CAN is

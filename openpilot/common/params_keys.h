@@ -418,6 +418,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"MazdaWiperWeatherMode", {PERSISTENT, BOOL}},
     {"MazdaHornBookmark", {PERSISTENT, BOOL}},
     {"MazdaHybridMaster", {PERSISTENT | DONT_LOG, INT, "0"}},
+    {"MazdaLatSmoothSeconds", {PERSISTENT, FLOAT, "0.05"}},  // steering smoothing, 0.01-0.10 s (starpilot/car/mazda/model_smoothing.py)
     {"NoMRCC", {PERSISTENT, BOOL}},
     {"NoFSC", {PERSISTENT, BOOL}},
     {"BlendedACC", {PERSISTENT, BOOL, "1"}},

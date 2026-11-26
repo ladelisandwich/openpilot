@@ -8,6 +8,8 @@ from openpilot.system.ui.widgets.scroller_tici import Scroller
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.selfdrive.ui.layouts.settings.initial_cruise_speed import InitialCruiseSpeedControl
+from openpilot.selfdrive.ui.layouts.settings.mazda_lat_smooth import MazdaLatSmoothControl
+from openpilot.starpilot.car.mazda.model_smoothing import applies as mazda_lat_smooth_applies
 from openpilot.starpilot.ui.slc_offset_feature import SlcOffsetOwner, native_parked
 from openpilot.starpilot.galaxy.localization_settings import LocalizationSettingsOwner
 from openpilot.starpilot.ui.feature_settings_state import FeatureSettingsRequest
@@ -232,6 +234,15 @@ class TogglesLayout(Widget):
       icon="speed_limit.png",
     )
     self._initial_cruise_speed.set_visible(lambda: ui_state.CP is not None and ui_state.has_longitudinal_control and not ui_state.CP.pcmCruise)
+    self._mazda_lat_smooth = ListItem(
+      title=lambda: tr("Steering Smoothing"),
+      description=lambda: tr("Mazda with the Torque Interceptor: how much the model's steering request is smoothed, with the " +
+                             "matching lookahead. More is calmer, less answers sooner. StarPilot 6 ran 0.10 s; the default is " +
+                             "0.05 s. Changes apply the next time the car starts."),
+      action_item=MazdaLatSmoothControl(),
+      icon="chffr_wheel.png",
+    )
+    self._mazda_lat_smooth.set_visible(lambda: ui_state.CP is not None and mazda_lat_smooth_applies(ui_state.CP))
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
       toggle = toggle_item(
@@ -262,6 +273,9 @@ class TogglesLayout(Widget):
         toggle.set_visible(lambda: ui_state.CP is not None and ui_state.CP.brand == "mazda")
       self._toggles[param] = toggle
 
+      if param == "TorqueInterceptorEnabled":
+        self._toggles["MazdaLatSmoothSeconds"] = self._mazda_lat_smooth
+
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
@@ -287,6 +301,8 @@ class TogglesLayout(Widget):
   def _update_toggles(self):
     ui_state.update_params()
     self._initial_cruise_speed.action_item.refresh()
+    if (mazda_lat_smooth := getattr(self, "_mazda_lat_smooth", None)) is not None:
+      mazda_lat_smooth.action_item.refresh()
 
     e2e_description = tr(
       "<h4>End-to-End Longitudinal Control</h4><br>" +
