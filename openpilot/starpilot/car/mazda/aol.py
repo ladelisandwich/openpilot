@@ -1,5 +1,5 @@
 from opendbc.car import structs
-from opendbc.car.mazda.stock_aol import qualified, temporary_restriction
+from opendbc.car.mazda.stock_aol import TI_RE_SAFETY_PARAM, qualified, temporary_restriction
 from openpilot.starpilot.aol.policy import AolVehiclePolicy
 from openpilot.starpilot.car.mazda.stock_intent import MazdaStockCardIntent
 
@@ -12,7 +12,8 @@ def policy_for(cp):
 
 
 def native_profile_supported(model, param):
-  return model == int(structs.CarParams.SafetyModel.mazda) and param == 0
+  # an unmodified GEN1 (0) or the fork's Torque Interceptor with radar emulation (stock_aol.TI_RE_SAFETY_PARAM)
+  return model == int(structs.CarParams.SafetyModel.mazda) and param in (0, TI_RE_SAFETY_PARAM)
 
 
 def native_accepts_cp(cp, model, param):

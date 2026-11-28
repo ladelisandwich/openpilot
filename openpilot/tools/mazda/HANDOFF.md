@@ -59,6 +59,34 @@ hash-pinned by FLM's producer_clock_equivalence). The amount is the owner's to t
 controlsd start. The stepper subclasses InitialCruiseSpeedControl so the StarPilot shell's settings adapter shows it. Scan script: PC scratch osc_scan.py (band-passed angle/output/
 desired per 4 s window, episodes with wall-clock times).
 
+**Always-on-lateral (2026-11-27, branch `sp7-mazda-aol`).** Dom's Mazda AOL admitted only an unmodified GEN1
+(param 0, stock ACC). It now also admits this car's configuration, GEN1 + Torque Interceptor + radar emulation (with
+or without hybrid long), safety param 265, in all three layers:
+- Panda (`opendbc/safety/modes/mazda_stock_aol.h`, `mazda.h`, flag `mazda_aol_ti_re`): MAIN and the cruise state come
+  from PEDALS (the radar's CRZ_CTRL is silenced), so the main-edge, boot and engagement grants run from the PEDALS
+  branch; the stock EPS's LKAS_BLOCK is not a source (set below about 45 km/h, where the TI steers); permission:
+  lateral = request & 1 with MAIN, gear D and no camera fault, and either controls_allowed or (token and moving);
+  longitudinal = request & 2 with controls_allowed (no motion gate: stop and go). The bus-1 CRZ_CTRL engagement rule
+  is limited to the radar interceptor. Tests: `safety/tests/test_mazda_ti_aol.py`. Firmware rebuilt.
+- pandad (`starpilot/car/mazda/aol_policy.h`: param 0 or 265). pandad is compiled; it was rebuilt ON THE DEVICE in a
+  scratch clone (`git clone --shared /data/openpilot /data/aolbuild`, then `scons openpilot/selfdrive/pandad/pandad`
+  with /usr/local/venv/bin on PATH), never in /data/openpilot. Dom's prebuilt pandad came from a laptop build (clang
+  18, shared libusb from a newer vendored package); the device has clang 20 and the vendored libusb as a static
+  library only (SConstruct: "older device venvs still have static .a only"), so the binary is not byte-identical, but
+  the pandad symbols match and mazda_aol_param disassembles to `param == 0 || param == 0x109`. `test_aol_protocol`
+  built and passed on the device.
+- Python (`opendbc/car/mazda/stock_aol.py` qualified = stock_qualified or ti_re_qualified; `car/mazda/aol.py`).
+- Prerequisite on the car: Vehicle Selection must be Automatic. Dom refuses AOL on a fixed (forced) fingerprint, and
+  the device had `VehicleSelection` = MAZDA_CX9_2021 since the port; the car's FW fingerprints exactly as
+  MAZDA_CX9_2021 (checked against route 00000010's carFw). With the forced selection nothing of this is active.
+- AlwaysOnLateral was already 1 on the device, so AOL is live from the first drive after the selection change.
+- Firmware build gotcha: the documented recipe must also put the tree's own `opendbc_repo` first on PYTHONPATH; a venv
+  from another worktree resolves `opendbc` (and the safety headers the panda build includes) to that worktree.
+- To check on the car: arming on a MAIN off->on press; steering below 28 mph and at a standstill while engaged;
+  stop and go in emulation; brake drops longitudinal and keeps lateral; MAIN off while emulation is master ends
+  AOL (the emulated CRZ_CTRL echoes CRZ_AVAILABLE from PEDALS; the hand-back after the disengage bounds it, but no
+  drive has turned MAIN off during emulation yet).
+
 **Lower Minimum Set Speed (2026-11-26).** On the StarPilot 6 fork the toggle only ever worked with plain radar
 emulation (8a17f8aa2 made hybrid long ignore it); on sp7 nothing read it. It works again while openpilot's emulated
 radar is the ACC master: starpilot/car/mazda/low_set_speed.py tells card's cruise helper to own the set speed

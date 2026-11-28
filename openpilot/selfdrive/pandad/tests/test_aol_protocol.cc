@@ -240,7 +240,7 @@ int main() {
     assert(!run(negotiator, transport, input, NOW, 2U).outcome.compatible);
   }
   for (uint32_t word = 0U; word <= 65535U; word++) {
-    assert(mazda_aol_param(static_cast<uint16_t>(word)) == (word == 0U));
+    assert(mazda_aol_param(static_cast<uint16_t>(word)) == (word == 0U || word == 265U));
     const bool preap_expected = (word == 0U) || (word == 1U) || (word == 2U) || (word == 3U) || (word == 6U) || (word == 7U);
     assert(tesla_preap_aol_param(static_cast<uint16_t>(word)) == preap_expected);
     auto preap = status();

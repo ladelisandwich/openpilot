@@ -83,7 +83,7 @@ static bool mazda_radar_heartbeat_msg_valid(const CANPacket_t *msg) {
 
 // track msgs coming from OP so that we know what CAM msgs to drop and what to forward
 static void mazda_rx_hook(const CANPacket_t *msg) {
-  // StarPilot 7's stock always-on-lateral bookkeeping: inert unless mazda_aol_enabled (an unmodified GEN1, param 0)
+  // StarPilot 7's always-on-lateral bookkeeping: inert unless mazda_aol_enabled (mazda_init)
   mazda_aol_rx(msg);
   if ((int)msg->bus == MAZDA_MAIN) {
     if (gen1) {
@@ -121,13 +121,17 @@ static void mazda_rx_hook(const CANPacket_t *msg) {
           bool cruise_engaged = GET_BIT(msg, 3U);
           bool acc_armed = GET_BIT(msg, 2U) || cruise_engaged;
           acc_main_on = acc_armed;
+          // always-on-lateral's MAIN observation for the Torque Interceptor with radar emulation (inert otherwise)
+          mazda_aol_main(cruise_engaged);
 
           // Only feed PEDALS into pcm_cruise_check when the ACC state is actually
           // meaningful. Brake-only samples can arrive with both ACC bits low while the
           // driver is holding the pedal; treating those as a stock ACC-off edge drops
           // controls before the normal brake-edge logic runs.
           if (acc_armed || cruise_engaged_prev || (!brake && !brake_pressed_prev)) {
+            const bool was_allowed = controls_allowed;
             pcm_cruise_check(cruise_engaged);
+            mazda_aol_engagement_observed(cruise_engaged, !was_allowed && controls_allowed);
           }
         } else if (radar_interceptor || no_mrcc) {
           // acc_main_on = GET_BIT(to_push, 17U); TODO
@@ -170,8 +174,9 @@ static void mazda_rx_hook(const CANPacket_t *msg) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
-    // enter controls on rising edge of ACC, exit controls on ACC off
-    if (msg->addr == MAZDA_CRZ_CTRL) {
+    // enter controls on rising edge of ACC, exit controls on ACC off: the radar interceptor's CRZ_CTRL on the
+    // OBD-C bus. Only that configuration has one there; anything else on bus 1 must not arm controls.
+    if ((msg->addr == MAZDA_CRZ_CTRL) && radar_interceptor) {
       bool cruise_engaged = msg->data[0] & 0x8U;
       pcm_cruise_check(cruise_engaged);
 
@@ -431,11 +436,13 @@ static safety_config mazda_init(uint16_t param) {
   no_mrcc = GET_FLAG(param, FLAG_NO_MRCC);
   radar_emulation = GET_FLAG(param, FLAG_RADAR_EMULATION);
 
-  // StarPilot 7's stock always-on-lateral: only an unmodified GEN1 (param 0) that asked for it (alternative
-  // experience 32). With the Torque Interceptor or the radar emulation flags set it stays off, and unlike
-  // upstream the flagged configurations keep their transmit tables.
+  // StarPilot 7's always-on-lateral, only when asked for (alternative experience 32): an unmodified GEN1
+  // (param 0), or the fork's GEN1 with the Torque Interceptor and radar emulation (param 265, mazda_stock_aol.h
+  // mazda_aol_ti_re). Other flagged configurations stay off, and unlike upstream they keep their transmit tables.
+  const uint16_t mazda_ti_re_param = (uint16_t)(FLAG_GEN1 | FLAG_TORQUE_INTERCEPTOR | FLAG_RADAR_EMULATION);
   mazda_aol_reset();
-  mazda_aol_enabled = (param == 0U) && ((unsigned int)alternative_experience == 32U);
+  mazda_aol_enabled = ((param == 0U) || (param == mazda_ti_re_param)) && ((unsigned int)alternative_experience == 32U);
+  mazda_aol_ti_re = mazda_aol_enabled && (param == mazda_ti_re_param);
   MAZDA_TX_MSGS[0].check_relay = !mazda_aol_enabled;
   MAZDA_TX_MSGS[2].check_relay = !mazda_aol_enabled;
   if (mazda_aol_enabled) {
